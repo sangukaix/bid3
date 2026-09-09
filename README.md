@@ -19,7 +19,8 @@ py -3.12 -m venv venv
 .\venv\Scripts\python.exe -m pip install -r requirements.txt
 # 기존 .env가 없을 때만 복사합니다.
 Copy-Item .env.example .env
-# .env에 본인의 API 키를 입력합니다.
+# .env에 나라장터 API 키를 입력합니다. 기본 AI_MODE=local은 OpenAI 키가 필요 없습니다.
+# Ollama에 qwen3:14b와 gemma4:26b가 설치되어 있어야 합니다. docs/LLM_SETUP.md 참고.
 .\venv\Scripts\python.exe manage.py migrate
 .\venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
 ```
@@ -70,6 +71,7 @@ cd server
 ## 모델과 후속 개발
 
 - [PC·프로젝트별 모델 설정](docs/LLM_SETUP.md)
+- [로컬 AI 전환 점검 및 한계](docs/LOCAL_AI_2026-09-10.md)
 - [이전 점검 보고서](docs/LOCAL_CHECK_2026-09-09.md)
 - [복구·개발 진행 기록](docs/FOLLOWUP_2026-09-09.md)
 - [기존 기능·품질 TODO](docs/TODO.md)

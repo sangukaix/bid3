@@ -735,7 +735,7 @@ class DocumentExtractionTests(TestCase):
         self.assertIn("실행 가능한 파일", result.failed_files[0]["reason"])
 
 
-@patch.dict("os.environ", {"RAG_SEARCH_MODE": "vector"})
+@patch.dict("os.environ", {"AI_MODE": "hybrid", "RAG_SEARCH_MODE": "vector"})
 class BidDocumentSearchTests(TestCase):
     def test_Chroma_관련도_점수를_0과_1_사이로_제한한다(self):
         from bids.services.rag.vector_store import normalize_l2_relevance_score
@@ -2233,6 +2233,7 @@ class BidProposalTests(TestCase):
         self.assertEqual(len(merged["added_slides"]), 20)
 
     @patch("bids.services.rag.proposal.build_revision_chain")
+    @patch.dict("os.environ", {"AI_MODE": "hybrid", "PROPOSAL_PROVIDER": "openai"})
     def test_100장_제안서는_AI_검토를_10번_순차_실행한다(
         self,
         mock_build_revision_chain,

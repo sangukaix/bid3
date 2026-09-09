@@ -5,7 +5,7 @@ from typing import Literal
 from django.db import transaction
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
-from .llm import build_text_model
+from .llm import build_text_model, model_selection
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pydantic import BaseModel, Field
 
@@ -132,6 +132,7 @@ def build_knowledge_batches(documents, original_name):
         chunk_overlap=KNOWLEDGE_CHUNK_OVERLAP,
     )
     chunks = splitter.split_documents(documents)
+    batch_limit = 3000 if model_selection("COMPANY_KNOWLEDGE", COMPANY_KNOWLEDGE_MODEL)[0] == "ollama" else MAX_BATCH_INPUT_CHARS
     total_chars = sum(len(chunk.page_content.strip()) for chunk in chunks)
     used_chars = 0
     batches = []
@@ -168,7 +169,7 @@ def build_knowledge_batches(documents, original_name):
         )
         source_text = f"{source_header}\n{content}"
 
-        if context_parts and batch_chars + len(source_text) > MAX_BATCH_INPUT_CHARS:
+        if context_parts and batch_chars + len(source_text) > batch_limit:
             finish_batch()
             source_number = 1
             source_header = (

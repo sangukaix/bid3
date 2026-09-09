@@ -6,7 +6,7 @@ from pathlib import Path
 
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
-from ..llm import build_text_model
+from ..llm import build_text_model, model_selection
 from pydantic import BaseModel, Field
 
 from .extract_document import extract_document
@@ -177,7 +177,9 @@ def _merge_batch_results(results):
 def build_document_requirement_register(bid_ntce_no, chunk_documents):
     """모든 첨부문서를 묶음별로 읽고 재사용 가능한 요구사항 목록을 만듭니다."""
 
-    cache_path = get_bid_db_path(bid_ntce_no) / "requirement_register.json"
+    local = model_selection("REQUIREMENT", REQUIREMENT_MODEL)[0] == "ollama"
+    model_tag = hashlib.sha256(model_selection("REQUIREMENT", REQUIREMENT_MODEL)[1].encode()).hexdigest()[:12]
+    cache_path = get_bid_db_path(bid_ntce_no) / (f"requirement_register_local_{model_tag}.json" if local else "requirement_register.json")
     if cache_path.exists():
         try:
             cached = json.loads(cache_path.read_text(encoding="utf-8"))
@@ -197,7 +199,7 @@ def build_document_requirement_register(bid_ntce_no, chunk_documents):
         raise ValueError("요구사항을 확인할 공고 원문이 없습니다.")
 
     chain = requirement_prompt | _build_requirement_model()
-    batch_cache_path = cache_path.with_name("requirement_batches_v4.json")
+    batch_cache_path = cache_path.with_name(f"requirement_batches_local_{model_tag}_v4.json" if local else "requirement_batches_v4.json")
     try:
         batch_cache = json.loads(batch_cache_path.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):

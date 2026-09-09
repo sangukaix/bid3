@@ -1,6 +1,7 @@
 import base64
 
-from .llm import cloud_client
+from .llm import cloud_client, model_selection
+from .local_vision import extract_local_registration
 from pydantic import BaseModel
 
 
@@ -41,6 +42,8 @@ def extract_business_registration(uploaded_file):
         raise ValueError("파일 크기는 5MB 이하여야 합니다.")
 
     file_bytes = uploaded_file.read()
+    if model_selection("BUSINESS_REGISTRATION", MODEL)[0] == "ollama":
+        return extract_local_registration(file_bytes, uploaded_file.content_type, BusinessRegistrationData, INSTRUCTIONS)
     client = cloud_client(timeout=40.0, max_retries=0)
     temporary_file_id = None
 

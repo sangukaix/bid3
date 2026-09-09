@@ -3,6 +3,7 @@ from typing import Literal
 
 from langchain_core.prompts import ChatPromptTemplate
 from ..llm import build_text_model
+from ..local_context import structured_chain
 from pydantic import BaseModel, Field
 
 from ..company_knowledge import build_company_knowledge_context
@@ -151,7 +152,7 @@ def build_quantitative_model():
 
     return build_text_model(
         "QUANTITATIVE", QUANTITATIVE_MODEL, MAX_QUANTITATIVE_OUTPUT_TOKENS,
-    ).with_structured_output(QuantitativeProposalSchema)
+    )
 
 
 def add_completion_summary(report):
@@ -167,11 +168,12 @@ def add_completion_summary(report):
             value = str(field.get("value") or "").strip()
             status = field.get("status")
             item_name = f"{form_name} · {label}"
-            if value:
-                field["status"] = "작성 완료"
-                completed_fields.append(item_name)
-            elif status == "직접 확인":
+            uncertain = any(marker in value for marker in ("미제공", "미기재", "확인 필요", "정보 없음", "자료 없음", "미확인"))
+            if status == "직접 확인" or uncertain:
+                field["status"] = "직접 확인"
                 direct_review_fields.append(item_name)
+            elif value and status == "작성 완료":
+                completed_fields.append(item_name)
             else:
                 field["status"] = "미작성"
                 incomplete_fields.append(item_name)
@@ -215,7 +217,7 @@ def generate_quantitative_proposal(saved_bid, profile):
         saved_bid.user,
         max_chars=50000,
     )
-    result = (quantitative_prompt | build_quantitative_model()).invoke(
+    result = structured_chain(quantitative_prompt, build_quantitative_model(), QuantitativeProposalSchema).invoke(
         {
             "company_context": company_context(profile),
             "company_knowledge_context": company_knowledge_context,

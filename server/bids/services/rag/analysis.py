@@ -3,6 +3,7 @@ from typing import Literal
 
 from langchain_core.prompts import ChatPromptTemplate
 from ..llm import build_text_model
+from ..local_context import structured_chain
 from pydantic import BaseModel, Field
 
 from .chatbot import CHAT_MODEL, build_full_page_context
@@ -102,8 +103,8 @@ def build_analysis_chain():
 
     analysis_model = build_text_model(
         "ANALYSIS", CHAT_MODEL, MAX_ANALYSIS_OUTPUT_TOKENS,
-    ).with_structured_output(BidAnalysisSchema)
-    return analysis_prompt | analysis_model  # Prompt -> OpenAI -> Pydantic 결과
+    )
+    return structured_chain(analysis_prompt, analysis_model, BidAnalysisSchema)  # Prompt -> OpenAI -> Pydantic 결과
 
 
 def collect_analysis_documents(bid_ntce_no):

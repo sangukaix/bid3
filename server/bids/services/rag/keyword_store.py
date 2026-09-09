@@ -12,6 +12,9 @@ from .vector_store import get_bid_db_path, get_collection_name
 
 
 def search_mode():
+    from ..llm import local_only
+    if local_only():
+        return "keyword"
     mode = os.getenv("RAG_SEARCH_MODE", "vector").strip().lower()
     if mode not in {"vector", "keyword"}:
         raise ValueError("RAG_SEARCH_MODE는 vector 또는 keyword여야 합니다.")

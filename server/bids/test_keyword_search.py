@@ -52,7 +52,7 @@ class KeywordSearchTests(SimpleTestCase):
                 vector.assert_not_called()
                 attachments.assert_called_once()
 
-    @patch.dict("os.environ", {"RAG_SEARCH_MODE": "vector"})
+    @patch.dict("os.environ", {"AI_MODE": "hybrid", "RAG_SEARCH_MODE": "vector"})
     @patch("bids.services.rag.prepare_docs_for_ai.fetch_bid_attachments", side_effect=RuntimeError("offline"))
     @patch("bids.services.rag.prepare_docs_for_ai.BidNotice")
     def test_failed_download_does_not_destroy_legacy_index(self, notice, fetch):

@@ -2,6 +2,16 @@
 
 import json
 import os
+import threading
+
+LOCAL_MODEL_LOCK = threading.Lock()
+
+
+def local_only():
+    mode = os.getenv("AI_MODE", "hybrid").strip().lower()
+    if mode not in {"local", "hybrid"}:
+        raise ValueError("AI_MODE는 local 또는 hybrid여야 합니다.")
+    return mode == "local"
 
 import requests
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -10,6 +20,26 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.runnables import RunnableLambda
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
+
+
+def ollama_schema(schema):
+    """Keep structure/enums; validate string bounds with Pydantic after decoding.
+
+    Some llama.cpp grammars cannot compile very large bounded strings.
+    """
+    if isinstance(schema, list):
+        return [ollama_schema(item) for item in schema]
+    if not isinstance(schema, dict):
+        return schema
+    result = {}
+    for key, value in schema.items():
+        if key in {"minLength", "maxLength", "pattern", "format"}:
+            continue
+        if key in {"properties", "$defs"}:
+            result[key] = {name: ollama_schema(item) for name, item in value.items()}
+        else:
+            result[key] = ollama_schema(value)
+    return result
 
 
 class OllamaChatModel(BaseChatModel):
@@ -35,7 +65,7 @@ class OllamaChatModel(BaseChatModel):
         # Bound input conservatively by UTF-8 bytes; do not let Ollama silently
         # discard the beginning of a long source document.
         input_bound = sum(len(m["content"].encode("utf-8")) + 64 for m in wire_messages)
-        schema_bound = len(json.dumps(kwargs.get("format", {})).encode("utf-8"))
+        schema_bound = len(json.dumps(kwargs.get("format", {}), ensure_ascii=False).encode("utf-8"))
         if input_bound + schema_bound + self.num_predict + 512 > self.num_ctx:
             raise ValueError(
                 "문서가 로컬 모델의 안전한 입력 범위를 초과했습니다. "
@@ -46,7 +76,7 @@ class OllamaChatModel(BaseChatModel):
             "messages": wire_messages,
             "stream": False,
             "think": False,
-            "keep_alive": "5m",
+            "keep_alive": os.getenv("LOCAL_LLM_KEEP_ALIVE", "0"),
             "options": {
                 "temperature": 0,
                 "num_ctx": self.num_ctx,
@@ -57,11 +87,10 @@ class OllamaChatModel(BaseChatModel):
             payload["options"]["stop"] = stop
         if "format" in kwargs:
             payload["format"] = kwargs["format"]
-        response = requests.post(
-            self.base_url.rstrip("/") + "/api/chat",
-            json=payload,
-            timeout=(10, self.timeout),
-        )
+        with LOCAL_MODEL_LOCK:
+            response = requests.post(
+                self.base_url.rstrip("/") + "/api/chat", json=payload, timeout=(10, self.timeout),
+            )
         response.raise_for_status()
         data = response.json()
         if data.get("error"):
@@ -78,11 +107,11 @@ class OllamaChatModel(BaseChatModel):
             schema_json, parser = schema, json.loads
         else:
             schema_json, parser = schema.model_json_schema(), schema.model_validate_json
-        return self.bind(format=schema_json) | RunnableLambda(lambda message: parser(message.content))
+        return self.bind(format=ollama_schema(schema_json)) | RunnableLambda(lambda message: parser(message.content))
 
 
 def model_selection(role, default_model):
-    provider = os.getenv(f"{role}_PROVIDER", "openai").strip().lower()
+    provider = "ollama" if local_only() else os.getenv(f"{role}_PROVIDER", "openai").strip().lower()
     if provider not in {"openai", "ollama"}:
         raise ValueError(f"{role}_PROVIDER는 openai 또는 ollama여야 합니다.")
     if provider == "ollama":
@@ -98,9 +127,9 @@ def build_text_model(role, default_model, max_tokens, reasoning_effort="low"):
         return OllamaChatModel(
             model=model,
             base_url=os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434"),
-            timeout=float(os.getenv("LOCAL_LLM_TIMEOUT", "180")),
-            num_ctx=int(os.getenv("LOCAL_LLM_CONTEXT", "16384")),
-            num_predict=max_tokens,
+            timeout=float(os.getenv("LOCAL_LLM_TIMEOUT", "300")),
+            num_ctx=int(os.getenv("LOCAL_LLM_CONTEXT", "32768")),
+            num_predict=min(max_tokens, int(os.getenv("LOCAL_LLM_MAX_OUTPUT", "4096"))),
         )
     options = {
         "model": model,
@@ -119,6 +148,8 @@ def build_text_model(role, default_model, max_tokens, reasoning_effort="low"):
 
 
 def cloud_options():
+    if local_only():
+        raise ValueError("로컬 모드에서는 OpenAI 호출이 차단됩니다.")
     return {
         "api_key": os.getenv("OPENAI_API_KEY"),
         "base_url": os.getenv("BID_OPENAI_BASE_URL", "https://api.openai.com/v1"),
