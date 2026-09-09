@@ -1,0 +1,211 @@
+﻿@import "tailwindcss"; /* Tailwind CSS 기능을 이 파일에서 사용할 수 있게 불러옵니다. */
+
+:root { /* 사이트 전체에서 공통으로 사용할 CSS 변수들을 정의하는 영역입니다. */
+  --background: #f5f7fa; /* 흰색 작업 영역이 자연스럽게 구분되는 대시보드 배경색입니다. */
+  --foreground: #172033; /* 부드럽지만 선명한 기본 글자색입니다. */
+  --surface: #ffffff; /* 카드처럼 중요한 내용을 올리는 밝은 면입니다. */
+  --surface-soft: #f8fafc; /* 표 머리글과 보조 영역에 사용하는 색입니다. */
+  --line: #e1e7ef; /* 영역을 구분하는 공통 경계선 색입니다. */
+  --primary: #2563eb; /* 주요 버튼과 선택 상태에 사용하는 브랜드 색입니다. */
+  --panel-shadow: 0 1px 2px rgb(15 23 42 / 4%); /* 패널이 과하게 떠 보이지 않도록 최소한의 깊이만 줍니다. */
+}
+
+@theme inline { /* Tailwind v4에서 CSS 변수를 Tailwind 색상/폰트 이름으로 연결하는 설정입니다. */
+  --color-background: var(--background); /* Tailwind에서 bg-background처럼 쓸 수 있는 색상입니다. */
+  --color-foreground: var(--foreground); /* Tailwind에서 text-foreground처럼 쓸 수 있는 색상입니다. */
+  --font-sans: var(--font-geist-sans); /* layout.tsx에서 불러온 기본 sans 폰트를 Tailwind에 연결합니다. */
+  --font-mono: var(--font-geist-mono); /* layout.tsx에서 불러온 monospace 폰트를 Tailwind에 연결합니다. */
+}
+
+html {
+  scrollbar-gutter: stable; /* 페이지 길이와 관계없이 스크롤바 공간을 유지합니다. */
+}
+
+body { /* 모든 페이지의 body 태그에 적용되는 기본 스타일입니다. */
+  background: var(--background); /* 위에서 만든 --background 값을 실제 배경색으로 사용합니다. */
+  color: var(--foreground); /* 위에서 만든 --foreground 값을 실제 글자색으로 사용합니다. */
+  font-family: var(--font-geist-sans), "Pretendard", "Noto Sans KR", "Malgun Gothic", Arial, sans-serif; /* 한글과 영문이 자연스럽게 이어지는 글꼴 순서입니다. */
+  letter-spacing: 0; /* 화면마다 글자 간격이 달라지지 않게 통일합니다. */
+  text-rendering: optimizeLegibility; /* 작은 글자의 가독성을 높입니다. */
+}
+
+::selection {
+  background: #dbeafe; /* 선택한 글씨가 브랜드 색과 자연스럽게 어울리도록 합니다. */
+  color: #172033;
+}
+
+/* 기존 Tailwind 구조는 유지하면서 전체 화면의 색 대비만 부드럽게 조정합니다. */
+.app-shell {
+  background: var(--background);
+}
+
+.app-shell .app-panel {
+  border-color: var(--line);
+  background: var(--surface);
+  box-shadow: var(--panel-shadow);
+}
+
+.app-shell .app-panel-soft {
+  border-color: var(--line);
+  background: var(--surface-soft);
+}
+
+/* 기존 페이지 카드는 경계선을 통일하고 과한 공통 그림자는 사용하지 않습니다. */
+.app-shell :is(section, article, form, div)[class~="rounded-lg"][class~="border"][class~="bg-white"] {
+  border-color: var(--line);
+}
+
+.app-shell [class~="bg-slate-50"] {
+  background-color: var(--surface-soft);
+}
+
+.app-shell [class~="border-slate-200"] {
+  border-color: var(--line);
+}
+
+/* 입력 요소의 높이와 포커스 표시를 통일해 폼 위치를 쉽게 파악하게 합니다. */
+.app-shell :where(input, textarea, select) {
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.app-shell :where(input, textarea, select):focus {
+  border-color: #7aa7f8;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
+  outline: none;
+}
+
+.app-shell :where(input, textarea)::placeholder {
+  color: #94a3b8;
+}
+
+/* 긴 목록에서도 제목과 행을 빠르게 구분할 수 있도록 표의 반응을 정리합니다. */
+.dashboard-content table thead {
+  background: var(--surface-soft);
+}
+
+.dashboard-content table tbody tr {
+  transition: background-color 140ms ease;
+}
+
+.dashboard-content table tbody tr:hover {
+  background-color: #f8fbff;
+}
+
+.dashboard-content > section > :is(header, div):first-child {
+  border-color: var(--line);
+}
+
+.dashboard-content h1 {
+  color: #111827;
+  letter-spacing: 0;
+}
+
+/* 모든 대시보드 페이지가 같은 제목 높이와 본문 시작 위치를 사용합니다. */
+.dashboard-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.page-header {
+  display: flex;
+  min-height: 68px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid var(--line);
+  padding: 2px 0 20px;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 2rem;
+  color: #111827;
+}
+
+.page-description {
+  margin-top: 6px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #64748b;
+}
+
+.page-note {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: #64748b;
+}
+
+/* 목록과 정보 패널의 제목·표 밀도를 같은 규칙으로 맞춥니다. */
+.dashboard-content table thead th {
+  color: #64748b;
+  font-size: 0.75rem;
+  letter-spacing: 0;
+}
+
+.dashboard-content table tbody td {
+  border-color: var(--line);
+}
+
+.dashboard-content :is(button, a)[class~="rounded-md"] {
+  border-radius: 6px;
+}
+
+/* 얇은 스크롤바로 표와 사이드바의 사용 가능 영역을 조금 더 확보합니다. */
+.app-shell * {
+  scrollbar-color: #b8c5d2 transparent;
+  scrollbar-width: thin;
+}
+
+.mobile-dashboard-nav {
+  scrollbar-width: none; /* 모바일 메뉴는 손가락으로 이동하므로 스크롤바만 숨깁니다. */
+}
+
+.mobile-dashboard-nav::-webkit-scrollbar {
+  display: none;
+}
+
+button:not(:disabled),
+a,
+select {
+  cursor: pointer; /* 클릭할 수 있는 요소에 마우스를 올리면 손 모양으로 표시합니다. */
+}
+
+button,
+a {
+  transition-duration: 160ms;
+  transition-property: color, background-color, border-color, box-shadow, opacity;
+  transition-timing-function: ease;
+}
+
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid var(--primary); /* 키보드로 이동할 때 현재 위치를 명확히 표시합니다. */
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: not-allowed; /* 사용할 수 없는 버튼은 비활성 커서로 표시합니다. */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .page-header {
+    min-height: 58px;
+    padding-bottom: 16px;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+}

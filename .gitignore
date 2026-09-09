@@ -1,0 +1,19 @@
+# Local data and credentials must never be published.
+.env
+.env.*
+!.env.example
+!*.env.example
+.backups/
+.local/
+**/venv/
+**/.venv/
+**/node_modules/
+**/.next/
+**/__pycache__/
+*.py[cod]
+*.sqlite3*
+*.log
+*.tsbuildinfo
+server/media/
+server/chroma_db/
+web/next-env.d.ts
