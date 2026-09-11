@@ -146,6 +146,19 @@ def _classify_slide(slide_number, title, elements):
     return "content"
 
 
+def _slide_title(elements):
+    """Prefer the title placeholder, then a prominent nonnumeric text box."""
+    candidates = [e for e in elements if _clean_text(e.get("text"))]
+    explicit = next((e for e in candidates if e.get("kind") == "title"), None)
+    if explicit:
+        return explicit["text"].splitlines()[0]
+    candidates = [e for e in candidates if e.get("kind") != "table_cell"
+                  and not re.fullmatch(r"[\d\s.\-/]+", e["text"])]
+    if not candidates:
+        return ""
+    return max(candidates, key=lambda e: float(e.get("font_size_pt") or 0))["text"].splitlines()[0]
+
+
 def extract_pptx_inventory(source_path, max_slides=MAX_SOURCE_SLIDES):
     """원본 PPTX의 슬라이드 번호와 수정 가능한 텍스트 위치를 읽습니다."""
 
@@ -162,11 +175,7 @@ def extract_pptx_inventory(source_path, max_slides=MAX_SOURCE_SLIDES):
     inventory = []
     for slide_number, slide in enumerate(presentation.slides, start=1):
         elements = _slide_elements(slide)
-        title = ""
-        if slide.shapes.title is not None:
-            title = slide.shapes.title.text.strip()
-        if not title and elements:
-            title = elements[0]["text"].splitlines()[0]
+        title = _slide_title(elements)
 
         layout_metadata = get_proposal_slide_layout(source_path, slide_number)
         inventory.append(
@@ -455,13 +464,11 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
         if total_text_length > 1800:
             dense_slide_numbers.append(slide_number)
 
-        title = ""
+        title = _slide_title(elements)
         for element in elements:
             text = _clean_text(element.get("text", ""))
             if not text:
                 continue
-            if element.get("is_title") and not title:
-                title = text
             font_size = float(element.get("font_size_pt") or 0)
             if font_size and font_size < MIN_BODY_FONT_PT:
                 small_text_items.append(

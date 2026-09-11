@@ -72,6 +72,7 @@ cd server
 
 - [PC·프로젝트별 모델 설정](docs/LLM_SETUP.md)
 - [로컬 AI 전환 점검 및 한계](docs/LOCAL_AI_2026-09-10.md)
+- [30장 템플릿 후속 점검](docs/LOCAL_AI_2026-09-11.md)
 - [이전 점검 보고서](docs/LOCAL_CHECK_2026-09-09.md)
 - [복구·개발 진행 기록](docs/FOLLOWUP_2026-09-09.md)
 - [기존 기능·품질 TODO](docs/TODO.md)

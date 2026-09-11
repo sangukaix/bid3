@@ -66,11 +66,11 @@ class LocalModeTests(SimpleTestCase):
         from pydantic import ValidationError
         def create_chain(prompt, model, schema):
             with self.assertRaises(ValidationError):
-                schema.model_validate({"edits":[{"target":"invented","revised_text":"수정"}],"review_notes":[]})
+                schema.model_validate({"edits":{"invented":"수정","shape-0":None},"review_notes":[]})
             from unittest.mock import Mock
             chain = Mock()
             chain.invoke.return_value = schema.model_validate({
-                "edits":[{"target":"shape-0","revised_text":"새 제목"}],"review_notes":[]})
+                "edits":{"shape-0":"새 제목"},"review_notes":[]})
             return chain
         chain_factory.side_effect = create_chain
         result = build_local_slide_plan({
@@ -79,6 +79,57 @@ class LocalModeTests(SimpleTestCase):
         self.assertEqual(result.slide_changes[0].text_changes[0].original_text, "기존")
         self.assertEqual(result.slide_changes[0].text_changes[0].revised_text, "새 제목")
         self.assertEqual(result.added_slides, [])
+
+    @patch("bids.services.rag.proposal.structured_chain")
+    def test_oversized_text_retries_before_accepting_plan(self, factory):
+        from unittest.mock import Mock
+        from bids.services.rag.proposal import build_local_slide_plan
+        def setup(prompt, model, schema):
+            chain=Mock()
+            chain.invoke.side_effect=[
+                schema.model_validate({"edits":{"shape-0":"너무 긴 문구" * 10},"review_notes":[]}),
+                schema.model_validate({"edits":{"shape-0":"짧은 제목"},"review_notes":[]})]
+            factory.chain=chain
+            return chain
+        factory.side_effect=setup
+        result=build_local_slide_plan({"slide_number":1,"title":"표지",
+            "elements":[{"target":"shape-0","text":"[사업명]","max_chars":10}]},{})
+        self.assertEqual(factory.chain.invoke.call_count,2)
+        self.assertEqual(result.slide_changes[0].text_changes[0].revised_text,"짧은 제목")
+
+    @patch("bids.services.rag.proposal.structured_chain")
+    def test_null_placeholder_is_flagged_but_static_text_can_stay(self, factory):
+        from unittest.mock import Mock
+        from bids.services.rag.proposal import build_local_slide_plan
+        def setup(prompt, model, schema):
+            return Mock(invoke=Mock(return_value=schema.model_validate({
+                "edits":{"shape-0":None,"shape-1":None},"review_notes":[]})))
+        factory.side_effect=setup
+        slide={"slide_number":1,"title":"표지","elements":[
+            {"target":"shape-0","text":"[회사명]"},{"target":"shape-1","text":"제안서"}]}
+        result=build_local_slide_plan(slide,{})
+        self.assertEqual(len(result.slide_changes[0].text_changes),1)
+        self.assertEqual(result.slide_changes[0].text_changes[0].revised_text,"확인 필요")
+        self.assertTrue(any("shape-0" in note for note in result.final_review_items))
+        slide["elements"][0]["text"]="회사 개요"
+        result=build_local_slide_plan(slide,{})
+        self.assertEqual(result.slide_changes[0].action,"REVIEW")
+        self.assertEqual(result.slide_changes[0].text_changes,[])
+
+    @patch("bids.services.rag.proposal.structured_chain")
+    def test_persistently_oversized_text_fails_without_silent_skip(self, factory):
+        from unittest.mock import Mock
+        from bids.services.rag.proposal import build_local_slide_plan
+        def setup(prompt, model, schema):
+            chain=Mock(invoke=Mock(return_value=schema.model_validate({
+                "edits":{"shape-0":"긴 문구" * 30},"review_notes":[]})))
+            factory.chain=chain
+            return chain
+        factory.side_effect=setup
+        with self.assertRaisesRegex(ValueError,"상자 크기"):
+            build_local_slide_plan({"slide_number":1,"title":"표지",
+                "elements":[{"target":"shape-0","text":"제목","max_chars":10}]},{})
+        self.assertEqual(factory.chain.invoke.call_count,2)
 
     def test_explicit_page_preservation_limits_model_scope(self):
         from bids.services.rag.proposal import restrict_feedback_inventory
