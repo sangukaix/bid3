@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import LoginRequiredNotice from "@/components/auth/LoginRequiredNotice";
+import CompanyClaimReviewPanel from "@/components/proposal/CompanyClaimReviewPanel";
 import ProposalAssistant from "@/components/proposal/ProposalAssistant";
 import ProposalPreviewModal from "@/components/proposal/ProposalPreviewModal";
 import ProjectAnalysisCard from "@/components/proposal/ProjectAnalysisCard";
@@ -36,6 +37,7 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
   const [previewError, setPreviewError] = useState("");
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedPreviewPage, setSelectedPreviewPage] = useState(1);
+  const [reviewPage, setReviewPage] = useState<number>();
   const [needsLogin, setNeedsLogin] = useState(false);
   const [error, setError] = useState("");
   const [isDeletingProject, setIsDeletingProject] = useState(false);
@@ -446,6 +448,12 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                   ) : null}
                 </div>
 
+                <CompanyClaimReviewPanel plan={proposal.revision_plan} disabled={assistantDisabled}
+                  onReviewPage={(page) => {
+                    setSelectedPreviewPage(page); setReviewPage(page);
+                    document.getElementById("proposal-assistant")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    document.querySelector<HTMLTextAreaElement>("#proposal-assistant textarea")?.focus({ preventScroll: true });
+                  }} />
                 <div className="mt-4 flex justify-end gap-2">
                   {proposal.status === "draft" ? (
                     <button
@@ -471,13 +479,15 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
           </div>
         </main>
 
-        <aside className="app-panel min-w-0 overflow-hidden rounded-lg border lg:h-[820px]">
+        <aside id="proposal-assistant" className="app-panel min-w-0 overflow-hidden rounded-lg border lg:h-[820px]">
           <ProposalAssistant
             bidNtceNo={bidNtceNo}
             bidTitle={bid.bidNtceNm}
             disabled={assistantDisabled}
             onUpdated={setProposal}
             proposal={proposal}
+            selectedSlide={reviewPage}
+            onClearSelection={() => setReviewPage(undefined)}
           />
         </aside>
       </div>

@@ -67,6 +67,14 @@ export type ProposalRevisionLog = {
   warnings: string[];
 };
 
+export type CompanyClaimReview = {
+  items: Array<{
+    slide_number: number; target: string; claim: string;
+    status: "source_matched" | "review_required"; reason: string;
+    evidence_quote: string; evidence_source: string;
+    reference_passages?: Array<{ source: string; text: string }>;
+  }>;
+};
 export type BidProposalData = {
   id: number;
   status: "draft" | "final" | "generating";
@@ -83,6 +91,7 @@ export type BidProposalData = {
     reviewed_slide_count?: number;
     revision_log?: ProposalRevisionLog[];
     final_review_items?: string[];
+    company_claim_review?: CompanyClaimReview;
     quality_review?: {
       passed: boolean;
       unresolved_placeholders: Array<{
@@ -98,6 +107,7 @@ export type BidProposalData = {
     };
     feedback_history?: Array<{
       instruction: string;
+      company_claim_review?: CompanyClaimReview | null;
       slide_number: number | null;
       summary: string;
       created_at: string;

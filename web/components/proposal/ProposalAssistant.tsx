@@ -9,6 +9,7 @@ type ProposalAssistantProps = {
   proposal: BidProposalData | null;
   disabled: boolean;
   selectedSlide?: number;
+  onClearSelection?: () => void;
   onUpdated: (proposal: BidProposalData) => void;
 };
 
@@ -18,6 +19,7 @@ export default function ProposalAssistant({
   proposal,
   disabled,
   selectedSlide,
+  onClearSelection,
   onUpdated,
 }: ProposalAssistantProps) {
   return (
@@ -27,6 +29,10 @@ export default function ProposalAssistant({
         <p className="mt-1 text-xs leading-5 text-slate-500">
           공고 질문과 제안서 수정 요청을 한 대화에서 진행할 수 있습니다.
         </p>
+        {selectedSlide && <div role="status" className="mt-2 flex items-center justify-between gap-2 text-sm text-blue-700">
+          <span>{selectedSlide}페이지 수정 · 요청을 입력해 주세요</span>
+          {onClearSelection && <button type="button" onClick={onClearSelection} className="underline">선택 해제</button>}
+        </div>}
       </header>
 
       <div className="min-h-0 flex-1">

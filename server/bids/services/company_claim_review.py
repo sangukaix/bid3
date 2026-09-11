@@ -36,7 +36,8 @@ def review_company_claims(plan, profile, knowledge):
             selected = [c for c in sorted(chunks, key=score, reverse=True)[:3] if score(c)>0]
             finding = {"slide_number":slide["slide_number"], "target":change["target"],
                        "claim":text, "status":"review_required", "evidence_quote":"",
-                       "evidence_source":"", "reason":"대조 가능한 회사 자료가 부족합니다."}
+                       "evidence_source":"", "reason":"대조 가능한 회사 자료가 부족합니다.",
+                       "reference_passages":[{"source":c["source"], "text":c["text"]} for c in selected]}
             if selected:
                 try:
                     if model is None:

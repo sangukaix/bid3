@@ -21,6 +21,7 @@ class CompanyClaimTests(SimpleTestCase):
         invoke.return_value=Verdict(supported=True,evidence_quote="강사 3명을 보유하고 있습니다.",reason="직접 명시")
         r=review_company_claims(plan("강사 3명 보유"),"강사 3명을 보유하고 있습니다.","")
         self.assertEqual(r["items"][0]["status"],"source_matched")
+        self.assertEqual(r["items"][0]["reference_passages"][0]["text"],"강사 3명을 보유하고 있습니다.")
         invoke.return_value=Verdict(supported=True,evidence_quote="강사 10명 보유",reason="확인")
         r=review_company_claims(plan("강사 10명 보유"),"강사 3명을 보유하고 있습니다.","")
         self.assertEqual(r["review_required_count"],1)
