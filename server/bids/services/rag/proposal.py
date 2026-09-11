@@ -971,6 +971,10 @@ def _generate_proposal_from_template(
         "project_reference_failed_files": project_reference_info["failed_files"],
     }
 
+    if model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
+        from ..company_claim_review import review_company_claims
+        review_company_claims(revision_plan, profile_context, company_knowledge_context)
+
     file_result = build_proposal_pptx(
         source_path=source_path,
         bid_notice=saved_bid.bid_notice,
@@ -1080,6 +1084,10 @@ def revise_proposal_with_feedback(
     feedback_plan = feedback_result.model_dump()
     feedback_plan["sources"] = sources
     feedback_plan["web_sources"] = web_sources
+    if model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
+        from ..company_claim_review import review_company_claims
+        knowledge, _ = build_company_knowledge_context(saved_bid.user)
+        review_company_claims(feedback_plan, company_context(profile), knowledge)
 
     file_result = build_proposal_pptx(
         source_path=proposal.generated_file.path,

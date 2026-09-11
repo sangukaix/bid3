@@ -1924,6 +1924,7 @@ def bid_proposal_feedback(request, bid_ntce_no):
             "instruction": instruction,
             "slide_number": slide_number,
             "summary": feedback_plan.get("summary", ""),
+            "company_claim_review": feedback_plan.get("company_claim_review"),
             "created_at": timezone.now().isoformat(),
         }
     )
