@@ -41,7 +41,7 @@ def review_company_claims(plan, profile, knowledge):
             if selected:
                 try:
                     if model is None:
-                        model = build_text_model("PROPOSAL", "gpt-4o-mini", 800).with_structured_output(Verdict)
+                        model = build_text_model("CLAIM_REVIEW", "gpt-4o-mini", 800).with_structured_output(Verdict)
                     evidence = "\n\n".join(f"[{c['source']}]\n{c['text']}" for c in selected)
                     verdict = model.invoke([
                         SystemMessage(content=(

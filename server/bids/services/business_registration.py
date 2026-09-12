@@ -42,7 +42,10 @@ def extract_business_registration(uploaded_file):
         raise ValueError("파일 크기는 5MB 이하여야 합니다.")
 
     file_bytes = uploaded_file.read()
-    if model_selection("BUSINESS_REGISTRATION", MODEL)[0] == "ollama":
+    from maintenance.routing import special_route
+    vision = special_route("VISION")
+    provider, selected_model = (vision["provider"], vision["model"]) if vision else model_selection("BUSINESS_REGISTRATION", MODEL)
+    if provider == "ollama":
         return extract_local_registration(file_bytes, uploaded_file.content_type, BusinessRegistrationData, INSTRUCTIONS)
     client = cloud_client(timeout=40.0, max_retries=0)
     temporary_file_id = None
@@ -64,7 +67,7 @@ def extract_business_registration(uploaded_file):
 
     try:
         response = client.responses.parse(
-            model=MODEL,
+            model=selected_model,
             instructions=INSTRUCTIONS,
             input=[
                 {

@@ -8,7 +8,9 @@ LOCAL_MODEL_LOCK = threading.Lock()
 
 
 def local_only():
-    mode = os.getenv("AI_MODE", "hybrid").strip().lower()
+    from maintenance.routing import read_config
+    config = read_config()
+    mode = config["mode"] if config else os.getenv("AI_MODE", "hybrid").strip().lower()
     if mode not in {"local", "hybrid"}:
         raise ValueError("AI_MODE는 local 또는 hybrid여야 합니다.")
     return mode == "local"
@@ -111,6 +113,11 @@ class OllamaChatModel(BaseChatModel):
 
 
 def model_selection(role, default_model):
+    from maintenance.routing import read_config
+    config = read_config()
+    if config and role in config["routes"]:
+        route = config["routes"][role]
+        return route["provider"], route["model"]
     provider = "ollama" if local_only() else os.getenv(f"{role}_PROVIDER", "openai").strip().lower()
     if provider not in {"openai", "ollama"}:
         raise ValueError(f"{role}_PROVIDER는 openai 또는 ollama여야 합니다.")

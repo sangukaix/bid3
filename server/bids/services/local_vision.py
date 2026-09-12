@@ -18,6 +18,8 @@ def _image_bytes(image):
 
 
 def extract_local_registration(content, content_type, schema, instructions):
+    from maintenance.routing import special_route
+    vision = special_route("VISION")
     images, texts = [], []
     if content_type == "application/pdf":
         try:
@@ -60,7 +62,7 @@ def extract_local_registration(content, content_type, schema, instructions):
     results = []
     for image in images:
         payload = {
-            "model": os.getenv("LOCAL_VISION_MODEL", "gemma4:26b"),
+            "model": vision["model"] if vision else os.getenv("LOCAL_VISION_MODEL", "gemma4:26b"),
             "messages": [{"role": "user", "content": instructions,
                           "images": [base64.b64encode(image).decode("ascii")]}],
             "stream": False, "think": False,

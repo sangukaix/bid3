@@ -21,5 +21,6 @@ from django.urls import include, path  # include: 다른 URL 파일 연결 함�
 
 urlpatterns = [  # URL 목록 변수
     path("admin/", admin.site.urls),
+    path("api/maintenance/", include("maintenance.urls")),
     path("api/", include("bids.urls")),  # bids/urls.py 연결
 ]

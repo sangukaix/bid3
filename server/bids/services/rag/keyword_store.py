@@ -13,7 +13,8 @@ from .vector_store import get_bid_db_path, get_collection_name
 
 def search_mode():
     from ..llm import local_only
-    if local_only():
+    from maintenance.routing import read_config
+    if read_config() or local_only():
         return "keyword"
     mode = os.getenv("RAG_SEARCH_MODE", "vector").strip().lower()
     if mode not in {"vector", "keyword"}:
