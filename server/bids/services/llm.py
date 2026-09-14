@@ -44,6 +44,10 @@ def ollama_schema(schema):
     return result
 
 
+class LocalOutputLimitError(ValueError):
+    """The local response ended before it was complete."""
+
+
 class OllamaChatModel(BaseChatModel):
     """Native Ollama API so context size and thinking are explicitly controlled."""
 
@@ -98,7 +102,7 @@ class OllamaChatModel(BaseChatModel):
         if data.get("error"):
             raise ValueError("로컬 모델 요청에 실패했습니다: " + str(data["error"]))
         if data.get("done_reason") == "length":
-            raise ValueError("로컬 모델 출력 한도에 도달했습니다. 출력량 설정을 확인하세요.")
+            raise LocalOutputLimitError("로컬 모델 출력 한도에 도달했습니다. 출력량 설정을 확인하세요.")
         content = data["message"]["content"]
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content=content))])
 

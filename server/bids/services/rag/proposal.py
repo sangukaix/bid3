@@ -2,7 +2,7 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
@@ -85,6 +85,32 @@ class ProposalStrategySchema(BaseModel):
     proposal_page_limit: int | None = Field(default=None, ge=1)
     recommended_sections: list[str] = Field(default_factory=list)
     writing_style: list[str]
+
+
+ShortStrategyText = Annotated[str, Field(max_length=180)]
+
+
+class LocalComplianceItem(ComplianceItem):
+    requirement: ShortStrategyText
+    response_direction: ShortStrategyText
+    company_evidence: ShortStrategyText = "회사정보 확인 필요"
+    source_numbers: list[int] = Field(default_factory=list, max_length=3)
+
+
+class LocalProposalStrategySchema(ProposalStrategySchema):
+    """A strategy overview; the full requirement register remains separate."""
+    bid_summary: ShortStrategyText
+    core_value_proposition: ShortStrategyText
+    client_needs: list[ShortStrategyText] = Field(max_length=3)
+    win_themes: list[ShortStrategyText] = Field(max_length=3)
+    differentiators: list[ShortStrategyText] = Field(max_length=3)
+    company_strengths: list[ShortStrategyText] = Field(max_length=3)
+    gaps_and_mitigations: list[ShortStrategyText] = Field(max_length=3)
+    compliance_matrix: list[LocalComplianceItem] = Field(max_length=3)
+    submission_requirements: list[ShortStrategyText] = Field(default_factory=list, max_length=3)
+    mandatory_sections: list[ShortStrategyText] = Field(default_factory=list, max_length=8)
+    recommended_sections: list[ShortStrategyText] = Field(default_factory=list, max_length=8)
+    writing_style: list[ShortStrategyText] = Field(max_length=3)
 
 
 class SlideTextChange(BaseModel):
@@ -404,6 +430,14 @@ def build_strategy_chain():
         MAX_STRATEGY_OUTPUT_TOKENS,
         reasoning_effort="low",
     )
+    if model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
+        prompt = strategy_prompt + ChatPromptTemplate.from_messages([
+            ("system", "로컬 전략 개요만 작성합니다. 모든 문자열은 180자 이내, 가능하면 60자 이내로 쓰세요. "
+             "각 목록과 compliance_matrix는 핵심 3개 이내, 목차는 8개 이내입니다. "
+             "전체 요구사항은 별도 목록에 보존되므로 여기서 전부 반복하지 마세요. "
+             "근거 없는 회사 보유사실은 확인 필요로 남기세요.")
+        ])
+        return structured_chain(prompt, model, LocalProposalStrategySchema)
     return structured_chain(strategy_prompt, model, ProposalStrategySchema)
 
 

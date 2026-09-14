@@ -4,9 +4,9 @@ import json
 from pathlib import Path
 from uuid import uuid4
 from django.conf import settings
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableLambda
-from .llm import OllamaChatModel
+from .llm import OllamaChatModel, LocalOutputLimitError
 
 COMPRESSIBLE = {"document_context", "bid_context", "company_context", "company_knowledge_context",
                 "project_reference_context", "requirement_context", "strategy_context",
@@ -29,7 +29,7 @@ def split_bytes(text, limit):
     return parts
 
 
-def summarize_evidence(text, target_bytes, model):
+def summarize_evidence(text, target_bytes, model, _split_depth=0):
     if byte_size(text) <= target_bytes:
         return text
     if target_bytes < 400:
@@ -60,12 +60,49 @@ def summarize_evidence(text, target_bytes, model):
                 "자료에 없는 사실을 추가하지 말고 빈 값은 확인 필요로 남기세요. "
                 f"중복을 줄여 한국어 약 {max(60, per_chunk // 3)}자 이내 항목만 작성하세요."
             )
-            message = summary_model.invoke([
+            messages = [
                 SystemMessage(content=instructions),
-                HumanMessage(content=f"[근거 묶음 {index}/{len(chunks)}]\n{chunk}")])
-            if not message.content.strip():
+                HumanMessage(content=f"[근거 묶음 {index}/{len(chunks)}]\n{chunk}")]
+            chunk_key = hashlib.sha256(json.dumps(
+                ["local-chunk-v1", model.model, model.base_url, model.num_ctx,
+                 [m.content for m in messages]], ensure_ascii=False).encode("utf-8")).hexdigest()
+            chunk_path = root / f"chunk-{chunk_key}.json"
+            cached = None
+            if chunk_path.exists():
+                try:
+                    cached = json.loads(chunk_path.read_text(encoding="utf-8"))["summary"]
+                except (ValueError, KeyError):
+                    pass
+            if isinstance(cached, str) and cached.strip():
+                summaries.append(cached)
+                continue
+            try:
+                message = summary_model.invoke(messages)
+            except LocalOutputLimitError:
+                # Never use partial text. Retry the same evidence once, bounded by
+                # the configured output allowance of the caller.
+                retry_limit = min(model.num_predict, max(2048, summary_model.num_predict * 2))
+                if retry_limit <= summary_model.num_predict:
+                    raise
+                try:
+                    message = summary_model.model_copy(update={"num_predict": retry_limit}).invoke(messages)
+                except LocalOutputLimitError:
+                    if _split_depth >= 3 or byte_size(chunk) <= 2000:
+                        raise
+                    parts = split_bytes(chunk, max(1000, byte_size(chunk) // 2))
+                    content = "\n".join(
+                        summarize_evidence(part, max(400, per_chunk // len(parts)), model, _split_depth + 1)
+                        for part in parts
+                    )
+                    message = AIMessage(content=content)
+            content = message.content.strip()
+            if not content:
                 raise ValueError("로컬 근거 요약이 비어 있습니다.")
-            summaries.append(message.content.strip())
+            root.mkdir(parents=True, exist_ok=True)
+            temporary = chunk_path.with_name(f".{uuid4().hex}.json")
+            temporary.write_text(json.dumps({"summary": content}, ensure_ascii=False), encoding="utf-8")
+            temporary.replace(chunk_path)
+            summaries.append(content)
         reduced = "\n\n".join(summaries)
         if byte_size(reduced) <= target_bytes:
             root.mkdir(parents=True, exist_ok=True)
