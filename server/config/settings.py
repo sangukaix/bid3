@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "rest_framework", # JSON API와 serializer 기능을 Django에 등록
     "rest_framework.authtoken", # 로그인한 사용자에게 Token을 발급
     "bids.apps.BidsConfig", #입찰 공고 기능을 장고에 등록하는것임
+    "presentation_studio.apps.PresentationStudioConfig",
 ]
 
 MIDDLEWARE = [

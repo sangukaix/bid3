@@ -17,6 +17,7 @@ const menuItems = [ // 사이드바의 기본 메뉴 목록
 
 const mobileMenuItems = [ // 모바일에서는 핵심 화면을 한 줄 메뉴로 간단히 표시
   ...menuItems,
+  { href: "/dashBoard/presentations", label: "발표자료 작성하기" },
   { href: "/dashBoard/matchBid", label: "제안서 제작" },
   { href: "/dashBoard/trash", label: "휴지통" },
   { href: "/dashBoard/myInfo", label: "결제 정보" },
@@ -189,6 +190,10 @@ export default function Sidebar() { // 대시보드에서 공통으로 쓰는 �
                 })}
               </div>
             )}
+          </div>
+          <div className="mt-5 border-t border-violet-100 pt-4">
+            <p className="px-3 pb-2 text-[10px] font-bold tracking-wider text-violet-400">PRESENTATION STUDIO</p>
+            <Link href="/dashBoard/presentations" aria-current={isMenuCurrent("/dashBoard/presentations") ? "page" : undefined} className={`flex items-center rounded-lg px-3 py-3 text-sm font-semibold ${isMenuCurrent("/dashBoard/presentations") ? "bg-violet-100 text-violet-900 shadow-[inset_3px_0_0_#7c3aed]" : "text-violet-700 hover:bg-violet-50"}`}>발표자료 작성하기</Link>
           </div>
         </nav>
 

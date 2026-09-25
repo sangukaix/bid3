@@ -25,5 +25,8 @@ finally {
     try {
         if ($null -ne $presentation) { $presentation.Close() }
     }
-    finally { $powerPoint.Quit() }
+    finally {
+        # Never close a presentation the user has open in PowerPoint.
+        if ($powerPoint.Presentations.Count -eq 0) { $powerPoint.Quit() }
+    }
 }

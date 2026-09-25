@@ -1,4 +1,6 @@
-﻿import Sidebar from "@/components/layout/Sidebar"; // 대시보드 왼쪽 메뉴 컴포넌트
+"use client";
+import { usePathname } from "next/navigation";
+import Sidebar from "@/components/layout/Sidebar"; // 대시보드 왼쪽 메뉴 컴포넌트
 
 import DashboardTopbar from "@/components/layout/DashboardTopbar";
 
@@ -7,8 +9,9 @@ type DashBoardLayoutProps = { // layout이 받을 props 타입
 };
 
 export default function DashBoardLayout({ children }: DashBoardLayoutProps) { // /dashBoard 아래 페이지들의 공통 화면 틀
+  const studio = usePathname().startsWith("/dashBoard/presentations");
   return (
-    <main className="min-h-screen bg-transparent text-slate-950"> {/* 대시보드 전체 배경 영역 */}
+    <main className={`min-h-screen text-slate-950 ${studio ? "bg-[#f5f3fa]" : "bg-transparent"}`}> {/* 대시보드 전체 배경 영역 */}
       <div className="dashboard-shell min-h-screen md:grid md:grid-cols-[224px_minmax(0,1fr)]"> {/* 고정 메뉴와 본문을 나누는 공통 틀 */}
         <Sidebar /> {/* 모든 대시보드 페이지에서 공통으로 보이는 왼쪽 메뉴 */}
         <div className="min-w-0">

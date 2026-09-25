@@ -48,6 +48,10 @@ API: http://127.0.0.1:8000/api/bids/
 
 양식 원본은 `server/proposal_templates/library/`, 제작 소스와 재생성 방법은 [템플릿 스튜디오](template_studio/README.md)에 있습니다. 외부 사이트에서 다운로드한 양식의 복제본은 포함하지 않습니다. 양식 선택과 다운로드에는 OpenAI API가 필요하지 않습니다.
 
+## 일반 발표자료 작성
+
+왼쪽 **발표자료 작성하기**에서 작업 중인 PPTX를 이어 쓰고, 유지 페이지를 잠그고, 지침·참고자료와 함께 Gemma4로 페이지를 작성할 수 있습니다. 입찰과 독립된 개인 작업실이며 OpenAI를 호출하지 않습니다. [사용법과 지원 범위](docs/PRESENTATION_STUDIO.md)를 참고하세요.
+
 ## 검사
 
 ```powershell
