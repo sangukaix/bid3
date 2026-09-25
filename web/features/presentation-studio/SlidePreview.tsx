@@ -15,7 +15,7 @@ export default function SlidePreview({ project, revision, page }: { project: str
         for (let attempt = 0; attempt < 120 && !controller.signal.aborted; attempt++) {
           const response = await fetch(previewURL(project, revision, page) + (retry && attempt === 0 ? "?retry=1" : ""), { headers: auth(), signal: controller.signal });
           if (response.status === 202) { await new Promise(resolve => setTimeout(resolve, 1500)); continue; }
-          if (!response.ok) { const data = await response.json(); throw new Error(data.error || "미리보기를 만들지 못했습니다."); }
+          if (!response.ok) { const data = await response.json().catch(() => ({})); throw new Error(data.error || "미리보기를 만들지 못했습니다. 잠시 후 다시 시도해 주세요."); }
           const blob = await response.blob(); if (controller.signal.aborted) return;
           objectURL = URL.createObjectURL(blob); setPreview({ identity, url: objectURL, error: "" }); return;
         }

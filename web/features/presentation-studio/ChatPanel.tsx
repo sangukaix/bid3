@@ -15,9 +15,8 @@ export default function ChatPanel({ project, page, disabled, mutate }: { project
     if (await mutate("chat/", "POST", { message: text, mode, count, slide: page })) setText("");
   }
   return <aside className="flex min-h-[600px] flex-col rounded-2xl border border-violet-200 bg-white xl:sticky xl:top-5 xl:max-h-[calc(100vh-40px)]">
-    <div className="border-b border-violet-100 p-4"><h2 className="font-bold text-violet-900">Gemma와 함께 작성</h2><p className="mt-1 text-xs leading-5 text-slate-500">계획과 질문을 확인한 뒤 적용하세요. 모호한 부분은 대화로 정하고, 수정본은 버전으로 남깁니다.</p></div>
+    <div className="border-b border-violet-100 p-4"><h2 className="font-bold text-violet-900">Gemma와 함께 작성</h2></div>
     <div ref={scrollArea} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4" aria-live="polite">
-      {!messages.length && <div className="rounded-xl bg-violet-50 p-4 text-sm leading-6 text-slate-600">예: “기존 5쪽은 그대로 두고, 참고한 프로젝트의 구현 과정과 회고를 3쪽 이어서 만들어 줘. 모르는 내용은 먼저 물어봐.”<p className="mt-3">이미지 생성 모델은 연결되어 있지 않습니다. Gemma가 샘플 이미지나 필요한 화면을 요청하면 참고자료에 업로드해 주세요.</p></div>}
       {messages.map(m => {
         const plan = m.plan || {};
         const changed = !!(plan.changes?.length || plan.additions?.length || plan.rewrite_slides?.length);

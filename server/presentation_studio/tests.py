@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch, MagicMock
 
 from django.conf import settings
+from django.db import OperationalError
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, SimpleTestCase, override_settings
@@ -134,6 +135,21 @@ class StudioTests(TestCase):
         for path in ['',f'revisions/{self.project.current_id}/download/',f'revisions/{self.project.current_id}/pages/1/','handoff/']:
             self.assertEqual(self.client.get(self.root+path).status_code,404)
         self.assertEqual(self.client.post('/api/presentation-studio/templates/',{'project':str(self.project.pk),'name':'private'},format='json').status_code,404)
+
+    def test_parallel_preview_sqlite_lock_returns_pending(self):
+        with patch('presentation_studio.views.enqueue', side_effect=OperationalError('database is locked')):
+            response=self.client.get(self.root+f'revisions/{self.project.current_id}/pages/1/')
+        self.assertEqual(response.status_code,202)
+        self.assertEqual(response.data,{'pending':True})
+
+    def test_parallel_preview_job_winner_returns_pending(self):
+        def race(project, kind, payload):
+            Job.objects.create(project=project,kind=kind,payload=payload)
+            raise ValueError('다른 작업이 진행 중입니다.')
+        with patch('presentation_studio.views.enqueue', side_effect=race):
+            response=self.client.get(self.root+f'revisions/{self.project.current_id}/pages/2/')
+        self.assertEqual(response.status_code,202)
+        self.assertEqual(Job.objects.filter(project=self.project).count(),1)
 
     def test_direct_edit_lock_and_optimistic_version(self):
         old=self.project.current_id

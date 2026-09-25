@@ -10,7 +10,7 @@ from PIL import Image
 
 from django.conf import settings
 from django.core.files.base import ContentFile
-from django.db import transaction
+from django.db import transaction, OperationalError
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
@@ -175,7 +175,15 @@ def preview(request,pk,revision_id,page):
     if not project.jobs.filter(status__in=['queued','running']).exists():
         failed=project.jobs.filter(kind='preview',payload__revision=revision.id,status='failed').order_by('-created_at').first()
         if failed and request.query_params.get('retry')!='1': return Response({'error':failed.error},status=422)
-        enqueue(project,'preview',{'revision':revision.id})
+        try:
+            enqueue(project,'preview',{'revision':revision.id})
+        except OperationalError as error:
+            # Several visible slides can request the same deck render at once.
+            # SQLite cannot upgrade competing read transactions to writers;
+            # let the client poll again after the winning request commits.
+            if 'locked' not in str(error).lower(): raise
+        except ValueError:
+            if not project.jobs.filter(status__in=['queued','running']).exists(): raise
     return Response({'pending':True},status=202)
 
 
