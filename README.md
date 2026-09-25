@@ -8,6 +8,10 @@
 - AI: 기능별 OpenAI / Ollama 선택
 - 출력: PPTX 제안서, PDF 미리보기, 정량평가 DOCX
 
+## 설치된 노트북에서 실행 / 팀원 접속
+
+[실행 명령과 같은 네트워크 공유 안내](docs/RUN_TEAM_LAN.md)를 참고하세요. `scripts/Start-Bid3.ps1`이 실행 중인 API 주소와 허용 출처를 설정합니다.
+
 ## Windows에서 실행
 
 Python 3.12, Node.js, Git을 설치합니다. PPTX 미리보기에는 PowerPoint 또는 LibreOffice가 필요합니다.
@@ -70,6 +74,7 @@ cd server
 
 ## 모델과 후속 개발
 
+- [실제 공고 로컬 생성 검증과 남은 품질 문제](docs/LOCAL_AI_VALIDATION_2026-09-25.md)
 - [PC·프로젝트별 모델 설정](docs/LLM_SETUP.md)
 - [로컬 AI 전환 점검 및 한계](docs/LOCAL_AI_2026-09-10.md)
 - [30장 템플릿 후속 점검](docs/LOCAL_AI_2026-09-11.md)

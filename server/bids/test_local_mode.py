@@ -80,28 +80,37 @@ class LocalModeTests(SimpleTestCase):
         self.assertEqual(result.slide_changes[0].text_changes[0].revised_text, "새 제목")
         self.assertEqual(result.added_slides, [])
 
+    @patch("bids.services.proposal_text_fit.structured_chain")
     @patch("bids.services.rag.proposal.structured_chain")
-    def test_oversized_text_retries_before_accepting_plan(self, factory):
+    def test_oversized_text_retries_before_accepting_plan(self, factory, shorten):
         from unittest.mock import Mock
         from bids.services.rag.proposal import build_local_slide_plan
         def setup(prompt, model, schema):
             chain=Mock()
-            chain.invoke.side_effect=[
-                schema.model_validate({"edits":{"shape-0":"너무 긴 문구" * 10},"review_notes":[]}),
-                schema.model_validate({"edits":{"shape-0":"짧은 제목"},"review_notes":[]})]
+            chain.invoke.return_value=schema.model_validate({
+                "edits":{"shape-0":"너무 긴 문구" * 10,"shape-1":"정상 문구"},"review_notes":[]})
             factory.chain=chain
             return chain
         factory.side_effect=setup
+        def setup_short(prompt, model, schema):
+            self.assertEqual(set(schema.model_fields), {"shape-0"})
+            return Mock(invoke=Mock(return_value=schema.model_validate({"shape-0":["짧은 제목", "짧게", "제목"]})))
+        shorten.side_effect=setup_short
         result=build_local_slide_plan({"slide_number":1,"title":"표지",
-            "elements":[{"target":"shape-0","text":"[사업명]","max_chars":10}]},{})
-        self.assertEqual(factory.chain.invoke.call_count,2)
+            "elements":[{"target":"shape-0","text":"[사업명]","max_chars":10},
+                        {"target":"shape-1","text":"[본문]","max_chars":20}]},{})
+        self.assertEqual(factory.chain.invoke.call_count,1)
         self.assertEqual(result.slide_changes[0].text_changes[0].revised_text,"짧은 제목")
+        self.assertEqual(result.slide_changes[0].text_changes[1].revised_text,"정상 문구")
 
     @patch("bids.services.rag.proposal.structured_chain")
     def test_null_placeholder_is_flagged_but_static_text_can_stay(self, factory):
         from unittest.mock import Mock
         from bids.services.rag.proposal import build_local_slide_plan
         def setup(prompt, model, schema):
+            if schema.__name__ == "RequiredSlideOutput":
+                return Mock(invoke=Mock(return_value=schema.model_validate({
+                    "edits":{"shape-0":"[회사명]"},"review_notes":[]})))
             return Mock(invoke=Mock(return_value=schema.model_validate({
                 "edits":{"shape-0":None,"shape-1":None},"review_notes":[]})))
         factory.side_effect=setup
@@ -117,7 +126,27 @@ class LocalModeTests(SimpleTestCase):
         self.assertEqual(result.slide_changes[0].text_changes,[])
 
     @patch("bids.services.rag.proposal.structured_chain")
-    def test_persistently_oversized_text_fails_without_silent_skip(self, factory):
+    def test_copied_placeholder_is_refilled_without_rewriting_other_targets(self, factory):
+        from unittest.mock import Mock
+        from bids.services.rag.proposal import build_local_slide_plan
+        def setup(prompt, model, schema):
+            if schema.__name__ == "RequiredSlideOutput":
+                self.assertEqual(set(schema.model_fields["edits"].annotation.model_fields), {"shape-0"})
+                edits = {"shape-0": "수강생 250명"}
+            else:
+                edits = {"shape-0": "[교육 대상]", "shape-1": "이미 작성한 내용"}
+            return Mock(invoke=Mock(return_value=schema.model_validate({"edits": edits, "review_notes": []})))
+        factory.side_effect = setup
+        result = build_local_slide_plan({"slide_number": 1, "title": "운영 계획", "elements": [
+            {"target": "shape-0", "text": "[교육 대상]"},
+            {"target": "shape-1", "text": "기존 본문"},
+        ]}, {})
+        self.assertEqual([c.revised_text for c in result.slide_changes[0].text_changes],
+                         ["수강생 250명", "이미 작성한 내용"])
+
+    @patch("bids.services.proposal_text_fit.structured_chain")
+    @patch("bids.services.rag.proposal.structured_chain")
+    def test_persistently_oversized_text_fails_without_silent_skip(self, factory, shorten):
         from unittest.mock import Mock
         from bids.services.rag.proposal import build_local_slide_plan
         def setup(prompt, model, schema):
@@ -126,10 +155,15 @@ class LocalModeTests(SimpleTestCase):
             factory.chain=chain
             return chain
         factory.side_effect=setup
-        with self.assertRaisesRegex(ValueError,"상자 크기"):
+        def invalid_short(prompt, model, schema):
+            def invalid(*args):
+                return schema.model_validate({"shape-0":["긴 문구" * 30] * 3})
+            return Mock(invoke=Mock(side_effect=invalid))
+        shorten.side_effect=invalid_short
+        with self.assertRaises(ValueError):
             build_local_slide_plan({"slide_number":1,"title":"표지",
                 "elements":[{"target":"shape-0","text":"제목","max_chars":10}]},{})
-        self.assertEqual(factory.chain.invoke.call_count,2)
+        self.assertEqual(factory.chain.invoke.call_count,1)
 
     def test_explicit_page_preservation_limits_model_scope(self):
         from bids.services.rag.proposal import restrict_feedback_inventory

@@ -6,6 +6,7 @@ from typing import Annotated, Literal
 
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableLambda
 from ..llm import build_text_model, cloud_client, model_selection, local_only
 from ..local_context import structured_chain
 from pydantic import BaseModel, Field
@@ -144,6 +145,11 @@ class ProposalRevisionPlanSchema(BaseModel):
     slide_changes: list[SlideRevision]
     added_slides: list[AddedSlide] = Field(default_factory=list, max_length=20)
     final_review_items: list[str]
+
+
+class LocalProposalRevisionPlanSchema(ProposalRevisionPlanSchema):
+    """Python-only selection metadata; never ask the cloud model to emit it."""
+    evidence_selection: list[dict] = Field(default_factory=list)
 
 
 class ProposalFeedbackSlideRevision(BaseModel):
@@ -437,7 +443,9 @@ def build_strategy_chain():
              "전체 요구사항은 별도 목록에 보존되므로 여기서 전부 반복하지 마세요. "
              "근거 없는 회사 보유사실은 확인 필요로 남기세요.")
         ])
-        return structured_chain(prompt, model, LocalProposalStrategySchema)
+        chain = structured_chain(prompt, model, LocalProposalStrategySchema)
+        return RunnableLambda(lambda inputs: {**inputs, "_evidence_query":
+            "사업 목적 대상 인원 기간 횟수 예산 필수 자격 평가 배점 제출 목차 분량 제한"}) | chain
     return structured_chain(strategy_prompt, model, ProposalStrategySchema)
 
 
@@ -469,7 +477,7 @@ def build_local_slide_plan(slide, inputs, feedback=False):
     """Use a small exact-target schema; construct renderer metadata in Python."""
     from pydantic import create_model
     elements = {element["target"]: element for element in slide["elements"]}
-    result_type = ProposalFeedbackPlanSchema if feedback else ProposalRevisionPlanSchema
+    result_type = ProposalFeedbackPlanSchema if feedback else LocalProposalRevisionPlanSchema
     if not elements:
         return result_type(summary="텍스트 없는 페이지: 직접 확인", slide_changes=[], final_review_items=["텍스트 없는 페이지 직접 확인"])
     from pydantic import ConfigDict
@@ -489,17 +497,34 @@ def build_local_slide_plan(slide, inputs, feedback=False):
          "자료 출처의 번호나 새 수치를 만들어내지 마세요. "
          "수정 요청 모드에서는 요청과 무관한 target 값을 null로 두고, 해당 텍스트만 바꾸세요. "
          "새 제안서 작성 모드에서는 기존 사업명과 기존 사업 내용을 현재 공고에 맞게 모두 바꾸세요."),
-        ("human", "[작업] {instruction}\n[회사] {company_context}\n[공고] {bid_context}\n"
+        ("human", "[작업] {instruction}\n[회사] {company_context}\n[공고 기본정보] {bid_notice_context}\n[공고] {bid_context}\n"
          "[요구사항] {requirement_context}\n"
-         "[회사 근거] {company_knowledge_context}\n[공개 참고] {web_context}\n"
+         "[회사 근거] {company_knowledge_context}\n[유사 제안서: 과거 수치 재사용 금지] {project_reference_context}\n[공개 참고] {web_context}\n"
          "[작성 기준] {proposal_rules_context}\n[현재 페이지] {slide_inventory}")
     ])
     values = {key: inputs.get(key, "") for key in (
         "company_context", "bid_context", "requirement_context", "strategy_context",
-        "company_knowledge_context", "web_context", "proposal_rules_context")}
+        "company_knowledge_context", "web_context", "proposal_rules_context",
+        "bid_notice_context", "project_reference_context")}
+    evidence_reports = []
+    values["_evidence_query"] = " ".join(str(slide.get(key, "")) for key in
+                                         ("title", "role", "use_when", "content_budget"))
+    if feedback:
+        values["_evidence_query"] += " " + inputs.get("instruction", "")
+    values["_evidence_reports"] = evidence_reports
     values["instruction"] = (
         "수정 요청 모드: " + inputs["instruction"] if feedback else "새 제안서 작성 모드"
     )
+    if not feedback and slide.get("role") in {"summary", "objective", "timeline", "metrics", "outcomes"}:
+        from ..proposal_evidence import core_project_requirements
+        core = core_project_requirements(values["requirement_context"])
+        if core:
+            values["instruction"] += (
+                "\n현재 사업의 기본조건을 아래에 별도로 제공합니다. 이 페이지의 요약·목표·일정에 해당하는 "
+                "대상 인원, 기간, 횟수·시간, 예산을 구체적으로 명시하세요. 원문의 변동 가능 조건도 유지하세요. "
+                "공고에 없는 달성률·만족도 같은 KPI 수치는 지어내지 말고 협의 후 확정이라고 쓰세요.\n" + core)
+    if not feedback and slide.get("role") in {"problem", "evaluation"}:
+        values["instruction"] += "\n평가 최고점 기준과 필수 참가자격을 구분하세요. 최고점 조건을 최소 참가자격으로 단정하지 마세요."
     values["slide_inventory"] = json.dumps(slide, ensure_ascii=False)
     if feedback:
         prompt = ChatPromptTemplate.from_messages([
@@ -512,31 +537,38 @@ def build_local_slide_plan(slide, inputs, feedback=False):
         ])
     chain = structured_chain(prompt, model, Output)
     output = chain.invoke(values)
-    def oversized(result):
-        return [target for target, text in result.edits.model_dump().items()
-                if text and len(" ".join(text.split())) > max(
-                    int(elements[target].get("max_chars", 200)),
-                    len(" ".join(elements[target]["text"].split())))]
-    too_long = oversized(output)
-    if too_long:
-        limits = {target: {
-            "max_chars": elements[target].get("max_chars", 200),
-            "previous_text": output.edits.model_dump()[target],
-        } for target in too_long}
-        output = chain.invoke({**values, "instruction": values["instruction"] +
-            "\n직전 출력이 텍스트 상자 크기를 넘었습니다. 다음 위치는 지정한 글자 수 이내로 핵심만 다시 작성하세요: " +
-            json.dumps(limits, ensure_ascii=False)})
-        if oversized(output):
-            raise ValueError("슬라이드 문구가 상자 크기를 초과했습니다. 더 짧은 문구로 요청해 주세요.")
+    candidate_edits = output.edits.model_dump()
+    review_notes = list(output.review_notes)
+    def unfilled(target, value):
+        markers = re.findall(r"\[[^\[\]\n]+\]", elements[target]["text"])
+        return bool(markers) and (value is None or any(marker in value for marker in markers))
+    pending = [target for target, text in candidate_edits.items() if unfilled(target, text)]
+    if pending and not feedback:
+        RequiredEdits = create_model("RequiredSlideEdits", __config__=ConfigDict(extra="forbid"),
+                                    **{target: (str, ...) for target in pending})
+        RequiredOutput = create_model("RequiredSlideOutput", edits=(RequiredEdits, ...),
+                                      review_notes=(list[str], ...))
+        required_prompt = prompt + ChatPromptTemplate.from_messages([
+            ("system", "앞선 응답에 미작성 칸이 남아 있습니다. 이번 target은 모두 필수 작성입니다. "
+             "대괄호 안의 안내문을 그대로 복사하지 마세요. 공고 근거의 대상·기간·수치·배점과 "
+             "현재 페이지의 목적에 맞는 내용을 작성하세요. 요구사항 열에는 짧은 항목명을 쓰세요. "
+             "근거 없이 회사가 이미 보유·완료했다고 하지 마세요. 자료가 없으면 '확인 필요'라고 쓰세요.")
+        ])
+        required_values = {**values, "slide_inventory": json.dumps({
+            **slide, "elements": [elements[target] for target in pending]}, ensure_ascii=False)}
+        required = structured_chain(required_prompt, model, RequiredOutput).invoke(required_values)
+        candidate_edits.update(required.edits.model_dump())
+        review_notes.extend(required.review_notes)
+    from ..proposal_text_fit import fit_slide_edits
+    fitted_edits = fit_slide_edits(candidate_edits, elements, model)
     edits = []
     missing_targets = []
-    for target, revised_text in output.edits.model_dump().items():
-        if revised_text is None:
-            if not feedback and re.search(r"\[[^\[\]\n]+\]", elements[target]["text"]):
-                revised_text = "확인 필요"
-                missing_targets.append(target)
-            else:
-                continue
+    for target, revised_text in fitted_edits.items():
+        if not feedback and unfilled(target, revised_text):
+            revised_text = "확인 필요"
+            missing_targets.append(target)
+        elif revised_text is None:
+            continue
         original = elements[target]
         if not revised_text.strip():
             if feedback:
@@ -545,11 +577,14 @@ def build_local_slide_plan(slide, inputs, feedback=False):
         if revised_text.strip() != original["text"].strip():
             edits.append(SlideTextChange(target=target, content_label=original.get("kind", "text"),
                 original_text=original["text"], revised_text=revised_text, reason="현재 페이지 작성"))
+    metadata = {"evidence_selection": [{"slide_number": slide["slide_number"], **item}
+                                       for item in evidence_reports]} if not feedback else {}
     return result_type(
+        **metadata,
         summary=f"{slide['slide_number']}페이지 로컬 작성",
         slide_changes=[{"slide_number":slide["slide_number"], "action":"UPDATE" if edits else "REVIEW",
             "title":slide["title"], "reason":"로컬 텍스트 작성", "text_changes":edits}],
-        final_review_items=output.review_notes + [
+        final_review_items=review_notes + [
             f"{slide['slide_number']}페이지 {target}: 자료가 채워지지 않아 확인 필요로 표시했습니다."
             for target in missing_targets
         ] + ["원문 조건 및 회사 증빙을 대조해 최종 확인하세요."])
@@ -737,6 +772,8 @@ def merge_revision_batch_plans(batch_reviews):
         "added_slides": merged_additions,
         "final_review_items": final_review_items,
         "review_batches": reviewed_batches,
+        "evidence_selection": [item for review in batch_reviews
+                               for item in review["plan"].get("evidence_selection", [])],
     }
 
 
@@ -917,6 +954,11 @@ def _generate_proposal_from_template(
     )
     strategy = strategy_result.model_dump()
     detected_page_limit = strategy.get("proposal_page_limit")
+    from ..proposal_text_fit import verified_page_limit
+    detected_page_limit = verified_page_limit(detected_page_limit, bid_context)
+    if strategy.get("proposal_page_limit") and not detected_page_limit:
+        strategy["gaps_and_mitigations"].append("모델이 추정한 분량 제한은 원문에서 확인되지 않아 적용하지 않았습니다.")
+    strategy["proposal_page_limit"] = detected_page_limit
     effective_target_slide_count = target_slide_count
     if isinstance(detected_page_limit, int) and detected_page_limit > 0:
         effective_target_slide_count = min(
@@ -948,16 +990,22 @@ def _generate_proposal_from_template(
             "target_slide_count": effective_target_slide_count,
         },
     )
-    coverage_result = build_coverage_chain().invoke(
-        {
-            "requirement_context": requirement_context,
-            "strategy_context": json.dumps(strategy, ensure_ascii=False, indent=2),
-            "revision_context": json.dumps(revision_plan, ensure_ascii=False, indent=2),
-        }
-    ).model_dump()
+    if model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
+        from ..proposal_coverage import review_requirement_coverage
+        coverage_result = review_requirement_coverage(
+            requirement_register, revision_plan, build_proposal_model(2500, reasoning_effort="none"))
+    else:
+        coverage_result = build_coverage_chain().invoke(
+            {
+                "requirement_context": requirement_context,
+                "strategy_context": json.dumps(strategy, ensure_ascii=False, indent=2),
+                "revision_context": json.dumps(revision_plan, ensure_ascii=False, indent=2),
+            }
+        ).model_dump()
     revision_plan["requirement_coverage"] = coverage_result
     if model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
-        revision_plan["final_review_items"].append("로컬 모델의 묶음 요약을 사용한 작성안입니다. 원문 필수조건·배점·증빙과 대조해 확인하세요.")
+        revision_plan["final_review_items"].append("페이지별 관련 원문을 선택한 로컬 작성안입니다. 선택되지 않은 요구사항과 회사 증빙도 최종 대조하세요.")
+        revision_plan["requirement_register"] = requirement_register
     for requirement in coverage_result["missing_requirements"]:
         warning = f"요구사항 반영 확인 필요: {requirement}"
         if warning not in revision_plan["final_review_items"]:

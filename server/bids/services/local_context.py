@@ -1,4 +1,4 @@
-"""Cached map/reduce of long evidence for local structured generation."""
+"""Bounded local inputs: source packets for proposals, cached summaries elsewhere."""
 import hashlib
 import json
 from pathlib import Path
@@ -117,6 +117,9 @@ def summarize_evidence(text, target_bytes, model, _split_depth=0):
 
 
 def fit_inputs(prompt, inputs, model, schema):
+    if "_evidence_query" in inputs:
+        from .proposal_evidence import fit_evidence_inputs
+        return fit_evidence_inputs(prompt, inputs, model, schema)
     result = dict(inputs)
     schema_bytes = byte_size(json.dumps(schema.model_json_schema(), ensure_ascii=False))
     budget = model.num_ctx - model.num_predict - schema_bytes - 1024
@@ -124,7 +127,8 @@ def fit_inputs(prompt, inputs, model, schema):
         return sum(byte_size(m.content) + 64 for m in prompt.invoke(values).to_messages())
     if size(result) <= budget:
         return result
-    keys = [k for k,v in result.items() if k in COMPRESSIBLE and isinstance(v, str) and v]
+    keys = [k for k,v in result.items() if k in COMPRESSIBLE and k in prompt.input_variables
+            and isinstance(v, str) and v]
     fixed = size({**result, **{k: "" for k in keys}})
     available = budget - fixed - 512
     if not keys or available < len(keys) * 400:
@@ -146,4 +150,25 @@ def structured_chain(prompt, model, schema):
     chain = prompt | model.with_structured_output(schema)
     if not isinstance(model, OllamaChatModel):
         return chain
-    return RunnableLambda(lambda inputs: fit_inputs(prompt, inputs, model, schema)) | chain
+    def invoke(inputs):
+        fitted = fit_inputs(prompt, inputs, model, schema)
+        if "_evidence_query" not in inputs:
+            return chain.invoke(fitted)
+        from .proposal_evidence import VERSION
+        fingerprint = [VERSION, model.model, model.base_url, model.num_ctx, model.num_predict,
+                       schema.model_json_schema(),
+                       [(m.type, m.content) for m in prompt.invoke(fitted).to_messages()]]
+        key = hashlib.sha256(json.dumps(fingerprint, ensure_ascii=False).encode()).hexdigest()
+        path = Path(settings.MEDIA_ROOT) / "local_proposal_cache" / f"{key}.json"
+        if path.exists():
+            try:
+                return schema.model_validate_json(path.read_text(encoding="utf-8"))
+            except (ValueError, OSError):
+                pass
+        result = chain.invoke(fitted)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_name(f".{uuid4().hex}.json")
+        temporary.write_text(result.model_dump_json(), encoding="utf-8")
+        temporary.replace(path)
+        return result
+    return RunnableLambda(invoke)
