@@ -6,7 +6,11 @@ param(
     [string]$OutputPath
 )
 
+$ErrorActionPreference = 'Stop'
+$SourcePath = (Resolve-Path -LiteralPath $SourcePath).Path
+$OutputPath = [System.IO.Path]::GetFullPath($OutputPath)
 $powerPoint = New-Object -ComObject PowerPoint.Application
+$presentation = $null
 
 try {
     $presentation = $powerPoint.Presentations.Open(
@@ -16,8 +20,10 @@ try {
         $false
     )
     $presentation.SaveAs($OutputPath, 32)
-    $presentation.Close()
 }
 finally {
-    $powerPoint.Quit()
+    try {
+        if ($null -ne $presentation) { $presentation.Close() }
+    }
+    finally { $powerPoint.Quit() }
 }

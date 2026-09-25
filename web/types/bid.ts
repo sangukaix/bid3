@@ -153,6 +153,12 @@ export type ProposalTemplateOption = {
   target_slides: number;
   slide_count: number;
   preview_url: string;
+  download_url?: string;
+  category?: string;
+  tags?: string[];
+  collection?: string;
+  license_note?: string;
+  palette?: { bg?: string; ink?: string; accent?: string; soft?: string };
 };
 
 export type BidProposalResponse = {

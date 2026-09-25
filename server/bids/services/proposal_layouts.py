@@ -15,7 +15,12 @@ def load_proposal_layout_catalog():
     """템플릿별 슬라이드 용도와 권장 분량을 한 번만 읽습니다."""
 
     with open(LAYOUT_CATALOG_PATH, encoding="utf-8") as file:
-        return json.load(file)
+        catalog = json.load(file)
+    studio_catalog = LAYOUT_CATALOG_PATH.parent / "library" / "layouts.json"
+    if studio_catalog.exists():
+        with studio_catalog.open(encoding="utf-8") as file:
+            catalog.update(json.load(file))
+    return catalog
 
 
 def get_proposal_slide_layout(template_path, slide_number):

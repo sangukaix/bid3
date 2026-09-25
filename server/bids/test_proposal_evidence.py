@@ -18,6 +18,22 @@ class Answer(BaseModel):
 
 
 class ProposalEvidenceTests(SimpleTestCase):
+    def test_short_requirement_packets_keep_all_evidence_when_context_is_available(self):
+        prompt = ChatPromptTemplate.from_template("{instruction}\n{requirement_context}\n{company_knowledge_context}")
+        fact = "교육 10회, 계약기간 3개월. 강사 자격의 구체적 기준은 미제공."
+        for requirement_context in (fact, json.dumps({"requirements": [{"requirement": fact}]}, ensure_ascii=False)):
+            with self.subTest(requirement_context=requirement_context):
+                reports = []
+                fitted = fit_inputs(prompt, {
+                    "instruction": "요구사항 작성", "requirement_context": requirement_context,
+                    "company_knowledge_context": "인력 증빙 미확인", "_evidence_query": "요구사항",
+                    "_evidence_reports": reports,
+                }, OllamaChatModel(model="gemma4:26b", num_ctx=8192, num_predict=1000), Answer)
+                self.assertIn(fact, fitted["requirement_context"])
+                self.assertIn("인력 증빙 미확인", fitted["company_knowledge_context"])
+                self.assertEqual(reports[0]["fields"]["requirement_context"]["omitted_ids"], [])
+                self.assertLessEqual(reports[0]["input_bytes"], reports[0]["budget_bytes"])
+
     def test_internal_packet_metadata_is_not_in_the_cloud_output_schema(self):
         from bids.services.rag.proposal import ProposalRevisionPlanSchema, LocalProposalRevisionPlanSchema
         self.assertNotIn("evidence_selection", ProposalRevisionPlanSchema.model_json_schema()["properties"])

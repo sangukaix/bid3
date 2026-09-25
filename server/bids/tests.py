@@ -2560,7 +2560,7 @@ class BidProposalTests(TestCase):
         self.assertEqual(response.json()["recommended_template_id"], "modern")
         self.assertIn("IT", response.json()["template_recommendation_reason"])
         self.assertEqual(
-            [item["id"] for item in response.json()["templates"]],
+            [item["id"] for item in response.json()["templates"]][:5],
             ["corporate", "modern", "public", "evergreen", "burgundy"],
         )
 

@@ -12,6 +12,7 @@ const menuItems = [ // 사이드바의 기본 메뉴 목록
   { href: "/dashBoard/myCompanyInfo", label: "회사정보" },
   { href: "/dashBoard/bidList", label: "입찰공고 목록" },
   { href: "/dashBoard/recommendedBid", label: "추천공고" },
+  { href: "/dashBoard/templates", label: "PPT 양식" },
 ];
 
 const mobileMenuItems = [ // 모바일에서는 핵심 화면을 한 줄 메뉴로 간단히 표시

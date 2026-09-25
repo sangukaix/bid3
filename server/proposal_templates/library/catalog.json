@@ -1,0 +1,722 @@
+[
+  {
+    "id": "civic_navy",
+    "name": "시빅 네이비",
+    "category": "공공·행정",
+    "description": "공공 제안의 근거와 수행 체계를 강조하는 좌측 정렬형",
+    "composition": "navy",
+    "variant": 0,
+    "palette": {
+      "bg": "#FFFFFF",
+      "ink": "#172C48",
+      "accent": "#2659A6",
+      "soft": "#EDF2F8"
+    },
+    "tags": [
+      "공공·행정",
+      "공공 제안형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "civic_navy.pptx"
+  },
+  {
+    "id": "policy_paper",
+    "name": "폴리시 페이퍼",
+    "category": "공공·행정",
+    "description": "넓은 여백과 문서형 목차를 갖춘 정책 보고형",
+    "composition": "editorial",
+    "variant": 1,
+    "palette": {
+      "bg": "#F6F3EC",
+      "ink": "#263342",
+      "accent": "#8C333B",
+      "soft": "#EAE5DA"
+    },
+    "tags": [
+      "공공·행정",
+      "문서형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "policy_paper.pptx"
+  },
+  {
+    "id": "public_cobalt",
+    "name": "퍼블릭 코발트",
+    "category": "공공·행정",
+    "description": "큰 제목과 선명한 대비로 핵심 제안을 전달하는 발표형",
+    "composition": "statement",
+    "variant": 2,
+    "palette": {
+      "bg": "#F9FBFF",
+      "ink": "#182C65",
+      "accent": "#254ECC",
+      "soft": "#E8EEFC"
+    },
+    "tags": [
+      "공공·행정",
+      "발표형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "public_cobalt.pptx"
+  },
+  {
+    "id": "municipal_teal",
+    "name": "로컬 티얼",
+    "category": "공공·행정",
+    "description": "지역 사업의 대상과 실행 단계를 분리한 정돈형",
+    "composition": "sidebar",
+    "variant": 3,
+    "palette": {
+      "bg": "#FAFCFB",
+      "ink": "#173C40",
+      "accent": "#16766E",
+      "soft": "#E5F1EE"
+    },
+    "tags": [
+      "공공·행정",
+      "좌측 목차"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "municipal_teal.pptx"
+  },
+  {
+    "id": "civic_mono",
+    "name": "시빅 모노",
+    "category": "공공·행정",
+    "description": "흑백 인쇄와 평가위원의 빠른 읽기에 적합한 실무형",
+    "composition": "ledger",
+    "variant": 4,
+    "palette": {
+      "bg": "#FFFFFF",
+      "ink": "#24282D",
+      "accent": "#45515E",
+      "soft": "#EEF0F2"
+    },
+    "tags": [
+      "공공·행정",
+      "표 중심"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "civic_mono.pptx"
+  },
+  {
+    "id": "learning_sage",
+    "name": "러닝 세이지",
+    "category": "교육·연구",
+    "description": "교육 대상과 프로그램 구성을 차분하게 보여주는 편집형",
+    "composition": "editorial",
+    "variant": 5,
+    "palette": {
+      "bg": "#F5F6EE",
+      "ink": "#283D35",
+      "accent": "#427354",
+      "soft": "#E8EDDF"
+    },
+    "tags": [
+      "교육·연구",
+      "문서형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "learning_sage.pptx"
+  },
+  {
+    "id": "academy_burgundy",
+    "name": "아카데미 버건디",
+    "category": "교육·연구",
+    "description": "대칭 표지와 충분한 본문 공간을 갖춘 학술 제안형",
+    "composition": "centered",
+    "variant": 6,
+    "palette": {
+      "bg": "#FBF7F2",
+      "ink": "#4B2930",
+      "accent": "#8B3D4B",
+      "soft": "#F0E4E4"
+    },
+    "tags": [
+      "교육·연구",
+      "대칭형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "academy_burgundy.pptx"
+  },
+  {
+    "id": "research_indigo",
+    "name": "리서치 인디고",
+    "category": "교육·연구",
+    "description": "연구 질문과 방법론을 구분해 보여주는 분석형",
+    "composition": "split",
+    "variant": 7,
+    "palette": {
+      "bg": "#FFFFFF",
+      "ink": "#302B58",
+      "accent": "#5A4BAB",
+      "soft": "#EEEAF8"
+    },
+    "tags": [
+      "교육·연구",
+      "분할형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "research_indigo.pptx"
+  },
+  {
+    "id": "classroom_apricot",
+    "name": "클래스룸 애프리콧",
+    "category": "교육·연구",
+    "description": "큰 단계 번호와 따뜻한 색으로 읽기 쉬운 교육형",
+    "composition": "numbered",
+    "variant": 8,
+    "palette": {
+      "bg": "#FFFAF4",
+      "ink": "#49362C",
+      "accent": "#B96330",
+      "soft": "#F9ECDC"
+    },
+    "tags": [
+      "교육·연구",
+      "단계형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "classroom_apricot.pptx"
+  },
+  {
+    "id": "seminar_ink",
+    "name": "세미나 잉크",
+    "category": "교육·연구",
+    "description": "간결한 제목과 논리적인 비교 구성을 갖춘 세미나형",
+    "composition": "minimal",
+    "variant": 9,
+    "palette": {
+      "bg": "#F8F8F7",
+      "ink": "#242B35",
+      "accent": "#315D78",
+      "soft": "#E7EDF0"
+    },
+    "tags": [
+      "교육·연구",
+      "미니멀"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "seminar_ink.pptx"
+  },
+  {
+    "id": "digital_midnight",
+    "name": "디지털 미드나이트",
+    "category": "기술·디지털",
+    "description": "짙은 표지와 밝은 본문으로 기술 구조를 설명하는 전문형",
+    "composition": "dark",
+    "variant": 10,
+    "palette": {
+      "bg": "#F7F9FC",
+      "ink": "#182842",
+      "accent": "#436DCE",
+      "soft": "#E8EEF9"
+    },
+    "tags": [
+      "기술·디지털",
+      "다크 표지"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "digital_midnight.pptx"
+  },
+  {
+    "id": "data_cyan",
+    "name": "데이터 시안",
+    "category": "기술·디지털",
+    "description": "기술 지표와 검증 근거를 명확히 구분하는 데이터형",
+    "composition": "ledger",
+    "variant": 11,
+    "palette": {
+      "bg": "#FFFFFF",
+      "ink": "#173840",
+      "accent": "#08788E",
+      "soft": "#E6F3F6"
+    },
+    "tags": [
+      "기술·디지털",
+      "표 중심"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "data_cyan.pptx"
+  },
+  {
+    "id": "cloud_violet",
+    "name": "클라우드 바이올렛",
+    "category": "기술·디지털",
+    "description": "비대칭 제목과 단계별 실행 내용이 돋보이는 플랫폼형",
+    "composition": "offset",
+    "variant": 12,
+    "palette": {
+      "bg": "#FAF8FE",
+      "ink": "#352751",
+      "accent": "#7652B0",
+      "soft": "#F0EAF8"
+    },
+    "tags": [
+      "기술·디지털",
+      "비대칭"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "cloud_violet.pptx"
+  },
+  {
+    "id": "product_lime",
+    "name": "프로덕트 라임",
+    "category": "기술·디지털",
+    "description": "강한 표지 대비와 간결한 핵심 문장을 쓰는 제품형",
+    "composition": "statement",
+    "variant": 13,
+    "palette": {
+      "bg": "#FAFCF5",
+      "ink": "#283C24",
+      "accent": "#4D791F",
+      "soft": "#EBF1DE"
+    },
+    "tags": [
+      "기술·디지털",
+      "발표형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "product_lime.pptx"
+  },
+  {
+    "id": "system_slate",
+    "name": "시스템 슬레이트",
+    "category": "기술·디지털",
+    "description": "요구사항과 설계 대응을 나란히 비교하는 시스템형",
+    "composition": "sidebar",
+    "variant": 14,
+    "palette": {
+      "bg": "#F8FAFC",
+      "ink": "#2D3E4F",
+      "accent": "#42677F",
+      "soft": "#E6EDF2"
+    },
+    "tags": [
+      "기술·디지털",
+      "좌측 목차"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "system_slate.pptx"
+  },
+  {
+    "id": "forest_plan",
+    "name": "포레스트 플랜",
+    "category": "환경·시설",
+    "description": "사업 범위와 현장 운영 계획을 연결하는 환경 제안형",
+    "composition": "dark",
+    "variant": 15,
+    "palette": {
+      "bg": "#F8FAF6",
+      "ink": "#223E30",
+      "accent": "#447A46",
+      "soft": "#E6EFE2"
+    },
+    "tags": [
+      "환경·시설",
+      "다크 표지"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "forest_plan.pptx"
+  },
+  {
+    "id": "terra_field",
+    "name": "테라 필드",
+    "category": "환경·시설",
+    "description": "현장 조사와 실행 계획을 넓은 지면에 담는 기록형",
+    "composition": "editorial",
+    "variant": 16,
+    "palette": {
+      "bg": "#FAF5EB",
+      "ink": "#4B3E2C",
+      "accent": "#A2682E",
+      "soft": "#F0E5D2"
+    },
+    "tags": [
+      "환경·시설",
+      "문서형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "terra_field.pptx"
+  },
+  {
+    "id": "ocean_blue",
+    "name": "오션 블루",
+    "category": "환경·시설",
+    "description": "명료한 대칭 구성으로 지속가능 사업을 설명하는 발표형",
+    "composition": "centered",
+    "variant": 17,
+    "palette": {
+      "bg": "#F6FBFC",
+      "ink": "#174150",
+      "accent": "#127A96",
+      "soft": "#DFF0F4"
+    },
+    "tags": [
+      "환경·시설",
+      "대칭형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "ocean_blue.pptx"
+  },
+  {
+    "id": "energy_olive",
+    "name": "에너지 올리브",
+    "category": "환경·시설",
+    "description": "목표와 점검 기준을 전면에 배치한 에너지 기획형",
+    "composition": "numbered",
+    "variant": 18,
+    "palette": {
+      "bg": "#F9F9F0",
+      "ink": "#3A4326",
+      "accent": "#6B782D",
+      "soft": "#ECEFD9"
+    },
+    "tags": [
+      "환경·시설",
+      "단계형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "energy_olive.pptx"
+  },
+  {
+    "id": "urban_concrete",
+    "name": "어반 콘크리트",
+    "category": "환경·시설",
+    "description": "시설·건축 사업의 공정과 책임을 정리하는 정밀형",
+    "composition": "split",
+    "variant": 19,
+    "palette": {
+      "bg": "#FAF9F7",
+      "ink": "#353738",
+      "accent": "#7B6252",
+      "soft": "#EEE8E2"
+    },
+    "tags": [
+      "환경·시설",
+      "분할형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "urban_concrete.pptx"
+  },
+  {
+    "id": "strategy_charcoal",
+    "name": "스트래티지 차콜",
+    "category": "경영·컨설팅",
+    "description": "큰 요약문과 세부 근거를 분리한 전략 제안형",
+    "composition": "dark",
+    "variant": 20,
+    "palette": {
+      "bg": "#FAFAF8",
+      "ink": "#26272A",
+      "accent": "#756343",
+      "soft": "#ECE9E0"
+    },
+    "tags": [
+      "경영·컨설팅",
+      "다크 표지"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "strategy_charcoal.pptx"
+  },
+  {
+    "id": "executive_wine",
+    "name": "이그제큐티브 와인",
+    "category": "경영·컨설팅",
+    "description": "절제된 타이포그래피와 비교 중심의 경영 보고형",
+    "composition": "offset",
+    "variant": 21,
+    "palette": {
+      "bg": "#FCF8F7",
+      "ink": "#472C37",
+      "accent": "#8B385D",
+      "soft": "#F2E7ED"
+    },
+    "tags": [
+      "경영·컨설팅",
+      "비대칭"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "executive_wine.pptx"
+  },
+  {
+    "id": "business_sand",
+    "name": "비즈니스 샌드",
+    "category": "경영·컨설팅",
+    "description": "분석부터 실행까지 흐름이 읽히는 밝은 컨설팅형",
+    "composition": "minimal",
+    "variant": 22,
+    "palette": {
+      "bg": "#F8F5EF",
+      "ink": "#423A31",
+      "accent": "#947047",
+      "soft": "#EEE5D6"
+    },
+    "tags": [
+      "경영·컨설팅",
+      "미니멀"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "business_sand.pptx"
+  },
+  {
+    "id": "supply_steel",
+    "name": "서플라이 스틸",
+    "category": "경영·컨설팅",
+    "description": "물품 사양과 납품·검수 계획에 어울리는 정돈형",
+    "composition": "ledger",
+    "variant": 23,
+    "palette": {
+      "bg": "#FFFFFF",
+      "ink": "#243E55",
+      "accent": "#32688D",
+      "soft": "#EAF1F6"
+    },
+    "tags": [
+      "경영·컨설팅",
+      "표 중심"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "supply_steel.pptx"
+  },
+  {
+    "id": "venture_coral",
+    "name": "벤처 코럴",
+    "category": "경영·컨설팅",
+    "description": "고객 문제와 제안 가치를 크게 제시하는 피치형",
+    "composition": "statement",
+    "variant": 24,
+    "palette": {
+      "bg": "#FFFAF7",
+      "ink": "#4E302B",
+      "accent": "#B6503C",
+      "soft": "#F8E6DF"
+    },
+    "tags": [
+      "경영·컨설팅",
+      "발표형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "venture_coral.pptx"
+  },
+  {
+    "id": "culture_plum",
+    "name": "컬처 플럼",
+    "category": "문화·홍보",
+    "description": "여백과 비대칭 제목으로 문화 사업의 인상을 만드는 제안형",
+    "composition": "split",
+    "variant": 25,
+    "palette": {
+      "bg": "#FCF8FC",
+      "ink": "#4B2F50",
+      "accent": "#914B8D",
+      "soft": "#F2E6F0"
+    },
+    "tags": [
+      "문화·홍보",
+      "분할형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "culture_plum.pptx"
+  },
+  {
+    "id": "tourism_moss",
+    "name": "투어리즘 모스",
+    "category": "문화·홍보",
+    "description": "지역 자원과 운영 계획을 차분하게 담는 관광 기획형",
+    "composition": "sidebar",
+    "variant": 26,
+    "palette": {
+      "bg": "#F6F7F0",
+      "ink": "#364333",
+      "accent": "#657A48",
+      "soft": "#E9EDDE"
+    },
+    "tags": [
+      "문화·홍보",
+      "좌측 목차"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "tourism_moss.pptx"
+  },
+  {
+    "id": "campaign_tangerine",
+    "name": "캠페인 탠저린",
+    "category": "문화·홍보",
+    "description": "크고 명확한 제목과 메시지 중심의 홍보 제안형",
+    "composition": "numbered",
+    "variant": 27,
+    "palette": {
+      "bg": "#FFF9F3",
+      "ink": "#503828",
+      "accent": "#B85E25",
+      "soft": "#F7E8D8"
+    },
+    "tags": [
+      "문화·홍보",
+      "단계형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "campaign_tangerine.pptx"
+  },
+  {
+    "id": "community_lavender",
+    "name": "커뮤니티 라벤더",
+    "category": "문화·홍보",
+    "description": "이해관계자와 참여 과정을 부드럽게 설명하는 협력형",
+    "composition": "centered",
+    "variant": 28,
+    "palette": {
+      "bg": "#FAF9FE",
+      "ink": "#3C3553",
+      "accent": "#7660A1",
+      "soft": "#EEEBF7"
+    },
+    "tags": [
+      "문화·홍보",
+      "대칭형"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "community_lavender.pptx"
+  },
+  {
+    "id": "studio_ruby",
+    "name": "스튜디오 루비",
+    "category": "문화·홍보",
+    "description": "강한 제목 대비와 편집 지면 구성을 갖춘 크리에이티브형",
+    "composition": "offset",
+    "variant": 29,
+    "palette": {
+      "bg": "#FFFAF9",
+      "ink": "#502D35",
+      "accent": "#A93C53",
+      "soft": "#F6E6EA"
+    },
+    "tags": [
+      "문화·홍보",
+      "비대칭"
+    ],
+    "slide_count": 20,
+    "target_slides": 20,
+    "collection": "BID3 스튜디오",
+    "origin": "original",
+    "license_note": "BID3 자체 제작 · 외부 서비스의 템플릿이나 이미지가 포함되지 않습니다.",
+    "file": "studio_ruby.pptx"
+  }
+]

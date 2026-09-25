@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from .local_context import byte_size, split_bytes
 
 VERSION = "proposal-packets-v1"
+PACKET_LABEL = "[관련 근거 발췌: 일부 자료. 미선택 요구사항은 전체 목록에서 별도 검토]\n"
 FIELDS = {
     "company_context": 2, "bid_notice_context": 2, "bid_context": 3,
     "requirement_context": 5, "company_knowledge_context": 3,
@@ -80,7 +81,7 @@ def core_project_requirements(context):
 
 
 def select_evidence(units, query, budget):
-    label = "[관련 근거 발췌: 일부 자료. 미선택 요구사항은 전체 목록에서 별도 검토]\n"
+    label = PACKET_LABEL
     used = byte_size(label)
     selected = []
     ranked = sorted(enumerate(units), key=lambda pair: (-relevance(pair[1].text, query), pair[0]))
@@ -111,22 +112,31 @@ def fit_evidence_inputs(prompt, inputs, model, schema):
         raise ValueError("페이지의 텍스트 위치가 입력 한도를 초과했습니다. 페이지를 작은 묶음으로 나눠 주세요.")
     remaining = available
     targets = {key: 0 for key in keys}
+    units_by_key = {key: evidence_units(values[key], key) for key in keys}
+    # Requirement packets always gain a provenance label and record IDs. Include
+    # those bytes before marking a short field as fully funded; otherwise even
+    # a single short requirement can be dropped despite ample context space.
+    field_sizes = {
+        key: (byte_size(PACKET_LABEL) + sum(byte_size(f"[{unit.id}] {unit.text}\n") for unit in units_by_key[key])
+              if key == "requirement_context" else byte_size(values[key]))
+        for key in keys
+    }
     active = list(keys)
     while active:
         total_weight = sum(FIELDS[key] for key in active)
-        short = [key for key in active if byte_size(values[key]) <= remaining * FIELDS[key] / total_weight]
+        short = [key for key in active if field_sizes[key] <= remaining * FIELDS[key] / total_weight]
         if not short:
             for key in active:
                 targets[key] = int(remaining * FIELDS[key] / total_weight)
             break
         for key in short:
-            targets[key] = byte_size(values[key])
+            targets[key] = field_sizes[key]
             remaining -= targets[key]
             active.remove(key)
     query = str(inputs.get("_evidence_query", ""))
     report = {"version": VERSION, "query": query, "fields": {}}
     for key in keys:
-        units = evidence_units(values[key], key)
+        units = units_by_key[key]
         if key != "requirement_context" and byte_size(values[key]) <= targets[key]:
             report["fields"][key] = {"total": len(units), "selected_ids": [u.id for u in units], "omitted_ids": []}
             continue

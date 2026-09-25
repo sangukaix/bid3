@@ -69,6 +69,7 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
             : null; // 예전 원본-PPT 수정 결과는 새 제안서 미리보기로 사용하지 않음
         const currentTemplateId =
           currentProposal?.revision_plan.template_id ??
+          availableTemplates.find((item) => item.available && item.id === localStorage.getItem("bid3_preferred_template"))?.id ??
           proposalData.selected_template_id ??
           availableTemplates.find((item) => item.available)?.id ??
           "";

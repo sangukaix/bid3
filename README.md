@@ -42,6 +42,12 @@ npm.cmd run dev
 웹: http://localhost:3000\
 API: http://127.0.0.1:8000/api/bids/
 
+## PPT 양식 라이브러리
+
+로그인 후 **PPT 양식** 메뉴에서 용도별 검색, 전체 페이지 미리보기, PPTX 다운로드와 기본 양식 선택을 할 수 있습니다. 기존 5종에 자체 제작 30종을 추가해 총 35종을 제공합니다. 신규 양식은 각 20쪽이며 텍스트와 표를 직접 편집할 수 있습니다.
+
+양식 원본은 `server/proposal_templates/library/`, 제작 소스와 재생성 방법은 [템플릿 스튜디오](template_studio/README.md)에 있습니다. 외부 사이트에서 다운로드한 양식의 복제본은 포함하지 않습니다. 양식 선택과 다운로드에는 OpenAI API가 필요하지 않습니다.
+
 ## 검사
 
 ```powershell

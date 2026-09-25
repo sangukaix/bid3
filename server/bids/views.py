@@ -1381,14 +1381,14 @@ def serialize_bid_proposal(proposal):
 def serialize_proposal_templates():
     """settings의 허용된 템플릿만 웹에 전달합니다."""
 
-    from pptx import Presentation
+    from .services.proposal_catalog import template_slide_count
 
     templates = []
     for template_id, template in settings.PROPOSAL_TEMPLATES.items():
         template_path = Path(template["path"])
         slide_count = template["target_slides"]
         if template_path.exists():
-            slide_count = len(Presentation(template_path).slides)
+            slide_count = template_slide_count(template_path)
         templates.append({
             "id": template_id,
             "name": template["name"],
@@ -1397,6 +1397,12 @@ def serialize_proposal_templates():
             "target_slides": template["target_slides"],
             "slide_count": slide_count,
             "preview_url": f"/api/proposal-templates/{template_id}/slides/",
+            "download_url": f"/api/proposal-templates/{template_id}/download/",
+            "category": template.get("category", "기본 양식"),
+            "tags": template.get("tags", []),
+            "collection": template.get("collection", "기존 템플릿"),
+            "license_note": template.get("license_note", ""),
+            "palette": template.get("palette", {}),
         })
     return templates
 
@@ -1527,6 +1533,25 @@ def bid_quantitative_proposal_download(request, bid_ntce_no):
         as_attachment=True,
         filename=f"quantitative-{bid_ntce_no}.docx",
         content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def proposal_template_catalog(request):
+    return Response({"templates": serialize_proposal_templates()})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def proposal_template_download(request, template_id):
+    template = settings.PROPOSAL_TEMPLATES.get(template_id)
+    if template is None or not Path(template["path"]).is_file():
+        return Response({"error": "템플릿을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+    return FileResponse(
+        open(template["path"], "rb"), as_attachment=True,
+        filename=f"{template_id}.pptx",
+        content_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
     )
 
 

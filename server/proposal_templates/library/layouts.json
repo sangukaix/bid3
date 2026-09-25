@@ -1,0 +1,3062 @@
+{
+  "civic_navy.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "policy_paper.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "public_cobalt.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "municipal_teal.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "civic_mono.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "learning_sage.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "academy_burgundy.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "research_indigo.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "classroom_apricot.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "seminar_ink.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "digital_midnight.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "data_cyan.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "cloud_violet.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "product_lime.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "system_slate.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "forest_plan.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "terra_field.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "ocean_blue.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "energy_olive.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "urban_concrete.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "strategy_charcoal.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "executive_wine.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "business_sand.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "supply_steel.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "venture_coral.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "culture_plum.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "tourism_moss.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "campaign_tangerine.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "community_lavender.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  },
+  "studio_ruby.pptx": {
+    "1": {
+      "role": "cover",
+      "use_when": "사업 제안서",
+      "content_budget": "사업명 확인 필요, 발주기관 확인 필요, 제안사 확인 필요 · 제출일 확인 필요"
+    },
+    "2": {
+      "role": "contents",
+      "use_when": "제안의 구성",
+      "content_budget": "사업 이해와 제안 방향, 수행 방법과 운영 체계, 품질·위험·보안 관리, 검증 근거와 성과 관리"
+    },
+    "3": {
+      "role": "summary",
+      "use_when": "제안 요약",
+      "content_budget": "사업의 목적, 주요 수행 내용, 완료 기준"
+    },
+    "4": {
+      "role": "problem",
+      "use_when": "사업 이해와 핵심 과제",
+      "content_budget": "발주처의 현황, 해결해야 할 과제"
+    },
+    "5": {
+      "role": "objective",
+      "use_when": "사업 목표와 적용 범위",
+      "content_budget": "대상과 범위, 정량 목표, 적용 조건"
+    },
+    "6": {
+      "role": "compliance",
+      "use_when": "요구사항 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "7": {
+      "role": "evaluation",
+      "use_when": "평가항목별 제안 근거",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "8": {
+      "role": "strategy",
+      "use_when": "핵심 수행 전략",
+      "content_budget": "접근 방법, 수행의 차별점, 실행 조건"
+    },
+    "9": {
+      "role": "process",
+      "use_when": "단계별 수행 절차",
+      "content_budget": "착수·요건 확인, 설계·준비, 실행·점검, 검증·인계"
+    },
+    "10": {
+      "role": "domain",
+      "use_when": "세부 과업 수행 방안",
+      "content_budget": "주요 과업, 수행 방법과 산출물"
+    },
+    "11": {
+      "role": "timeline",
+      "use_when": "추진 일정과 마일스톤",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "12": {
+      "role": "organization",
+      "use_when": "수행 조직과 역할",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "13": {
+      "role": "governance",
+      "use_when": "보고와 의사결정",
+      "content_budget": "진행 현황 보고, 쟁점 검토, 발주처 협의, 변경사항 반영"
+    },
+    "14": {
+      "role": "quality",
+      "use_when": "품질관리와 검수",
+      "content_budget": "품질 기준, 검증 방법, 보완과 재검수"
+    },
+    "15": {
+      "role": "risk",
+      "use_when": "위험과 대응 계획",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "16": {
+      "role": "security",
+      "use_when": "정보보호와 준수사항",
+      "content_budget": "보호 대상과 준수 기준, 통제 방법과 점검 기록"
+    },
+    "17": {
+      "role": "metrics",
+      "use_when": "성과지표와 측정 방법",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "18": {
+      "role": "evidence",
+      "use_when": "수행 역량과 검증 자료",
+      "content_budget": "관련 역량과 수행 경험, 확인 가능한 증빙"
+    },
+    "19": {
+      "role": "outcomes",
+      "use_when": "산출물과 완료 기준",
+      "content_budget": "4개 이하 항목, 셀별 핵심 문구"
+    },
+    "20": {
+      "role": "closing",
+      "use_when": "제안의 핵심",
+      "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
+    }
+  }
+}

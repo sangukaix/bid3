@@ -81,6 +81,8 @@ def _slide_elements(slide):
         else None
     )
     for shape_index, shape in enumerate(slide.shapes):
+        if shape.name.startswith("bid3-fixed-"):
+            continue
         if getattr(shape, "has_table", False):
             for row_index, row in enumerate(shape.table.rows):
                 for cell_index, cell in enumerate(row.cells):
@@ -111,7 +113,7 @@ def _slide_elements(slide):
                         width=shape.width,
                         height=shape.height,
                         kind="text",
-                        is_title=shape.shape_id == title_shape_id,
+                        is_title=shape.shape_id == title_shape_id or shape.name == "bid3-title",
                     )
                 )
 
@@ -267,6 +269,9 @@ def _target_text_frame(slide, target):
     try:
         shape = slide.shapes[int(parts[1])]
     except (IndexError, ValueError):
+        return None
+
+    if shape.name.startswith("bid3-fixed-"):
         return None
 
     if len(parts) == 2 and getattr(shape, "has_text_frame", False):

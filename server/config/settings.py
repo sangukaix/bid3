@@ -165,6 +165,9 @@ PROPOSAL_TEMPLATES = {  # 웹에서 고를 수 있는 제안서 디자인과 실
         "target_slides": 30,
     },
 }
+from bids.services.proposal_catalog import load_studio_templates
+
+PROPOSAL_TEMPLATES.update(load_studio_templates(BASE_DIR / "proposal_templates" / "library"))
 PROPOSAL_DEFAULT_TEMPLATE_PATH = PROPOSAL_TEMPLATES[
     PROPOSAL_DEFAULT_TEMPLATE_ID
 ]["path"]  # 기존 코드와 테스트에서 사용하는 기본 템플릿 경로

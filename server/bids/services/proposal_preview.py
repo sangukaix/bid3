@@ -130,6 +130,13 @@ def create_proposal_preview(proposal, force=False):
 def create_template_slide_previews(template_id, force=False):
     """등록된 PPTX 템플릿을 슬라이드별 PNG로 변환해 캐시합니다."""
 
+    from .proposal_catalog import bundled_previews
+
+    template = settings.PROPOSAL_TEMPLATES.get(template_id)
+    if template is not None and not force:
+        images = bundled_previews(template)
+        if images:
+            return images
     with TEMPLATE_PREVIEW_LOCK:
         return _create_template_slide_previews(template_id, force)
 
