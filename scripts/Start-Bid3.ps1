@@ -18,7 +18,7 @@ $listening = @(Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction 
 if ($listening.Count -gt 0) {
     throw "Port $port is already in use. Stop the existing BID3 service first."
 }
-$names = @("DJANGO_ALLOWED_HOSTS", "DJANGO_CORS_ALLOWED_ORIGINS", "NEXT_PUBLIC_API_BASE_URL")
+$names = @("DJANGO_ALLOWED_HOSTS", "DJANGO_CORS_ALLOWED_ORIGINS", "NEXT_PUBLIC_API_MODE", "BID_API_BASE_URL")
 $previous = @{}
 foreach ($name in $names) { $previous[$name] = [Environment]::GetEnvironmentVariable($name, "Process") }
 Push-Location $projectRoot
@@ -34,8 +34,9 @@ try {
     } else {
         Set-Location (Join-Path $projectRoot "web")
         if (-not (Test-Path "node_modules\next")) { throw "Run npm.cmd ci in web first." }
-        $env:NEXT_PUBLIC_API_BASE_URL = "http://${Address}:8000"
-        Write-Host "Building BID3 for API address $env:NEXT_PUBLIC_API_BASE_URL ..."
+        $env:NEXT_PUBLIC_API_MODE = "proxy"
+        $env:BID_API_BASE_URL = "http://127.0.0.1:8000"
+        Write-Host "Building BID3 with same-origin API proxy ..."
         & npm.cmd run build
         if ($LASTEXITCODE -ne 0) { throw "Web build failed. Server was not started." }
         Write-Host "BID3 web: http://${Address}:3000  (Ctrl+C to stop)"
