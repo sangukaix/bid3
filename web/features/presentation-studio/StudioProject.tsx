@@ -7,12 +7,15 @@ import SlideDeck from "./SlideDeck";
 import SlideEditor from "./SlideEditor";
 import ReferencePanel from "./ReferencePanel";
 import ChatPanel from "./ChatPanel";
+import ReferenceForm from "./ReferenceForm";
+import ImagePlacement from "./ImagePlacement";
 
 export default function StudioProject({ id }: { id: string }) {
   const [project, setProject] = useState<Project>();
   const [capabilities, setCapabilities] = useState<Capabilities>();
   const [page, setPage] = useState(1);
   const [tab, setTab] = useState("pages");
+  const [attachment, setAttachment] = useState<"url" | "upload" | "image" | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -57,15 +60,6 @@ export default function StudioProject({ id }: { id: string }) {
   const lastJob = project.jobs?.find(j => j.kind !== "preview") || project.jobs?.[0];
   const disabled = busy || !!activeJob;
   const locked = project.protected_slides.includes(currentPage);
-  async function pageAction(action: string, extra = {}) {
-    return mutate("edit/", "POST", { action, slide: currentPage, base_revision: project!.current.id, ...extra });
-  }
-  async function move(direction: number) {
-    const target = currentPage + direction;
-    const order = slides.map(s => s.number);
-    [order[currentPage - 1], order[target - 1]] = [order[target - 1], order[currentPage - 1]];
-    if (await pageAction("order", { order })) setPage(target);
-  }
   return <div className="space-y-5 pb-10">
     <header className="space-y-4"><Link href="/dashBoard/presentations" className="text-xs font-semibold text-violet-700">← 발표자료 작업실</Link><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs text-violet-600">{capabilities?.model || "Gemma4"} · 로컬 AI · v{project.current.number} · {slides.length}쪽</p><h1 className="mt-2 text-2xl font-bold tracking-tight">{project.title}</h1></div><div className="flex flex-wrap gap-2"><button className={button} onClick={() => setSaveTemplate(v => !v)}>내 양식으로 저장</button><button className={primary} onClick={() => void getFile(`revisions/${project.current.id}/download/`, `${project.title}.pptx`)}>PPTX 다운로드</button></div></div></header>
     {error && <div role="alert" className="flex justify-between gap-3 rounded-xl bg-rose-50 p-4 text-sm text-rose-800"><span>{error}</span><button onClick={() => setError("")} aria-label="오류 닫기">×</button></div>}
@@ -73,9 +67,14 @@ export default function StudioProject({ id }: { id: string }) {
     {saveTemplate && <form onSubmit={template} className="flex flex-wrap gap-3 rounded-xl border border-violet-200 bg-white p-4"><label className="min-w-48 flex-1 text-xs">저장할 내 양식 이름<input className={input} name="name" required maxLength={200} defaultValue={`${project.title} 양식`} /></label><button disabled={disabled} className={primary}>현재 파일과 유지 설정 저장</button><p className="w-full text-xs text-slate-500">현재 텍스트·이미지까지 포함하는 개인 양식입니다. 내 계정에서만 다시 선택할 수 있습니다.</p></form>}
     {activeJob && <div role="status" className="flex items-center justify-between gap-3 rounded-xl border border-violet-200 bg-violet-100 p-4 text-sm text-violet-900"><span className="animate-pulse">{activeJob.progress || "작업 준비 중…"} · 로컬 모델은 자료량에 따라 몇 분 걸릴 수 있습니다.</span><button disabled={busy} className={button} onClick={() => void mutate(`jobs/${activeJob.id}/cancel/`, "POST")}>작업 취소</button></div>}
     {!activeJob && lastJob?.status === "failed" && <p role="alert" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">{lastJob.error} 새 요청을 보내거나 미리보기를 재시도할 수 있습니다.</p>}
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-violet-100 bg-white p-1.5"><div className="flex flex-wrap gap-1">{[["pages", "페이지·디자인"], ["sources", `지침·참고자료 ${project.references?.length || 0}`], ["history", "버전·작업 연결"]].map(([value, label]) => <button key={value} onClick={() => setTab(value)} aria-pressed={tab === value} className={`rounded-lg px-4 py-2.5 text-sm ${tab === value ? "bg-violet-100 font-bold text-violet-900" : "text-slate-500"}`}>{label}</button>)}</div><div className="ml-auto flex flex-wrap gap-2">{([["url", "참고 URL"], ["upload", "참고자료 업로드"], ["image", "이미지 업로드"]] as const).map(([kind, label]) => <button key={kind} type="button" aria-expanded={attachment === kind} aria-controls="studio-attachment" onClick={() => setAttachment(attachment === kind ? null : kind)} className={`rounded-lg border px-3 py-2 text-xs font-semibold ${attachment === kind ? "border-violet-400 bg-violet-100 text-violet-900" : "border-violet-100 text-violet-700 hover:bg-violet-50"}`}>{label}</button>)}</div></div>
+    {attachment && <section id="studio-attachment" aria-label="자료 추가" className="rounded-2xl border border-violet-200 bg-white p-5">
+      <div className="mb-4 flex items-center justify-between"><h2 className="text-sm font-bold text-violet-900">{attachment === "url" ? "참고 URL" : attachment === "image" ? "이미지 업로드" : "참고자료 업로드"}</h2><button type="button" onClick={() => setAttachment(null)} className="text-xs text-slate-500">닫기</button></div>
+      <div className="max-w-2xl"><ReferenceForm key={attachment} kind={attachment} disabled={disabled} mutate={mutate} />{attachment === "image" && <ImagePlacement project={project} slide={slide} disabled={disabled} mutate={mutate} />}</div>
+    </section>}
     <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_400px]">
       <section className="min-w-0 space-y-4">
-        <div className="flex flex-wrap gap-1 rounded-xl border border-violet-100 bg-white p-1.5">{[["pages", "페이지·디자인"], ["sources", `지침·참고자료 ${project.references?.length || 0}`], ["history", "버전·작업 연결"]].map(([value, label]) => <button key={value} onClick={() => setTab(value)} aria-pressed={tab === value} className={`rounded-lg px-4 py-2.5 text-sm ${tab === value ? "bg-violet-100 font-bold text-violet-900" : "text-slate-500"}`}>{label}</button>)}</div>
+
         {tab === "pages" && <>
           {!project.template_confirmed && <div className="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4"><h2 className="text-sm font-bold text-amber-950">이 양식으로 이어 작성할까요?</h2><p className="text-sm leading-6 text-amber-900">페이지를 확인하고, 손대지 않을 페이지에 ‘원본 유지’를 켜 주세요. 새 페이지는 기존 페이지의 디자인을 복제해 만듭니다. 선택은 나중에도 바꿀 수 있습니다.</p><button className={primary} disabled={disabled} onClick={() => void mutate("", "PATCH", { template_confirmed: true })}>현재 양식과 유지 설정으로 시작</button></div>}
           <SlideDeck project={id} revision={project.current.id} slides={slides} page={currentPage} protectedSlides={project.protected_slides} onSelect={setPage} />
@@ -84,8 +83,6 @@ export default function StudioProject({ id }: { id: string }) {
             <div className="mt-4">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><label className="flex min-w-0 flex-1 items-center gap-2 text-sm">페이지<select className={`${input} max-w-sm`} value={currentPage} onChange={e => setPage(Number(e.target.value))}>{slides.map(s => <option key={s.number} value={s.number}>{project.protected_slides.includes(s.number) ? "🔒 " : ""}{s.number}. {s.title.slice(0, 50) || "제목 없음"}</option>)}</select></label><label className="flex items-center gap-2 text-sm font-semibold text-violet-800"><input type="checkbox" checked={locked} disabled={disabled} onChange={e => void mutate("", "PATCH", { protected_slides: e.target.checked ? [...project.protected_slides, currentPage] : project.protected_slides.filter(n => n !== currentPage) })} />원본 유지</label></div>
             <div className="mb-3 flex flex-wrap items-center gap-3 text-xs text-slate-500"><span>유지 페이지: {project.protected_slides.length ? project.protected_slides.join(", ") : "없음"}</span><button disabled={disabled} className="text-violet-700 disabled:opacity-40" onClick={() => void mutate("", "PATCH", { protected_slides: slides.map(s => s.number) })}>전체 원본 유지</button><button disabled={disabled} className="text-violet-700 disabled:opacity-40" onClick={() => void mutate("", "PATCH", { protected_slides: [] })}>전체 잠금 해제</button></div>
-            <div className="my-4 flex flex-wrap gap-2"><button className={button} disabled={disabled || currentPage <= 1} onClick={() => void move(-1)}>페이지 순서 앞으로</button><button className={button} disabled={disabled || currentPage >= slides.length} onClick={() => void move(1)}>페이지 순서 뒤로</button></div>
-            <div className="mb-5 flex flex-wrap gap-2 border-b border-slate-100 pb-4"><button className={button} disabled={disabled || slides.length >= 80} onClick={async () => { if (await pageAction("clone")) setPage(slides.length + 1); }}>이 디자인으로 끝에 한 장 복제</button><button className={button} disabled={disabled || locked || slides.length <= 1} onClick={() => { if (window.confirm(`${currentPage}쪽을 삭제할까요? 이전 버전에는 남아 있습니다.`)) void pageAction("delete"); }}>현재 페이지 삭제</button></div>
             {slide && <SlideEditor key={`${project.current.id}-${currentPage}`} slide={slide} project={project} disabled={disabled} mutate={mutate} />}
             </div>
           </details>
