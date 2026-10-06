@@ -2726,6 +2726,12 @@ class BidProposalTests(TestCase):
         )
 
     def test_초안은_확정한_뒤에만_내려받는다(self):
+        from io import BytesIO
+        from pptx import Presentation
+        deck=Presentation();slide=deck.slides.add_slide(deck.slide_layouts[1])
+        slide.shapes.title.text='정보시스템 구축 제안'
+        slide.placeholders[1].text='공고 요구사항에 따라 시스템 구축과 검증을 수행합니다.'
+        buffer=BytesIO();deck.save(buffer);draft=buffer.getvalue()
         proposal = BidProposal.objects.create(
             saved_bid=self.saved_bid,
             output_format=BidProposal.OutputFormat.PPTX,
@@ -2738,7 +2744,7 @@ class BidProposalTests(TestCase):
         )
         proposal.generated_file.save(
             "draft.pptx",
-            SimpleUploadedFile("draft.pptx", b"draft proposal"),
+            SimpleUploadedFile("draft.pptx", draft),
         )
         self.client.force_login(self.user)
 
@@ -2757,7 +2763,7 @@ class BidProposalTests(TestCase):
         self.assertEqual(finalized.status_code, 200)
         self.assertEqual(finalized.json()["proposal"]["status"], "final")
         self.assertEqual(downloaded.status_code, 200)
-        self.assertEqual(content, b"draft proposal")
+        self.assertEqual(content, draft)
 
 
 class CompanyWebsiteKnowledgeTests(TestCase):

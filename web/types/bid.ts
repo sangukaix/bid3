@@ -93,7 +93,10 @@ export type BidProposalData = {
     final_review_items?: string[];
     company_claim_review?: CompanyClaimReview;
     quality_review?: {
+      check_version?: string;
       passed: boolean;
+      template_leftovers?: Array<{ slide_number: number; marker: string }>;
+      severe_overflow_items?: Array<{ slide_number: number; target: string }>;
       unresolved_placeholders: Array<{
         slide_number: number;
         marker: string;

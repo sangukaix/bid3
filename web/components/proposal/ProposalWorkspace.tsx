@@ -32,6 +32,7 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [layoutAcknowledgedFor, setLayoutAcknowledgedFor] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState("");
@@ -204,11 +205,13 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
         `${API_BASE_URL}/api/bids/${bidNtceNo}/proposal/finalize/`,
         {
           method: "POST",
-          headers: { Authorization: `Token ${token}` },
+          headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ acknowledge_layout_warnings: layoutAcknowledgedFor === `${proposal.id}:${proposal.updated_at}` }),
         },
       );
       const data = (await response.json().catch(() => ({}))) as
         BidProposalResponse & { error?: string };
+      if (data.proposal) setProposal(data.proposal);
       if (!response.ok || !data.proposal) {
         throw new Error(data.error ?? "제안서를 최종본으로 만들지 못했습니다.");
       }
@@ -455,6 +458,31 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                     document.getElementById("proposal-assistant")?.scrollIntoView({ behavior: "smooth", block: "center" });
                     document.querySelector<HTMLTextAreaElement>("#proposal-assistant textarea")?.focus({ preventScroll: true });
                   }} />
+                {!!proposal.revision_plan.quality_review?.review_items?.length && (
+                  <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+                    <h4 className="font-semibold">출력 전 확인할 내용</h4>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {proposal.revision_plan.quality_review.review_items.map((item, i) => <li key={i}>{item}</li>)}
+                    </ul>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {[...new Set([
+                        ...(proposal.revision_plan.quality_review.unresolved_placeholders ?? []),
+                        ...(proposal.revision_plan.quality_review.template_leftovers ?? []),
+                        ...(proposal.revision_plan.quality_review.severe_overflow_items ?? []),
+                      ].map(item => item.slide_number))].sort((a, b) => a - b).map(page => (
+                        <button key={page} type="button" className="cursor-pointer rounded border border-amber-300 bg-white px-2 py-1 text-xs"
+                          onClick={() => { setSelectedPreviewPage(page); setReviewPage(page); }}>{page}쪽 확인</button>
+                      ))}
+                    </div>
+                    {!!proposal.revision_plan.quality_review.severe_overflow_items?.length && proposal.status === "draft" && (
+                      <label className="mt-3 flex items-start gap-2 text-xs leading-5">
+                        <input type="checkbox" className="mt-1" checked={layoutAcknowledgedFor === `${proposal.id}:${proposal.updated_at}`}
+                          onChange={e => setLayoutAcknowledgedFor(e.target.checked ? `${proposal.id}:${proposal.updated_at}` : "")} />
+                        미리보기에서 표시된 페이지의 글자 겹침과 잘림이 없음을 확인했습니다.
+                      </label>
+                    )}
+                  </div>
+                )}
                 <div className="mt-4 flex justify-end gap-2">
                   {proposal.status === "draft" ? (
                     <button

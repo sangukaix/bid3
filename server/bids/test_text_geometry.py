@@ -11,6 +11,23 @@ import json
 
 
 class GeometryTests(SimpleTestCase):
+    def test_frame_retains_bold_style_for_font_measurement(self):
+        from pptx import Presentation
+        from pptx.util import Inches,Pt
+        from .services.text_geometry import frame_geometry
+        prs=Presentation();slide=prs.slides.add_slide(prs.slide_layouts[6])
+        shape=slide.shapes.add_textbox(0,0,Inches(2),Inches(1));shape.text='사전·사후'
+        run=shape.text_frame.paragraphs[0].runs[0];run.font.size=Pt(30);run.font.bold=True
+        geometry=frame_geometry(shape.text_frame,shape.width,shape.height)
+        self.assertTrue(geometry['bold'])
+        with patch('bids.services.text_geometry.font_path',return_value=('',False)) as resolve:
+            measure_text(shape.text,geometry)
+            resolve.assert_called_once_with('',True)
+
+    def test_fractional_font_checks_the_exact_minimum_before_rejecting(self):
+        element={'width':200,'height':16.3,'font_size':11.25,'margin_top':2,'margin_bottom':2}
+        size,result=fitting_size('정확한 최소 크기',element,11)
+        self.assertEqual(size,11);self.assertTrue(result['fits'])
     def test_removing_text_does_not_require_a_line_in_a_tiny_box(self):
         element={'width':10,'height':0,'font_size':18,'paragraph_gap':20}
         for text in ('',' \n '):

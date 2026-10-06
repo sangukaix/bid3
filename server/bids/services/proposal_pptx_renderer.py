@@ -21,6 +21,9 @@ EMU_PER_POINT = 12700
 MIN_BODY_FONT_PT = 11
 MIN_TITLE_FONT_PT = 18
 PLACEHOLDER_PATTERN = re.compile(r"\[[^\[\]\n]{1,100}\]")
+QUALITY_CHECK_VERSION = 'proposal-output-v2'
+TEMPLATE_TEXT_MARKERS = {'사업명 제안서', '회사 이미지 · 수행 실적 · 인증 자료',
+                         '사업과 직접 관련된 자료만 배치합니다.'}
 
 
 def _clean_text(value):
@@ -117,9 +120,12 @@ def _slide_elements(slide):
                         width=shape.width,
                         height=shape.height,
                         kind="text",
-                        is_title=shape.shape_id == title_shape_id or shape.name == "bid3-title",
+                        is_title=shape.shape_id == title_shape_id or shape.name in {'bid3-title','cover-title','section-title'} or bool(re.fullmatch(r'title-\d+',shape.name)),
                     )
                 )
+                elements[-1]['label'] = shape.name.startswith(('section-label-','footer-','number-',
+                    'contents-number-','week-','schedule-header-label','strategy-no-','phase-label-'))
+                elements[-1]['name'] = shape.name
 
     return elements
 
@@ -465,6 +471,7 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
     dense_slide_numbers = []
     small_text_items = []
     overflow_items = []
+    template_leftovers = []
     title_locations = {}
     slide_roles = []
 
@@ -487,10 +494,15 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
             if not text:
                 continue
             measured = measure_text(element['text'], element)
-            if not measured['fits']:
+            # Short footer/page labels often use Office leading inside tight boxes.
+            # Still flag wrapped labels and horizontal overflow.
+            if not measured['fits'] and not (element.get('label') and measured['line_count']==1
+                                             and measured['font_size'] < MIN_BODY_FONT_PT
+                                             and measured['required_height'] <= measured['available_height'] * 1.5 + 1
+                                             and measured['measured_width'] <= measured['available_width']+1):
                 overflow_items.append({'slide_number': slide_number, 'target': element['target'], **measured})
             font_size = float(element.get("font_size_pt") or 0)
-            if font_size and font_size < MIN_BODY_FONT_PT:
+            if font_size and font_size < MIN_BODY_FONT_PT and not element.get('label'):
                 small_text_items.append(
                     {
                         "slide_number": slide_number,
@@ -509,6 +521,8 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
         )
 
         for text in texts:
+            if text in TEMPLATE_TEXT_MARKERS:
+                template_leftovers.append({'slide_number':slide_number,'marker':text})
             for marker in PLACEHOLDER_PATTERN.findall(text):
                 if re.fullmatch(
                     r"\[(?:출처|근거)\s*\d+(?:\s*,\s*\d+)*\]",
@@ -556,6 +570,8 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
             "자리표시자가 남은 슬라이드를 확인해 주세요: "
             + ", ".join(map(str, slides))
         )
+    if template_leftovers:
+        review_items.append('양식 안내 문구가 남은 페이지: ' + ', '.join(map(str,sorted({i['slide_number'] for i in template_leftovers}))))
     if empty_slide_numbers:
         review_items.append(
             "내용이 거의 없는 슬라이드를 확인해 주세요: "
@@ -597,10 +613,15 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
         slides = sorted({item['slide_number'] for item in overflow_items})
         review_items.append('폰트 폭 기준 표시 공간 초과가 예상되는 페이지: ' + ', '.join(map(str, slides)) + '. 실제 미리보기를 확인하세요.')
     return {
+        'check_version': QUALITY_CHECK_VERSION,
         "passed": not review_items,
         "layout_estimated": True,
         "overflow_items": overflow_items,
         "unresolved_placeholders": unresolved_placeholders,
+        'template_leftovers': template_leftovers,
+        'severe_overflow_items': [i for i in overflow_items if
+            i['required_height'] > i['available_height'] * 1.5 + 1
+            or i['measured_width'] > i['available_width'] * 1.5 + 1],
         "empty_slide_numbers": empty_slide_numbers,
         "apply_warnings": apply_warnings,
         "dense_slide_numbers": dense_slide_numbers,

@@ -2043,10 +2043,26 @@ def bid_proposal_finalize(request, bid_ntce_no):
             status=status.HTTP_409_CONFLICT,
         )
 
+    from .services.proposal_pptx_renderer import inspect_proposal_quality
+    from zipfile import BadZipFile
+    from lxml.etree import XMLSyntaxError
+    try:
+        quality = inspect_proposal_quality(Path(proposal.generated_file.path).read_bytes())
+    except (OSError, ValueError, BadZipFile, XMLSyntaxError):
+        return Response({'error':'현재 PPTX 파일을 검사하지 못했습니다. 정상 파일로 다시 생성해 주세요.'},status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+    proposal.revision_plan = {**(proposal.revision_plan or {}), 'quality_review':quality}
+    save_with_sqlite_retry(proposal)
+    if quality['unresolved_placeholders'] or quality['template_leftovers']:
+        return Response({'error':'미완성 문구 또는 양식 안내 문구가 남아 있습니다. 검수 목록의 페이지를 수정한 뒤 확정해 주세요.',
+                         'proposal':serialize_bid_proposal(proposal)},status=status.HTTP_409_CONFLICT)
+    if quality['severe_overflow_items'] and request.data.get('acknowledge_layout_warnings') is not True:
+        return Response({'error':'글자 겹침이 예상되는 페이지가 있습니다. 미리보기를 확인하고 수정하거나 배치 확인을 표시해 주세요.',
+                         'proposal':serialize_bid_proposal(proposal)},status=status.HTTP_409_CONFLICT)
     proposal.revision_plan = {
         **(proposal.revision_plan or {}),
         "status": "final",
         "finalized_at": timezone.now().isoformat(),
+        'layout_warnings_acknowledged': request.data.get('acknowledge_layout_warnings') is True,
     }
     save_with_sqlite_retry(proposal)
     return Response({"proposal": serialize_bid_proposal(proposal)})
