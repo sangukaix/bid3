@@ -44,7 +44,7 @@ def owned(request, pk):
 def revision_data(revision, details=False):
     if not revision: return None
     return {'id':revision.id,'number':revision.number,'label':revision.label,'created_at':revision.created_at,
-            'slide_count':len(revision.inventory),**({'slides':revision.inventory} if details else {})}
+            'slide_count':len(revision.inventory),**({'slides':revision.inventory,'quality_review':revision.quality_review} if details else {})}
 
 
 def job_data(job):
@@ -155,7 +155,7 @@ def edit(request,pk):
 def restore(request,pk,revision_id):
     project=owned(request,pk); require_idle(project)
     revision=get_object_or_404(project.revisions,pk=revision_id)
-    save_revision(project,Path(revision.file.path).read_bytes(),f'v{revision.number}에서 복원',expected=int(request.data['base_revision']))
+    save_revision(project,Path(revision.file.path).read_bytes(),f'v{revision.number}에서 복원',expected=int(request.data['base_revision']),quality=revision.quality_review)
     project.refresh_from_db(); return Response(project_data(project,True))
 
 

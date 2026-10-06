@@ -2,7 +2,9 @@ import { API_BASE_URL } from "@/lib/api";
 
 export type Element = { target: string; text: string; kind: string; name: string; font_size: number; width: number; height: number; x: number; y: number };
 export type Slide = { number: number; title: string; elements: Element[]; width: number; height: number };
-export type Revision = { id: number; number: number; label: string; slide_count: number; created_at: string; slides?: Slide[] };
+export type QualityPage = { page: number; checked_targets: string[]; repaired_once: boolean; semantic_checked: boolean; findings: { target: string; problem: string; severity: string }[]; initial_findings: { target: string; problem: string; severity: string }[]; citations: { target: string; reference_id: string; part: number }[]; sources: { id: string; name: string }[]; omitted_reference_count?: number };
+export type Quality = { version: string; pages: QualityPage[]; visual_check_required: boolean };
+export type Revision = { id: number; number: number; label: string; slide_count: number; created_at: string; slides?: Slide[]; quality_review?: Quality };
 export type Reference = { id: string; kind: string; name: string; locator: string; enabled: boolean; text_length: number; excerpt: string; updated_at: string; metadata: { image?: boolean; vision_pending?: boolean; empty?: boolean; truncated?: boolean; files?: string[]; omitted_files?: number } };
 export type Plan = { message?: string; questions?: string[]; image_requests?: string[]; changes?: { slide: number; edits: { target: string; text: string }[] }[]; additions?: { template_slide: number; title: string; brief: string }[]; rewrite_slides?: number[]; base_revision?: number; sources?: { id: string; name: string }[]; omitted_reference_count?: number };
 export type Message = { id: number; role: string; content: string; plan: Plan; applied_revision: number | null };

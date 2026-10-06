@@ -9,6 +9,7 @@ from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.util import Pt
 
 from .proposal_layouts import get_proposal_slide_layout
+from .text_geometry import frame_geometry, fitting_size, measure_text
 
 
 MAX_SOURCE_SLIDES = 100
@@ -57,6 +58,7 @@ def _element_metadata(target, text, text_frame, width, height, kind, is_title=Fa
     fallback_size = 28 if is_title else 16
     font_size_pt = _font_size_points(text_frame, fallback_size)
     return {
+        **frame_geometry(text_frame, width, height, fallback_size),
         "target": target,
         "text": text,
         "kind": "title" if is_title else kind,
@@ -86,6 +88,8 @@ def _slide_elements(slide):
         if getattr(shape, "has_table", False):
             for row_index, row in enumerate(shape.table.rows):
                 for cell_index, cell in enumerate(row.cells):
+                    if cell.is_spanned:
+                        continue
                     text = cell.text.strip()
                     if text:
                         elements.append(
@@ -95,8 +99,8 @@ def _slide_elements(slide):
                                 ),
                                 text=text,
                                 text_frame=cell.text_frame,
-                                width=shape.table.columns[cell_index].width,
-                                height=row.height,
+                                width=sum(shape.table.columns[i].width for i in range(cell_index,cell_index+cell.span_width)),
+                                height=sum(shape.table.rows[i].height for i in range(row_index,row_index+cell.span_height)),
                                 kind="table_cell",
                             )
                         )
@@ -338,6 +342,12 @@ def _apply_text_changes(slide, text_changes):
                 continue
             adjusted_font_size = max(minimum_size, adjusted_font_size)
 
+        measured_size, measured = fitting_size(revised_text, {**element, 'font_size': adjusted_font_size},
+                                               MIN_TITLE_FONT_PT if element.get('kind') == 'title' else MIN_BODY_FONT_PT)
+        if measured_size is None:
+            warnings.append(f"{target}: 폰트 폭 기준으로 표시 공간을 초과해 자동 수정을 건너뛰었습니다.")
+            continue
+        adjusted_font_size = measured_size
         _replace_text_frame(
             text_frame,
             revised_text,
@@ -355,6 +365,7 @@ def _apply_text_changes(slide, text_changes):
                 "char_count": revised_length,
                 "max_chars": max_chars,
                 "font_size_pt": round(adjusted_font_size, 1),
+                "layout_fit": measured,
             }
         )
 
@@ -453,6 +464,7 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
     empty_slide_numbers = []
     dense_slide_numbers = []
     small_text_items = []
+    overflow_items = []
     title_locations = {}
     slide_roles = []
 
@@ -474,6 +486,9 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
             text = _clean_text(element.get("text", ""))
             if not text:
                 continue
+            measured = measure_text(element['text'], element)
+            if not measured['fits']:
+                overflow_items.append({'slide_number': slide_number, 'target': element['target'], **measured})
             font_size = float(element.get("font_size_pt") or 0)
             if font_size and font_size < MIN_BODY_FONT_PT:
                 small_text_items.append(
@@ -578,8 +593,13 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
             "같은 형태가 4장 이상 반복되는 구간이 있습니다. 레이아웃 변화를 확인해 주세요."
         )
 
+    if overflow_items:
+        slides = sorted({item['slide_number'] for item in overflow_items})
+        review_items.append('폰트 폭 기준 표시 공간 초과가 예상되는 페이지: ' + ', '.join(map(str, slides)) + '. 실제 미리보기를 확인하세요.')
     return {
         "passed": not review_items,
+        "layout_estimated": True,
+        "overflow_items": overflow_items,
         "unresolved_placeholders": unresolved_placeholders,
         "empty_slide_numbers": empty_slide_numbers,
         "apply_warnings": apply_warnings,

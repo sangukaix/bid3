@@ -9,6 +9,7 @@ import ReferencePanel from "./ReferencePanel";
 import ChatPanel from "./ChatPanel";
 import ReferenceForm from "./ReferenceForm";
 import ImagePlacement from "./ImagePlacement";
+import QualityReview from "./QualityReview";
 
 export default function StudioProject({ id }: { id: string }) {
   const [project, setProject] = useState<Project>();
@@ -77,6 +78,7 @@ export default function StudioProject({ id }: { id: string }) {
 
         {tab === "pages" && <>
           {!project.template_confirmed && <div className="space-y-3 rounded-xl border border-amber-200 bg-amber-50 p-4"><h2 className="text-sm font-bold text-amber-950">이 양식으로 이어 작성할까요?</h2><p className="text-sm leading-6 text-amber-900">페이지를 확인하고, 손대지 않을 페이지에 ‘원본 유지’를 켜 주세요. 새 페이지는 기존 페이지의 디자인을 복제해 만듭니다. 선택은 나중에도 바꿀 수 있습니다.</p><button className={primary} disabled={disabled} onClick={() => void mutate("", "PATCH", { template_confirmed: true })}>현재 양식과 유지 설정으로 시작</button></div>}
+          <QualityReview review={project.current.quality_review} />
           <SlideDeck project={id} revision={project.current.id} slides={slides} page={currentPage} protectedSlides={project.protected_slides} onSelect={setPage} />
           <details className="rounded-2xl border border-violet-100 bg-white p-4 sm:p-5">
             <summary className="cursor-pointer text-sm font-bold text-violet-900">{currentPage}쪽 편집 · 원본 유지 설정</summary>

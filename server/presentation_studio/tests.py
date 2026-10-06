@@ -108,7 +108,7 @@ class SourceTests(SimpleTestCase):
         self.assertIn('Reference',text); self.assertNotIn('bad()',text)
 
 
-@override_settings(STUDIO_INLINE_JOBS=True)
+@override_settings(STUDIO_INLINE_JOBS=True, STUDIO_SEMANTIC_REVIEW=False)
 class StudioTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -226,10 +226,31 @@ class StudioTests(TestCase):
         self.assertTrue(self.project.messages.latest('id').plan['questions'])
         self.assertEqual(self.project.jobs.latest('created_at').status,'failed')
 
+    def test_failed_quality_review_keeps_revision_and_records_findings(self):
+        target=self.project.current.inventory[2]['elements'][0]['target']
+        plan=self.plan(changes=[{'slide':3,'edits':[{'target':target,'text':'근거 없는 결과'}]}])
+        msg=Message.objects.create(project=self.project,role='assistant',content='검증 작성안',plan=plan)
+        failure=ValueError('근거 확인 필요');failure.quality_review={'page':3,'findings':[{'target':target,'severity':'error','problem':'근거 없음'}]}
+        with patch('presentation_studio.ai.context',return_value={}),patch('presentation_studio.quality.review_page',side_effect=failure):
+            self.client.post(self.root+f'plans/{msg.pk}/apply/')
+        self.project.refresh_from_db();msg.refresh_from_db()
+        self.assertEqual(self.project.revisions.count(),1)
+        self.assertEqual(Path(self.project.current.file.path).read_bytes(),self.original)
+        self.assertIsNone(msg.applied_revision_id)
+        self.assertEqual(self.project.messages.latest('id').plan['quality_review'],failure.quality_review)
+        self.assertEqual(self.project.jobs.latest('created_at').status,'failed')
+
     def test_cancelled_worker_cannot_publish_revision(self):
         job=Job.objects.create(project=self.project,kind='apply',status='cancelled')
         with self.assertRaises(ValueError): save_revision(self.project,self.original,'cancelled result',job=job)
         run_job(job.id); self.assertEqual(self.project.revisions.count(),1)
+
+    def test_restoring_same_file_keeps_its_quality_audit(self):
+        revision=self.project.current
+        revision.quality_review={'version':'test','pages':[{'page':3,'semantic_checked':True}]};revision.save()
+        response=self.client.post(self.root+f'revisions/{revision.id}/restore/',{'base_revision':revision.id},format='json')
+        self.assertEqual(response.status_code,200,response.data)
+        self.assertEqual(response.data['current']['quality_review'],revision.quality_review)
 
     def test_chat_runs_only_after_design_confirmation_and_keeps_questions(self):
         self.project.template_confirmed=False; self.project.save()

@@ -29,6 +29,7 @@ class Revision(models.Model):
     number = models.PositiveIntegerField()
     label = models.CharField(max_length=250)
     inventory = models.JSONField(default=list)
+    quality_review = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

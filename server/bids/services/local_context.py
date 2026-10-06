@@ -7,6 +7,7 @@ from django.conf import settings
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableLambda
 from .llm import OllamaChatModel, LocalOutputLimitError
+from .context_tables import pack, dumps, READING_RULE
 
 COMPRESSIBLE = {"document_context", "bid_context", "company_context", "company_knowledge_context",
                 "project_reference_context", "requirement_context", "strategy_context",
@@ -151,11 +152,28 @@ def structured_chain(prompt, model, schema):
     if not isinstance(model, OllamaChatModel):
         return chain
     def invoke(inputs):
-        fitted = fit_inputs(prompt, inputs, model, schema)
+        values=dict(inputs); packed=False
+        # Pack only valid JSON fields; keep ordinary documents/instructions intact.
+        for key,value in list(values.items()):
+            if key not in {'review_context','edit_context','inventory_context','slide_context','slide_inventory'} or not isinstance(value,str): continue
+            try: parsed=json.loads(value)
+            except (ValueError, TypeError): continue
+            encoded=pack(parsed)
+            if encoded!=parsed and byte_size(dumps(encoded))+byte_size(READING_RULE)<byte_size(value):
+                values[key]=dumps(encoded); packed=True
+        fit_model=model.model_copy(update={'num_ctx':model.num_ctx-byte_size(READING_RULE)-64}) if packed else model
+        fitted = fit_inputs(prompt, values, fit_model, schema)
+        def generate():
+            if not packed: return chain.invoke(fitted)
+            messages=[SystemMessage(content=READING_RULE),*prompt.invoke(fitted).to_messages()]
+            total=sum(byte_size(m.content)+64 for m in messages)
+            if total+model.num_predict+byte_size(json.dumps(schema.model_json_schema(),ensure_ascii=False))+1024>model.num_ctx:
+                raise ValueError('압축 해석 규칙을 포함한 로컬 입력이 한도를 넘었습니다.')
+            return model.with_structured_output(schema).invoke(messages)
         if "_evidence_query" not in inputs:
-            return chain.invoke(fitted)
+            return generate()
         from .proposal_evidence import VERSION
-        fingerprint = [VERSION, model.model, model.base_url, model.num_ctx, model.num_predict,
+        fingerprint = [VERSION, 'lossless-tables-v1' if packed else '', model.model, model.base_url, model.num_ctx, model.num_predict,
                        schema.model_json_schema(),
                        [(m.type, m.content) for m in prompt.invoke(fitted).to_messages()]]
         key = hashlib.sha256(json.dumps(fingerprint, ensure_ascii=False).encode()).hexdigest()
@@ -165,7 +183,7 @@ def structured_chain(prompt, model, schema):
                 return schema.model_validate_json(path.read_text(encoding="utf-8"))
             except (ValueError, OSError):
                 pass
-        result = chain.invoke(fitted)
+        result = generate()
         path.parent.mkdir(parents=True, exist_ok=True)
         temporary = path.with_name(f".{uuid4().hex}.json")
         temporary.write_text(result.model_dump_json(), encoding="utf-8")

@@ -25,7 +25,7 @@ def require_idle(project):
         raise ValueError('현재 작업이 끝난 뒤 수정하거나 작업을 취소해 주세요.')
 
 
-def save_revision(project, content, label, expected=None, protected=None, job=None):
+def save_revision(project, content, label, expected=None, protected=None, job=None, quality=None):
     slides=inventory(content)
     with transaction.atomic():
         project=Project.objects.select_for_update().get(pk=project.pk)
@@ -44,7 +44,7 @@ def save_revision(project, content, label, expected=None, protected=None, job=No
                 if not any(old.parts[old_part]==new.parts[new.slide_parts()[n-1]] and old.parts.get(rel_path(old_part))==new.parts.get(rel_path(new.slide_parts()[n-1])) for n in protected):
                     raise ValueError('유지 페이지 설정이 바뀌었습니다. 최신 버전에서 다시 요청하세요.')
         number=(project.revisions.order_by('-number').values_list('number',flat=True).first() or 0)+1
-        revision=Revision(project=project,number=number,label=label[:250],inventory=slides)
+        revision=Revision(project=project,number=number,label=label[:250],inventory=slides,quality_review=quality or {})
         revision.file.save('presentation.pptx',ContentFile(content),save=False); revision.save()
         project.current=revision
         if protected is not None: project.protected_slides=protected
@@ -170,19 +170,26 @@ def run_job(job_id):
             Message.objects.create(project=project,role='assistant',content=result['message'],plan=result)
         elif job.kind=='apply':
             from .ai import context, fill_page
+            from .quality import review_page, VERSION
             message=project.messages.get(pk=job.payload['message'])
             plan=message.plan; validate_plan(project,plan)
             original=Path(project.current.file.path).read_bytes(); deck=Deck(original)
-            for change in plan.get('changes',[]): deck.edit(change['slide'],change['edits'])
             packet=context(project,plan.get('request',''))
             validate_plan(project,plan)  # Sources may have changed during refresh.
+            audits=[]
+            for change in plan.get('changes',[]):
+                progress(job,f'{change["slide"]}페이지 검수 중')
+                edits,audit=review_page(project.current.inventory[change['slide']-1],change['edits'],plan.get('request',''),packet)
+                deck.edit(change['slide'],edits); audits.append(audit)
             for number in plan.get('rewrite_slides',[]):
                 progress(job,f'{number}페이지 작성 중 · 잠긴 페이지는 유지합니다')
                 result=fill_page(project,project.current.inventory[number-1],plan.get('request',''),packet)
                 if result['questions']:
                     Message.objects.create(project=project,role='assistant',content='작성 전에 확인이 필요합니다.',plan={'questions':result['questions']})
                     raise ValueError('AI가 추가 확인을 요청했습니다. 대화에서 답해 주세요. 원본은 유지했습니다.')
-                deck.edit(number,result['edits'])
+                progress(job,f'{number}페이지 검수·보완 중')
+                edits,audit=review_page(project.current.inventory[number-1],result['edits'],plan.get('request',''),packet)
+                deck.edit(number,edits); audits.append(audit)
             for index,addition in enumerate(plan.get('additions',[]),1):
                 progress(job,f'추가 페이지 {index}/{len(plan["additions"])} 작성 중')
                 number=deck.clone(addition['template_slide'])
@@ -191,10 +198,13 @@ def run_job(job_id):
                 if result['questions']:
                     Message.objects.create(project=project,role='assistant',content='새 페이지를 만들기 전에 확인해 주세요.',plan={'questions':result['questions']})
                     raise ValueError('추가 질문이 있습니다. 대화에서 답한 뒤 다시 요청하세요. 원본은 유지했습니다.')
-                deck.edit(number,result['edits'])
+                progress(job,f'추가 페이지 {index} 검수·보완 중')
+                edits,audit=review_page(slide,result['edits'],f'{addition["title"]}\n{addition["brief"]}',packet)
+                deck.edit(number,edits); audits.append(audit)
             content=deck.bytes(); assert_protected(original,content,project.protected_slides)
             progress(job,'수정본 저장 중')
-            revision=save_revision(project,content,'Gemma4 작성안 적용',expected=plan['base_revision'],job=job)
+            revision=save_revision(project,content,'Gemma4 작성·검수 적용',expected=plan['base_revision'],job=job,
+                                   quality={'version':VERSION,'pages':audits,'visual_check_required':True})
             message.applied_revision=revision; message.save(update_fields=['applied_revision'])
             try:
                 progress(job,'새 버전의 페이지 미리보기 생성 중'); render(revision)
@@ -206,4 +216,10 @@ def run_job(job_id):
         log_root=Path(settings.MEDIA_ROOT)/'presentation_job_logs'; log_root.mkdir(parents=True,exist_ok=True)
         (log_root/f'{job.id}.log').write_text(traceback.format_exc(),encoding='utf-8')
         detail=str(error) if isinstance(error,ValueError) else '작업 처리에 실패했습니다. Ollama 연결과 파일을 확인한 뒤 다시 시도해 주세요.'
+        if getattr(error,'quality_review',None):
+            Message.objects.create(project=project,role='assistant',content='검수에서 확인할 내용이 남아 이전 파일을 유지했습니다. '+detail,
+                                   plan={'quality_review':error.quality_review})
+        elif getattr(error,'questions',None):
+            Message.objects.create(project=project,role='assistant',content='검수 보완 전에 확인해 주세요. 이전 파일은 유지했습니다.',
+                                   plan={'questions':error.questions})
         Job.objects.filter(pk=job.pk,status='running').update(status='failed',error=detail[:1200],progress='작업 실패 · 이전 파일 보존',updated_at=timezone.now())

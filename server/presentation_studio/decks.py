@@ -246,7 +246,9 @@ def inventory(content):
                     cell=shape.table.cell(r,c)
                     bounds={**common,'width':round(sum(shape.table.columns[i].width for i in range(c,c+cell.span_width))/12700,1),
                             'height':round(sum(shape.table.rows[i].height for i in range(r,r+cell.span_height))/12700,1)}
-                found.append({**bounds,'target':target,'text':frame.text,'kind':kind,'font_size':sizes[0] if sizes else 18})
+                from bids.services.text_geometry import frame_geometry
+                geometry=frame_geometry(frame, round(bounds['width']*12700), round(bounds['height']*12700), sizes[0] if sizes else 18)
+                found.append({**bounds,**geometry,'target':target,'text':frame.text,'kind':kind})
         return found
     for number, slide in enumerate(prs.slides,1):
         items = elements(slide.shapes)
