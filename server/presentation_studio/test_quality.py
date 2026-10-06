@@ -81,6 +81,38 @@ class QualityTests(SimpleTestCase):
         self.slide['elements'].append({**self.slide['elements'][0],'target':'footer','name':'bid3-fixed-footer'})
         self.assertEqual({e['target'] for e in compact_slide(self.slide)['elements']},{'11','12'})
 
+    def test_empty_decorations_are_excluded_but_native_blank_text_and_cells_remain(self):
+        from io import BytesIO
+        from pptx import Presentation
+        from pptx.util import Inches
+        from pptx.enum.shapes import MSO_SHAPE
+        from .decks import inventory
+        prs=Presentation(); page=prs.slides.add_slide(prs.slide_layouts[6])
+        background=page.shapes.add_shape(MSO_SHAPE.RECTANGLE,0,0,Inches(5),Inches(3))
+        blank=page.shapes.add_textbox(Inches(1),Inches(1),Inches(2),Inches(1))
+        table=page.shapes.add_table(1,1,Inches(1),Inches(3),Inches(2),Inches(1))
+        buffer=BytesIO();prs.save(buffer);slide=inventory(buffer.getvalue())[0]
+        targets={e['target'] for e in compact_slide(slide)['elements']}
+        self.assertNotIn(str(background.shape_id),targets)
+        self.assertIn(str(blank.shape_id),targets)
+        self.assertIn(f'{table.shape_id}:0:0',targets)
+        with self.assertRaisesMessage(ValueError,'배경 도형'):
+            review_page(slide,[{'target':str(background.shape_id),'text':'잘못된 배경 글자'}],'작성',{})
+        # Saved inventories from before this flag was introduced are conservative.
+        for element in slide['elements']: element.pop('ai_editable')
+        self.assertNotIn(str(background.shape_id),{e['target'] for e in compact_slide(slide)['elements']})
+
+    def test_native_title_is_used_instead_of_small_section_header(self):
+        from io import BytesIO
+        from pptx import Presentation
+        from pptx.util import Inches
+        from .decks import inventory
+        prs=Presentation();page=prs.slides.add_slide(prs.slide_layouts[6])
+        page.shapes.add_textbox(0,0,Inches(3),Inches(1)).text='1 프로젝트 개요'
+        title=page.shapes.add_textbox(0,Inches(1),Inches(5),Inches(1));title.name='title';title.text='특화 포인트'
+        buffer=BytesIO();prs.save(buffer)
+        self.assertEqual(inventory(buffer.getvalue())[0]['title'],'특화 포인트')
+
     def test_new_page_missing_title_or_body_retries_once_then_requires_all_targets(self):
         partial={'edits':[{'target':'11','text':'새 제목'}],'questions':[]}
         complete={'edits':[{'target':'11','text':'새 제목'},{'target':'12','text':'새 본문'}],'questions':[]}

@@ -54,7 +54,7 @@ def measure_text(text, element, size=None):
     font = load_font(path, size)
     def length(value): return font.getlength(value) / 4
     lines = []
-    for paragraph in str(text).replace('\v', '\n').split('\n'):
+    for paragraph in (str(text).replace('\v', '\n').split('\n') if str(text).strip() else []):
         if not element.get('wrap', True):
             lines.append(paragraph); continue
         current = ''
@@ -69,7 +69,7 @@ def measure_text(text, element, size=None):
             else: current += char
         lines.append(current)
     required = len(lines) * (element.get('line_height_pt') or size * element.get('line_height_ratio', 1.2))
-    required += max(0, str(text).count('\n')) * element.get('paragraph_gap', 0)
+    required += (max(0, str(text).count('\n')) * element.get('paragraph_gap', 0)) if lines else 0
     widest = max((length(line) for line in lines), default=0)
     return {'fits': required <= height + 1 and widest <= width + 1,
             'font_size': size, 'line_count': len(lines), 'required_height': round(required, 1),

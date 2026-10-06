@@ -11,6 +11,13 @@ import json
 
 
 class GeometryTests(SimpleTestCase):
+    def test_removing_text_does_not_require_a_line_in_a_tiny_box(self):
+        element={'width':10,'height':0,'font_size':18,'paragraph_gap':20}
+        for text in ('',' \n '):
+            result=measure_text(text,element)
+            self.assertTrue(result['fits']);self.assertEqual(result['line_count'],0)
+            self.assertEqual(result['required_height'],0)
+
     def test_long_korean_text_does_not_fit_but_readable_short_text_fits(self):
         element={'width':220,'height':55,'font_size':20,'font_family':'Malgun Gothic'}
         self.assertTrue(measure_text('실습 결과와 회고',element)['fits'])

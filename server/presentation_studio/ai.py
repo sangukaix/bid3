@@ -13,6 +13,7 @@ from PIL import Image
 import requests
 from bids.services.llm import OllamaChatModel, ollama_schema, LocalOutputLimitError
 from bids.services.context_tables import packed_json, READING_RULE, dumps
+from .decks import ai_editable
 
 
 def model_name():
@@ -142,7 +143,7 @@ def compact_slide(slide):
     return {**{k:slide[k] for k in ('number','title','width','height')},
             'elements':[{'target':e['target'],'text':e['text'],'kind':e['kind'],'font_size':e['font_size'],
                          **{k:e[k] for k in ('name','x','y','width','height') if k in e},
-                         'max_chars':min(500,max(18,int(e['width']*e['height']/max(e['font_size']**2,1)*.55)))} for e in slide['elements'] if not e.get('name','').startswith('bid3-fixed-')]}
+                         'max_chars':min(500,max(18,int(e['width']*e['height']/max(e['font_size']**2,1)*.55)))} for e in slide['elements'] if ai_editable(e)]}
 
 
 def plan(project, payload):

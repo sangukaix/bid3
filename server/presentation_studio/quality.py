@@ -6,6 +6,7 @@ from django.conf import settings
 from pydantic import BaseModel, Field
 from bids.services.text_geometry import fitting_size
 from .ai import call, PageText, RULES, compact_slide
+from .decks import ai_editable
 
 VERSION = 'studio-quality-v1'
 
@@ -33,6 +34,7 @@ def normalize_edits(slide, edits):
     for edit in edits:
         target=edit['target']
         if target not in elements or target in seen: raise ValueError('검수할 텍스트 위치가 없거나 중복되었습니다.')
+        if not ai_editable(elements[target]): raise ValueError('배경 도형·구분선·고정 문구는 AI 수정 대상이 아닙니다.')
         seen.add(target)
         text=str(edit['text'])
         if len(text)>3000: raise ValueError('AI 작성 문구가 너무 깁니다.')

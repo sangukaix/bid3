@@ -223,6 +223,12 @@ class Deck:
         self.parts[path] = dump(root)
 
 
+def ai_editable(element):
+    """Legacy inventories stay safe; empty native text boxes opt in on import."""
+    return not element.get('name', '').startswith('bid3-fixed-') and element.get(
+        'ai_editable', element.get('kind') == 'cell' or bool(element.get('text', '').strip()))
+
+
 def inventory(content):
     Deck(content)  # Package limits also apply to library and locally read files.
     prs = Presentation(BytesIO(content))
@@ -248,11 +254,14 @@ def inventory(content):
                             'height':round(sum(shape.table.rows[i].height for i in range(r,r+cell.span_height))/12700,1)}
                 from bids.services.text_geometry import frame_geometry
                 geometry=frame_geometry(frame, round(bounds['width']*12700), round(bounds['height']*12700), sizes[0] if sizes else 18)
-                found.append({**bounds,**geometry,'target':target,'text':frame.text,'kind':kind})
+                editable = kind == 'cell' or bool(frame.text.strip()) or (
+                    (shape.shape_type == 17 or shape.is_placeholder) and bounds['width'] > 0 and bounds['height'] > 0)
+                found.append({**bounds,**geometry,'target':target,'text':frame.text,'kind':kind,'ai_editable':editable})
         return found
     for number, slide in enumerate(prs.slides,1):
         items = elements(slide.shapes)
-        title = next((e['text'] for e in items if e['name']=='bid3-title'), next((e['text'] for e in items if e['text'].strip()), f'{number}페이지'))
+        title = next((e['text'] for e in items if e['name'] in {'bid3-title','title','toc-clean-title'} and e['text'].strip()),
+                     next((e['text'] for e in items if e['text'].strip()), f'{number}페이지'))
         result.append({'number':number,'title':title[:150],'elements':items,'width':round(prs.slide_width/12700,1),'height':round(prs.slide_height/12700,1)})
     return result
 

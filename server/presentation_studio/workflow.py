@@ -15,7 +15,7 @@ from django.utils import timezone
 import pypdfium2 as pdfium
 
 from .models import Project, Revision, Message, Job
-from .decks import Deck, inventory, assert_protected
+from .decks import Deck, inventory, assert_protected, ai_editable
 
 
 def require_idle(project):
@@ -75,7 +75,7 @@ def validate_plan(project, plan):
         number=int(change['slide'])
         if number in project.protected_slides: raise ValueError(f'{number}페이지는 유지하도록 잠겨 있습니다.')
         if not 1<=number<=len(project.current.inventory): raise ValueError('작성안의 페이지 번호가 올바르지 않습니다.')
-        valid={e['target'] for e in project.current.inventory[number-1]['elements']}
+        valid={e['target'] for e in project.current.inventory[number-1]['elements'] if ai_editable(e)}
         if any(e['target'] not in valid for e in change.get('edits',[])): raise ValueError('작성안에 없는 텍스트 위치가 포함되어 있습니다.')
     for number in plan.get('rewrite_slides',[]):
         if number in project.protected_slides or not 1<=number<=len(project.current.inventory): raise ValueError('작성할 페이지의 유지 설정을 다시 확인하세요.')
