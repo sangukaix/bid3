@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import LoginRequiredNotice from "@/components/auth/LoginRequiredNotice";
 import CompanyClaimReviewPanel from "@/components/proposal/CompanyClaimReviewPanel";
+import ProposalOutputReviewPanel from "@/components/proposal/ProposalOutputReviewPanel";
 import ProposalAssistant from "@/components/proposal/ProposalAssistant";
 import ProposalPreviewModal from "@/components/proposal/ProposalPreviewModal";
 import ProjectAnalysisCard from "@/components/proposal/ProjectAnalysisCard";
@@ -32,6 +33,7 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [isReviewingOutput, setIsReviewingOutput] = useState(false);
   const [layoutAcknowledgedFor, setLayoutAcknowledgedFor] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
@@ -42,6 +44,22 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
   const [needsLogin, setNeedsLogin] = useState(false);
   const [error, setError] = useState("");
   const [isDeletingProject, setIsDeletingProject] = useState(false);
+
+  async function refreshOutputReview() {
+    const token = localStorage.getItem("auth_token");
+    if (!token || !proposal) return;
+    setIsReviewingOutput(true);
+    setError("");
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/bids/${bidNtceNo}/proposal/output-review/`, {
+        method: "POST", headers: { Authorization: `Token ${token}` },
+      });
+      const data = (await response.json()) as BidProposalResponse & { error?: string };
+      if (!response.ok || !data.proposal) throw new Error(data.error ?? "최신 파일을 대조하지 못했습니다.");
+      setProposal(data.proposal);
+    } catch (error) { setError(error instanceof Error ? error.message : "파일 대조 중 오류가 발생했습니다."); }
+    finally { setIsReviewingOutput(false); }
+  }
 
   useEffect(() => {
     async function loadWorkspace() {
@@ -458,6 +476,9 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                     document.getElementById("proposal-assistant")?.scrollIntoView({ behavior: "smooth", block: "center" });
                     document.querySelector<HTMLTextAreaElement>("#proposal-assistant textarea")?.focus({ preventScroll: true });
                   }} />
+                <ProposalOutputReviewPanel review={proposal.revision_plan.output_review}
+                  disabled={isGenerating || isFinalizing} refreshing={isReviewingOutput} onRefresh={refreshOutputReview}
+                  onPage={page => { setSelectedPreviewPage(page); setReviewPage(page); }} />
                 {!!proposal.revision_plan.quality_review?.review_items?.length && (
                   <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
                     <h4 className="font-semibold">출력 전 확인할 내용</h4>
@@ -487,7 +508,7 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                   {proposal.status === "draft" ? (
                     <button
                       className="cursor-pointer rounded-md bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-                      disabled={isFinalizing || isPreviewLoading}
+                      disabled={isFinalizing || isPreviewLoading || isReviewingOutput}
                       onClick={() => void finalizeProposal()}
                       type="button"
                     >

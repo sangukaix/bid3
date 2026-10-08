@@ -14,7 +14,7 @@ from .vector_store import get_bid_db_path
 
 
 REQUIREMENT_MODEL = os.getenv("REQUIREMENT_MODEL", "gpt-5.6-terra")
-REQUIREMENT_CACHE_VERSION = 4
+REQUIREMENT_CACHE_VERSION = 5
 MAX_BATCH_CHARS = 4000  # 요구사항이 밀집된 문서도 JSON 결과가 잘리지 않게 분할
 MAX_BATCH_OUTPUT_TOKENS = 5000
 
@@ -97,7 +97,7 @@ def _extract_requirement_batch(chain, batch):
 
 
 def _unique_source_documents(chunk_documents):
-    """Chunk가 가리키는 원본 페이지·문단을 한 번씩만 복원합니다."""
+    """등록된 원본의 현재 전체 페이지를 복원하고 오래된 chunk를 버립니다."""
 
     source_cache = {}
     used_locations = set()
@@ -106,19 +106,26 @@ def _unique_source_documents(chunk_documents):
     for chunk in chunk_documents:
         source = chunk.metadata.get("source", "")
         element_index = chunk.metadata.get("element_index")
+        if source and isinstance(element_index, int):
+            if source in source_cache:
+                continue
+            source_documents = extract_document(source).documents
+            if not source_documents:
+                raise ValueError('등록된 공고 원문을 다시 읽지 못했습니다. 첨부파일을 확인하고 다시 분석해 주세요.')
+            source_cache[source] = source_documents
+            # Re-extraction can add/remove pages without updating the old index.
+            for number, document in enumerate(source_documents, 1):
+                unique_documents.append(Document(page_content=document.page_content,
+                    metadata={**chunk.metadata, **document.metadata, 'source':source,
+                        'element_index':number,
+                        'location':document.metadata.get('location') or f'문단 {number}'}))
+            continue
         location = chunk.metadata.get("location", "위치 확인 필요")
         key = (source, element_index, location)
         if key in used_locations:
             continue
 
         content = chunk.page_content
-        if source and isinstance(element_index, int):
-            if source not in source_cache:
-                source_cache[source] = extract_document(source).documents
-            source_documents = source_cache[source]
-            if 0 < element_index <= len(source_documents):
-                content = source_documents[element_index - 1].page_content
-
         unique_documents.append(
             Document(
                 page_content=content,
@@ -165,7 +172,9 @@ def _build_batches(documents):
 
 
 def _normalize_requirement(value):
-    return re.sub(r"[^0-9a-z가-힣]", "", str(value).lower())
+    # Keep decimal points, ranges, exceptions and punctuation; false deduplication
+    # loses requirements while conservative duplicates can still be reviewed.
+    return re.sub(r"\s+", "", str(value).lower())
 
 
 def _merge_batch_results(results):
@@ -179,6 +188,9 @@ def _merge_batch_results(results):
             key = (
                 _normalize_requirement(data["category"]),
                 _normalize_requirement(data["requirement"]),
+                _normalize_requirement(data['priority']),
+                _normalize_requirement(data['evaluation_points']),
+                _normalize_requirement(data['form_name']),
             )
             if key in used:
                 existing = requirements[used[key]]
@@ -201,10 +213,15 @@ def build_document_requirement_register(bid_ntce_no, chunk_documents):
     local = model_selection("REQUIREMENT", REQUIREMENT_MODEL)[0] == "ollama"
     model_tag = hashlib.sha256(model_selection("REQUIREMENT", REQUIREMENT_MODEL)[1].encode()).hexdigest()[:12]
     cache_path = get_bid_db_path(bid_ntce_no) / (f"requirement_register_local_{model_tag}.json" if local else "requirement_register.json")
+    source_documents = _unique_source_documents(chunk_documents)
+    signature = hashlib.sha256(json.dumps([
+        {'source':document.metadata.get('source',''), 'location':document.metadata.get('location',''),
+         'element_index':document.metadata.get('element_index'), 'text':document.page_content}
+        for document in source_documents],ensure_ascii=False,sort_keys=True).encode('utf-8')).hexdigest()
     if cache_path.exists():
         try:
             cached = json.loads(cache_path.read_text(encoding="utf-8"))
-            if cached.get("version") == REQUIREMENT_CACHE_VERSION:
+            if cached.get("version") == REQUIREMENT_CACHE_VERSION and cached.get('source_signature')==signature:
                 return cached["register"], {
                     "created": False,
                     "batch_count": cached.get("batch_count", 0),
@@ -214,7 +231,6 @@ def build_document_requirement_register(bid_ntce_no, chunk_documents):
         except (json.JSONDecodeError, KeyError):
             pass
 
-    source_documents = _unique_source_documents(chunk_documents)
     batches = _build_batches(source_documents)
     if not batches:
         raise ValueError("요구사항을 확인할 공고 원문이 없습니다.")
@@ -244,6 +260,7 @@ def build_document_requirement_register(bid_ntce_no, chunk_documents):
         json.dumps(
             {
                 "version": REQUIREMENT_CACHE_VERSION,
+                'source_signature':signature,
                 "batch_count": len(batches),
                 "source_location_count": len(source_documents),
                 "register": register,

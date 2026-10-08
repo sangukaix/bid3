@@ -1,6 +1,7 @@
 """Check every requirement against small, relevant excerpts of the written deck."""
 import json
 import re
+from decimal import Decimal
 
 import requests
 from langchain_core.prompts import ChatPromptTemplate
@@ -36,9 +37,18 @@ def confirmed_quote(verdict, requirement, pages):
     if not verdict.covered or len(quote) < 8 or quote not in normalize(pages.get(quote_page(verdict, pages), "")):
         return False
     # A passage without the requirement's quantities cannot prove numeric coverage.
-    numbers = set(re.findall(r"\d+(?:\.\d+)?", requirement.replace(",", "")))
-    quoted = set(re.findall(r"\d+(?:\.\d+)?", quote.replace(",", "")))
-    return numbers <= quoted
+    dates = re.compile(r"(?<!\d)(20\d{2})[./-](\d{1,2})[./-](\d{1,2})(?!\d)")
+    def numeric_values(text):
+        return {Decimal(value) for value in re.findall(r"\d+(?:\.\d+)?", dates.sub(' ',text).replace(',', ''))}
+    numbers, quoted = numeric_values(requirement), numeric_values(quote)
+    # The same digits with different units do not demonstrate the same requirement.
+    quantities = re.compile(r"(\d+(?:,\d{3})*(?:\.\d+)?)\s*(시간|개월|페이지|만원|억원|천원|명|회|분|일|주|년|월|장|부|원|%)")
+    def bindings(text):
+        return {(Decimal(value.replace(',', '')), unit) for value,unit in quantities.findall(text)}
+    def date_values(text):
+        return {tuple(map(int, parts)) for parts in dates.findall(text)}
+    uncertain = re.search(r"미구현|미실시|미충족|미측정|미제공|미확인|확인\s*필요|추후\s*확인", quote)
+    return numbers <= quoted and bindings(requirement) <= bindings(quote) and date_values(requirement) <= date_values(quote) and not uncertain
 
 
 def review_requirement_coverage(register, plan, model):

@@ -992,26 +992,10 @@ def _generate_proposal_from_template(
             "target_slide_count": effective_target_slide_count,
         },
     )
-    if model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
-        from ..proposal_coverage import review_requirement_coverage
-        coverage_result = review_requirement_coverage(
-            requirement_register, revision_plan, build_proposal_model(2500, reasoning_effort="none"))
-    else:
-        coverage_result = build_coverage_chain().invoke(
-            {
-                "requirement_context": requirement_context,
-                "strategy_context": json.dumps(strategy, ensure_ascii=False, indent=2),
-                "revision_context": json.dumps(revision_plan, ensure_ascii=False, indent=2),
-            }
-        ).model_dump()
-    revision_plan["requirement_coverage"] = coverage_result
+    # Preserve the complete register for all providers; review the exported deck below.
+    revision_plan["requirement_register"] = requirement_register
     if model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
         revision_plan["final_review_items"].append("페이지별 관련 원문을 선택한 로컬 작성안입니다. 선택되지 않은 요구사항과 회사 증빙도 최종 대조하세요.")
-        revision_plan["requirement_register"] = requirement_register
-    for requirement in coverage_result["missing_requirements"]:
-        warning = f"요구사항 반영 확인 필요: {requirement}"
-        if warning not in revision_plan["final_review_items"]:
-            revision_plan["final_review_items"].append(warning)
     revision_plan["version"] = PROPOSAL_REVISION_VERSION
     revision_plan["quality_rules_version"] = proposal_rules["version"]
     revision_plan["provider"], revision_plan["model"] = model_selection("PROPOSAL", PROPOSAL_MODEL)
@@ -1071,6 +1055,14 @@ def _generate_proposal_from_template(
     revision_plan["reviewed_slide_count"] = len(inventory)
     revision_plan["revision_log"] = file_result["revision_log"]
     revision_plan["quality_review"] = file_result["quality_review"]
+    from ..proposal_coverage import review_requirement_coverage
+    from ..proposal_output_review import refresh_output_review, output_plan
+    coverage_result = review_requirement_coverage(requirement_register,
+        output_plan(file_result['file_bytes']), build_proposal_model(2500, reasoning_effort="none"))
+    revision_plan['requirement_coverage'] = {**coverage_result, 'reviewed_artifact':'exported_pptx'}
+    refresh_output_review(file_result['file_bytes'], revision_plan)
+    for requirement in coverage_result['missing_requirements']:
+        revision_plan['final_review_items'].append(f'요구사항 반영 확인 필요: {requirement}')
 
     if (
         isinstance(detected_page_limit, int)
@@ -1183,6 +1175,8 @@ def revise_proposal_with_feedback(
         max_source_slides=MAX_OUTPUT_SLIDES,
         max_output_slides=MAX_OUTPUT_SLIDES,
     )
+    from ..proposal_output_review import audit_output
+    feedback_plan['output_review'] = audit_output(file_result['file_bytes'], proposal.revision_plan or {})
     return {
         "revision_plan": feedback_plan,
         **file_result,

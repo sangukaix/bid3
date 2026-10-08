@@ -2667,6 +2667,13 @@ class BidProposalTests(TestCase):
 
     @patch("bids.services.rag.proposal.revise_proposal_with_feedback")
     def test_미리보기_수정요청을_초안에_저장한다(self, mock_feedback):
+        from io import BytesIO
+        from pptx import Presentation
+        deck=Presentation()
+        for text in ['수행 전략을 구체화합니다.','단계별 구축과 검증을 수행합니다.']:
+            page=deck.slides.add_slide(deck.slide_layouts[1])
+            page.shapes.title.text=text
+        buffer=BytesIO();deck.save(buffer);feedback_file=buffer.getvalue()
         proposal = BidProposal.objects.create(
             saved_bid=self.saved_bid,
             output_format=BidProposal.OutputFormat.PPTX,
@@ -2691,7 +2698,7 @@ class BidProposalTests(TestCase):
                 "final_review_items": [],
             },
             "filename": "feedback.pptx",
-            "file_bytes": b"feedback",
+            "file_bytes": feedback_file,
             "output_slide_count": 2,
             "revision_log": [
                 {
@@ -2719,6 +2726,7 @@ class BidProposalTests(TestCase):
         proposal.refresh_from_db()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(proposal.revision_plan["status"], "draft")
+        self.assertEqual(proposal.revision_plan['output_review']['actual_slide_count'],2)
         self.assertEqual(len(proposal.revision_plan["feedback_history"]), 1)
         self.assertEqual(
             proposal.revision_plan["feedback_history"][0]["slide_number"],

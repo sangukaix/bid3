@@ -1965,6 +1965,8 @@ def bid_proposal_feedback(request, bid_ntce_no):
         "quality_review",
         current_plan.get("quality_review", {}),
     )
+    from .services.proposal_output_review import refresh_output_review
+    refresh_output_review(result['file_bytes'], current_plan)
     current_plan["final_review_items"] = list(
         dict.fromkeys(
             [
@@ -2047,10 +2049,13 @@ def bid_proposal_finalize(request, bid_ntce_no):
     from zipfile import BadZipFile
     from lxml.etree import XMLSyntaxError
     try:
-        quality = inspect_proposal_quality(Path(proposal.generated_file.path).read_bytes())
-    except (OSError, ValueError, BadZipFile, XMLSyntaxError):
+        content = Path(proposal.generated_file.path).read_bytes()
+        quality = inspect_proposal_quality(content)
+    except (OSError, ValueError, KeyError, BadZipFile, XMLSyntaxError):
         return Response({'error':'현재 PPTX 파일을 검사하지 못했습니다. 정상 파일로 다시 생성해 주세요.'},status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     proposal.revision_plan = {**(proposal.revision_plan or {}), 'quality_review':quality}
+    from .services.proposal_output_review import refresh_output_review
+    refresh_output_review(content, proposal.revision_plan)
     save_with_sqlite_retry(proposal)
     if quality['unresolved_placeholders'] or quality['template_leftovers']:
         return Response({'error':'미완성 문구 또는 양식 안내 문구가 남아 있습니다. 검수 목록의 페이지를 수정한 뒤 확정해 주세요.',
@@ -2066,6 +2071,36 @@ def bid_proposal_finalize(request, bid_ntce_no):
     }
     save_with_sqlite_retry(proposal)
     return Response({"proposal": serialize_bid_proposal(proposal)})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def bid_proposal_output_review(request, bid_ntce_no):
+    """Reconcile saved evidence with the current file, without an LLM call."""
+    proposal = BidProposal.objects.filter(saved_bid__user=request.user,
+        saved_bid__bid_notice__bid_ntce_no=bid_ntce_no).select_related('saved_bid__bid_notice').first()
+    if proposal is None or not proposal.generated_file:
+        return Response({'error':'대조할 제안서가 없습니다.'},status=404)
+    if (proposal.revision_plan or {}).get('status')=='generating':
+        return Response({'error':'생성이 끝난 뒤 파일을 대조해 주세요.'},status=409)
+    from .services.proposal_output_review import refresh_output_review
+    from .services.proposal_pptx_renderer import inspect_proposal_quality
+    from zipfile import BadZipFile
+    from lxml.etree import XMLSyntaxError
+    try:
+        content = Path(proposal.generated_file.path).read_bytes()
+        plan = dict(proposal.revision_plan or {})
+        refresh_output_review(content, plan)
+        plan['quality_review'] = inspect_proposal_quality(content)
+    except (OSError,ValueError,KeyError,BadZipFile,XMLSyntaxError):
+        return Response({'error':'PPTX를 읽지 못했습니다. 정상 파일로 다시 생성해 주세요.'},status=422)
+    # Do not overwrite a revision or finalization made while this file was read.
+    updated = BidProposal.objects.filter(pk=proposal.pk, updated_at=proposal.updated_at,
+        generated_file=proposal.generated_file.name).update(revision_plan=plan, updated_at=timezone.now())
+    if not updated:
+        return Response({'error':'제안서가 변경되었습니다. 최신 파일을 다시 대조해 주세요.'},status=409)
+    proposal.refresh_from_db()
+    return Response({'proposal':serialize_bid_proposal(proposal)})
 
 
 @api_view(["GET"])

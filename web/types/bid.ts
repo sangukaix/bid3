@@ -91,6 +91,7 @@ export type BidProposalData = {
     reviewed_slide_count?: number;
     revision_log?: ProposalRevisionLog[];
     final_review_items?: string[];
+    output_review?: ProposalOutputReview;
     company_claim_review?: CompanyClaimReview;
     quality_review?: {
       check_version?: string;
@@ -146,6 +147,16 @@ export type BidProposalData = {
   updated_at: string;
   preview_url: string;
   download_url: string;
+};
+
+export type ProposalOutputReview = {
+  version: string; file_sha256: string; actual_slide_count: number;
+  source_register_available: boolean; matched_count: number; total_count: number;
+  review_required_count: number; page_limit_exceeded: boolean; review_notes: string[]; limitation: string;
+  checks: Array<{ id: string; requirement: string; category?: string; priority?: string;
+    evaluation_points?: string; form_name?: string; sources?: string[];
+    covered: boolean; slide_number: number | null; quote: string; reason: string; status: string }>;
+  open_text_items: Array<{ slide_number: number; text: string }>;
 };
 
 export type ProposalTemplateOption = {

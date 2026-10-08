@@ -6,6 +6,9 @@ from rest_framework.test import APIClient
 from tempfile import TemporaryDirectory
 from pptx import Presentation
 from pptx.util import Inches,Pt
+from hashlib import sha256
+from unittest.mock import patch
+from django.utils import timezone
 from .models import BidNotice,SavedBid,BidProposal
 
 
@@ -49,3 +52,49 @@ class FinalizeReviewTests(TestCase):
         self.proposal.generated_file.save('bad.pptx',SimpleUploadedFile('bad.pptx',b'broken'))
         self.assertEqual(self.finalize().status_code,422)
         self.proposal.refresh_from_db();self.assertEqual(self.proposal.revision_plan['status'],'draft')
+
+    def output_review(self):
+        return self.client.post('/api/bids/REVIEW-001/proposal/output-review/',{},format='json')
+
+    def test_review_invalidates_stale_coverage_without_changing_the_file(self):
+        self.upload('실제 운영 방안을 설명합니다.')
+        original=self.proposal.generated_file.read();self.proposal.generated_file.close()
+        self.proposal.revision_plan.update({
+            'requirement_register':{'requirements':[{'requirement':'250명에게 30분 수업'}]},
+            'requirement_coverage':{'covered_count':1,'checks':[{'id':'R0001',
+                'requirement':'250명에게 30분 수업','covered':True,'slide_number':1,
+                'quote':'250명에게 30분 수업을 운영합니다.'}]}})
+        self.proposal.save()
+        response=self.output_review()
+        self.assertEqual(response.status_code,200)
+        self.proposal.refresh_from_db()
+        self.assertEqual(self.proposal.revision_plan['requirement_coverage']['covered_count'],0)
+        self.assertEqual(self.proposal.revision_plan['output_review']['file_sha256'],sha256(original).hexdigest())
+        self.assertEqual(self.proposal.generated_file.read(),original);self.proposal.generated_file.close()
+        self.assertEqual(self.proposal.revision_plan['status'],'draft')
+
+    def test_other_user_cannot_review_and_invalid_file_is_rejected(self):
+        self.upload('수행 계획을 설명합니다.')
+        self.client.force_authenticate(get_user_model().objects.create_user(username='other-reviewer'))
+        self.assertEqual(self.output_review().status_code,404)
+        self.client.force_authenticate(self.user)
+        self.proposal.generated_file.save('bad.pptx',SimpleUploadedFile('bad.pptx',b'broken'))
+        self.assertEqual(self.output_review().status_code,422)
+
+    def test_concurrent_finalization_is_preserved_instead_of_overwritten(self):
+        self.upload('수행 계획을 설명합니다.')
+        from .services.proposal_output_review import refresh_output_review
+        def concurrent_change(content,plan):
+            BidProposal.objects.filter(pk=self.proposal.pk).update(
+                revision_plan={'status':'final'},updated_at=timezone.now())
+            return refresh_output_review(content,plan)
+        with patch('bids.services.proposal_output_review.refresh_output_review',side_effect=concurrent_change):
+            self.assertEqual(self.output_review().status_code,409)
+        self.proposal.refresh_from_db();self.assertEqual(self.proposal.revision_plan['status'],'final')
+
+    def test_finalize_also_records_actual_file_audit(self):
+        self.upload('수행 계획을 설명합니다.')
+        self.assertEqual(self.finalize().status_code,200)
+        self.proposal.refresh_from_db()
+        self.assertFalse(self.proposal.revision_plan['output_review']['source_register_available'])
+        self.assertEqual(self.proposal.revision_plan['output_review']['actual_slide_count'],1)
