@@ -450,7 +450,7 @@ def prepare_user_company_knowledge(user):
 
 
 def build_company_knowledge_context(user, max_chars=60000):
-    """자동 추출한 회사 지식을 출처와 함께 제안서 프롬프트 문맥으로 만듭니다."""
+    """검토 완료·유효한 회사 근거만 제안서에 전달합니다."""
 
     processing = prepare_user_company_knowledge(user)
     context_parts = []
@@ -461,7 +461,13 @@ def build_company_knowledge_context(user, max_chars=60000):
         .select_related("source_document", "source_website_page")
         .order_by("category", "id")
     )
+    from .company_evidence import effective_review_status
+    counts, source_cache = {}, {}
     for item in items:
+        review_state = effective_review_status(item, source_cache)
+        counts[review_state] = counts.get(review_state, 0) + 1
+        if review_state != 'approved':
+            continue
         locations = ", ".join(item.source_locations) or "위치 정보 없음"
         if item.source_document:
             source_name = item.source_document.original_name
@@ -470,17 +476,20 @@ def build_company_knowledge_context(user, max_chars=60000):
         else:
             source_name = "회사 정보"
         part = (
-            f"[{item.get_category_display()} | {source_name} | "
-            f"{locations}]\n{item.title}: {item.content}"
+            f"[검토 완료 근거 K{item.pk} | {item.get_category_display()} | {source_name} | "
+            f"{locations} | 검토일 {item.reviewed_at.date().isoformat()} | "
+            f"유효기간 {item.valid_until or '별도 지정 없음'}]\n{item.title}: {item.content}\n"
+            f"원문 발췌: {item.evidence_excerpt}"
         )
         remaining = max_chars - used_chars
-        if remaining <= 0:
-            break
-        context_parts.append(part[:remaining])
-        used_chars += min(len(part), remaining)
+        if len(part) > remaining:
+            continue  # Never sever a qualification, date or evidence passage.
+        context_parts.append(part)
+        used_chars += len(part) + 2
 
     context = "\n\n".join(context_parts)
     if not context:
-        context = "등록된 회사 문서에서 자동 추출한 회사 지식이 없습니다."
+        context = "검토 완료·유효한 회사 근거가 없습니다. 회사정보의 회사 근거 보관함에서 원문을 확인해 주세요. 미검토 자료를 회사 보유 사실로 추정하지 마세요."
 
-    return context, {**processing, "used_chars": used_chars}
+    return context, {**processing, "used_chars": used_chars, 'review_counts':counts,
+        'included_reviewed_count':len(context_parts)}

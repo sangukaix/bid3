@@ -1,6 +1,7 @@
 from django.urls import path # URL주소 등록하는 장고 기능 가지고 오기
 
 from .import views # 같은 bids 폴더의 views.py를 가져오기
+from . import company_evidence_views
 
 urlpatterns = [
     path("proposal-templates/", views.proposal_template_catalog),
@@ -36,6 +37,10 @@ urlpatterns = [
     path("company-profile/business-registration/", views.business_registration_extract), #사업자등록증 기본정보 추출
     path("company-documents/", views.company_document_list), #회사 제안서와 소개서 조회·업로드
     path("company-documents/<int:document_id>/", views.company_document_delete), #회사 문서 삭제
+    path("company-documents/<int:document_id>/download/", company_evidence_views.document_download),
+    path("company-documents/<int:document_id>/knowledge/", company_evidence_views.document_knowledge),
+    path("company-evidence/", company_evidence_views.evidence_list),
+    path("company-evidence/<int:item_id>/", company_evidence_views.evidence_review),
     path("auth/signup/", views.signup), #회원가입 요청을 처리하는 주소
     path("auth/login/", views.login), #로그인 후 Token을 발급하는 주소
     path("auth/logout/", views.logout), #로그인 Token을 삭제하는 주소

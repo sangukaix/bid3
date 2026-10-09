@@ -410,6 +410,9 @@ feedback_prompt = ChatPromptTemplate.from_messages(
 [회사 정보]
 {company_context}
 
+[검토 완료·유효한 회사 근거]
+{company_knowledge_context}
+
 [현재 제안 전략]
 {strategy_context}
 
@@ -535,7 +538,8 @@ def build_local_slide_plan(slide, inputs, feedback=False):
              "제목 수정이면 제목 target만 선택하고 본문은 유지하세요. 빈 수정 문구는 작성하지 마세요. "
              "target은 현재 페이지의 정확한 값이어야 합니다."),
             ("human", "[수정 요청] {instruction}\n[현재 페이지] {slide_inventory}\n"
-             "[참고 자료] {web_context}")
+             "[참고 자료] {web_context}\n[회사 직접 입력] {company_context}\n"
+             "[검토 완료·유효한 회사 근거] {company_knowledge_context}")
         ])
     chain = structured_chain(prompt, model, Output)
     output = chain.invoke(values)
@@ -1015,6 +1019,8 @@ def _generate_proposal_from_template(
         ],
         "requirement_count": requirement_info["requirement_count"],
         "company_knowledge_item_count": company_knowledge_info["item_count"],
+        "company_knowledge_review_counts": company_knowledge_info.get('review_counts', {}),
+        "company_knowledge_included_reviewed_count": company_knowledge_info.get('included_reviewed_count', 0),
         "company_knowledge_processed_files": company_knowledge_info[
             "processed_files"
         ],
@@ -1136,6 +1142,7 @@ def revise_proposal_with_feedback(
     )
     web_context, web_sources = search_web_for_proposal(instruction)
     allowed_template_numbers = get_content_template_numbers(inventory)
+    knowledge, _ = build_company_knowledge_context(saved_bid.user)
     feedback_result = build_feedback_plan(selected_inventory, {
 
             "instruction": instruction,
@@ -1147,6 +1154,7 @@ def revise_proposal_with_feedback(
             "bid_context": bid_context or "관련 공고 근거를 찾지 못했습니다.",
             "web_context": web_context,
             "company_context": company_context(profile),
+            "company_knowledge_context": knowledge,
             "strategy_context": json.dumps(
                 proposal.strategy,
                 ensure_ascii=False,
@@ -1165,7 +1173,6 @@ def revise_proposal_with_feedback(
     from maintenance.routing import read_config
     if read_config() or model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
         from ..company_claim_review import review_company_claims
-        knowledge, _ = build_company_knowledge_context(saved_bid.user)
         review_company_claims(feedback_plan, company_context(profile), knowledge)
 
     file_result = build_proposal_pptx(

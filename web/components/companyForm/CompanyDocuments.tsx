@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 
 import { API_BASE_URL } from "@/lib/api";
 import type { CompanyDocumentData } from "@/types/company";
+import CompanyEvidenceLibrary from "@/components/companyForm/CompanyEvidenceLibrary";
 
 const MAX_DOCUMENTS = 10;
-const ACCEPTED_DOCUMENTS = ".doc,.docx,.ppt,.pptx,.hwp,.hwpx";
+const ACCEPTED_DOCUMENTS = ".doc,.docx,.ppt,.pptx,.hwp,.hwpx,.pdf";
 
 const documentTypes = [
   {
@@ -18,6 +19,11 @@ const documentTypes = [
     type: "proposal" as const,
     title: "기존 입찰 제안서",
     description: "과거 제안서에서 수행 실적, 사업 방법론과 검증된 전략을 참고합니다.",
+  },
+  {
+    type: "evidence" as const,
+    title: "실적·인력·인증 증빙",
+    description: "실적증명서, 경력 자료, 면허·인증서를 등록하고 근거 항목을 검토합니다.",
   },
 ];
 
@@ -37,11 +43,9 @@ function getErrorMessage(data: Record<string, unknown>) {
 export default function CompanyDocuments({
   editable = false,
 }: CompanyDocumentsProps) {
-  const basicFileInputRef = useRef<HTMLInputElement>(null);
-  const bidFileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputs = useRef<Partial<Record<CompanyDocumentData['document_type'], HTMLInputElement | null>>>({});
   const [documents, setDocuments] = useState<CompanyDocumentData[]>([]);
-  const [basicFile, setBasicFile] = useState<File | null>(null);
-  const [bidFile, setBidFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<Partial<Record<CompanyDocumentData['document_type'], File | null>>>({});
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [uploadingType, setUploadingType] = useState<
@@ -80,8 +84,7 @@ export default function CompanyDocuments({
     documentType: CompanyDocumentData["document_type"],
   ) {
     const token = localStorage.getItem("auth_token");
-    const selectedFile =
-      documentType === "proposal" ? bidFile : basicFile;
+    const selectedFile = files[documentType];
 
     if (!token || !selectedFile) {
       setMessage("업로드할 파일을 선택해 주세요.");
@@ -111,13 +114,9 @@ export default function CompanyDocuments({
       }
 
       setDocuments((current) => [data, ...current]);
-      if (documentType === "proposal") {
-        setBidFile(null);
-        if (bidFileInputRef.current) bidFileInputRef.current.value = "";
-      } else {
-        setBasicFile(null);
-        if (basicFileInputRef.current) basicFileInputRef.current.value = "";
-      }
+      setFiles(current => ({...current, [documentType]: null}));
+      const input = fileInputs.current[documentType];
+      if (input) input.value = "";
       setMessage("회사 문서가 등록되었습니다.");
     } catch {
       setMessage("문서 업로드 서버에 연결할 수 없습니다.");
@@ -153,7 +152,7 @@ export default function CompanyDocuments({
   const reachedLimit = documents.length >= MAX_DOCUMENTS;
 
   return (
-    <section className="app-panel overflow-hidden rounded-lg border">
+    <div className="space-y-6"><section className="app-panel overflow-hidden rounded-lg border">
       <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4">
         <div>
           <h2 className="text-base font-bold text-slate-950">회사 자료</h2>
@@ -170,11 +169,7 @@ export default function CompanyDocuments({
         <>
           <div className="divide-y divide-slate-200">
             {documentTypes.map(({ type, title, description }) => {
-              const isProposal = type === "proposal";
-              const file = isProposal ? bidFile : basicFile;
-              const inputRef = isProposal
-                ? bidFileInputRef
-                : basicFileInputRef;
+              const file = files[type];
 
               return (
                 <div
@@ -195,16 +190,15 @@ export default function CompanyDocuments({
                     disabled={reachedLimit}
                     onChange={(event) => {
                       const selected = event.target.files?.[0] ?? null;
-                      if (isProposal) setBidFile(selected);
-                      else setBasicFile(selected);
+                      setFiles(current => ({...current, [type]: selected}));
                     }}
-                    ref={inputRef}
+                    ref={element => { fileInputs.current[type] = element; }}
                     type="file"
                   />
                   <button
                     className="h-10 cursor-pointer rounded-md bg-blue-600 px-4 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                     disabled={
-                      uploadingType !== null || reachedLimit || file === null
+                      uploadingType !== null || reachedLimit || !file
                     }
                     onClick={() => uploadDocument(type)}
                     type="button"
@@ -217,7 +211,7 @@ export default function CompanyDocuments({
           </div>
 
           <p className="border-t border-slate-200 bg-slate-50/70 px-6 py-3 text-xs leading-5 text-slate-500">
-            Word, PowerPoint, HWP, HWPX · 최대 10개
+            Word, PowerPoint, HWP, HWPX, PDF · 최대 10개
           </p>
         </>
       )}
@@ -296,6 +290,6 @@ export default function CompanyDocuments({
           </p>
         )}
       </div>
-    </section>
+    </section><CompanyEvidenceLibrary documents={documents} /></div>
   );
 }

@@ -96,13 +96,15 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
         return ", ".join(industries)
 
 
-def validate_proposal_document_file(uploaded_file):
+def validate_proposal_document_file(uploaded_file, allow_pdf=False):
     allowed_extensions = {".doc", ".docx", ".ppt", ".pptx", ".hwp", ".hwpx"}
     extension = Path(uploaded_file.name).suffix.lower()
+    if allow_pdf:
+        allowed_extensions.add('.pdf')
 
     if extension not in allowed_extensions:
         raise serializers.ValidationError(
-            "Word, PowerPoint, HWP, HWPX 파일만 업로드할 수 있습니다."
+            "지원하는 문서 형식이 아닙니다. Word, PowerPoint, HWP, HWPX" + (', PDF' if allow_pdf else '') + " 파일을 선택해 주세요."
         )
     max_size_mb = 100 if extension == ".pptx" else 20
     if uploaded_file.size > max_size_mb * 1024 * 1024:
@@ -110,6 +112,16 @@ def validate_proposal_document_file(uploaded_file):
             f"파일 한 개의 크기는 {max_size_mb}MB를 초과할 수 없습니다."
         )
 
+    if extension == '.pdf':
+        from pypdf import PdfReader
+        try:
+            reader = PdfReader(uploaded_file)
+            if reader.is_encrypted or not reader.pages:
+                raise ValueError('unreadable PDF')
+        except Exception as error:
+            raise serializers.ValidationError('텍스트를 읽을 수 있는 정상 PDF인지 확인해 주세요. 암호화된 PDF는 지원하지 않습니다.') from error
+        finally:
+            uploaded_file.seek(0)
     if extension == ".pptx":
         try:
             presentation = Presentation(uploaded_file)
@@ -144,7 +156,22 @@ class CompanyDocumentSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "original_name", "uploaded_at"]
 
     def validate_file(self, uploaded_file):
-        return validate_proposal_document_file(uploaded_file)
+        return validate_proposal_document_file(uploaded_file, allow_pdf=True)
+
+
+class CompanyEvidenceReviewSerializer(serializers.Serializer):
+    review_status = serializers.ChoiceField(choices=['pending', 'approved', 'excluded'])
+    title = serializers.CharField(max_length=200, required=False)
+    content = serializers.CharField(max_length=2000, required=False)
+    valid_until = serializers.DateField(allow_null=True, required=False)
+    review_note = serializers.CharField(max_length=500, allow_blank=True, required=False)
+    expected_updated_at = serializers.DateTimeField()
+    confirm_source_review = serializers.BooleanField(default=False)
+
+    def validate(self, attrs):
+        if set(self.initial_data) - set(self.fields):
+            raise serializers.ValidationError('수정할 수 없는 필드가 포함되어 있습니다.')
+        return attrs
 
 
 class ProjectReferenceDocumentSerializer(serializers.ModelSerializer):

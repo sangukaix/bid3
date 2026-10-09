@@ -69,7 +69,7 @@ def review_company_claims(plan, profile, knowledge):
         if item["status"] != "source_matched":
             warnings.append(f"회사 근거 확인 필요: {item['slide_number']}페이지 {item['target']} — {item['reason']}")
     result = {"scope":"새로 작성·수정한 텍스트 중 실적·경력·자격 등 회사 주장",
-              "source_policy":"회사 입력 정보와 회사 지식만 대조. 공고·전략·웹 참고 제외.",
+              "source_policy":"회사 직접 입력과 검토 완료·유효한 회사 지식만 대조. 직접 입력은 증빙 검토 완료를 뜻하지 않습니다. 공고·전략·웹 참고 제외.",
               "limitation":"원문 일치는 자료의 진위나 모든 주장 탐지를 보장하지 않습니다. 회사 지식은 추출 요약일 수 있습니다.",
               "items":findings, "review_required_count":sum(i["status"]!="source_matched" for i in findings)}
     plan["company_claim_review"] = result

@@ -83,6 +83,7 @@ class CompanyDocument(models.Model):
     class DocumentType(models.TextChoices):
         PROPOSAL = "proposal", "제안서"
         COMPANY_INTRODUCTION = "company_introduction", "회사소개서"
+        EVIDENCE = "evidence", "회사 증빙"
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -135,6 +136,11 @@ class CompanyWebsitePage(models.Model):
 
 
 class CompanyKnowledgeItem(models.Model):
+    class ReviewStatus(models.TextChoices):
+        PENDING = "pending", "검토 대기"
+        APPROVED = "approved", "검토 완료"
+        EXCLUDED = "excluded", "사용 제외"
+
     class Category(models.TextChoices):
         COMPANY_OVERVIEW = "company_overview", "회사 개요"
         HISTORY = "history", "연혁"
@@ -172,6 +178,13 @@ class CompanyKnowledgeItem(models.Model):
     source_locations = models.JSONField(default=list, blank=True)
     evidence_excerpt = models.TextField(blank=True)
     tags = models.JSONField(default=list, blank=True)
+    review_status = models.CharField(max_length=20, choices=ReviewStatus.choices, default=ReviewStatus.PENDING)
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='reviewed_company_knowledge')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    valid_until = models.DateField(null=True, blank=True)
+    review_note = models.CharField(max_length=500, blank=True)
+    review_fingerprint = models.CharField(max_length=64, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

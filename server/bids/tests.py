@@ -326,7 +326,7 @@ class CompanyDocumentViewTests(TestCase):
         self.assertEqual(list_response.json()["count"], 1)
         self.assertEqual(list_response.json()["items"][0]["original_name"], "sample-proposal.docx")
 
-    def test_PDF_회사_문서는_업로드할_수_없다(self):
+    def test_손상된_PDF_회사_문서는_업로드할_수_없다(self):
         self.client.force_login(self.user)
 
         response = self.client.post(
@@ -2478,7 +2478,7 @@ class BidProposalTests(TestCase):
         )
 
     @patch("bids.services.company_knowledge.prepare_user_company_knowledge")
-    def test_제안서에_자동_추출한_회사_지식을_전달한다(self, mock_prepare):
+    def test_제안서에_검토_완료한_회사_지식을_전달한다(self, mock_prepare):
         from bids.services.company_knowledge import build_company_knowledge_context
 
         source_document = CompanyDocument.objects.create(
@@ -2487,14 +2487,19 @@ class BidProposalTests(TestCase):
             original_name="company-introduction.pptx",
             document_type=CompanyDocument.DocumentType.COMPANY_INTRODUCTION,
         )
-        CompanyKnowledgeItem.objects.create(
+        item = CompanyKnowledgeItem.objects.create(
             user=self.user,
             source_document=source_document,
             category=CompanyKnowledgeItem.Category.CAPABILITY,
             title="공공 정보시스템 운영 역량",
             content="공공 정보시스템 구축과 운영 경험을 보유하고 있습니다.",
             source_locations=["1페이지"],
+            evidence_excerpt='공공 정보시스템 구축과 운영 경험을 보유하고 있습니다.',
         )
+        from bids.services.company_evidence import evidence_fingerprint
+        from django.utils import timezone
+        item.review_status='approved';item.reviewed_by=self.user;item.reviewed_at=timezone.now()
+        item.review_fingerprint=evidence_fingerprint(item);item.save()
         mock_prepare.return_value = {
             "item_count": 1,
             "processed_files": [],
@@ -2822,7 +2827,7 @@ class CompanyWebsiteKnowledgeTests(TestCase):
             _validate_public_url("http://internal.example.com/")
 
     @patch("bids.services.company_knowledge.prepare_user_company_knowledge")
-    def test_홈페이지_지식이_제안서_회사문맥에_포함된다(self, mock_prepare):
+    def test_검토한_홈페이지_지식이_제안서_회사문맥에_포함된다(self, mock_prepare):
         page = CompanyWebsitePage.objects.create(
             user=self.user,
             url="https://company.example.com/about",
@@ -2830,14 +2835,19 @@ class CompanyWebsiteKnowledgeTests(TestCase):
             extracted_text="공공 교육 운영 경험",
             content_hash="b" * 64,
         )
-        CompanyKnowledgeItem.objects.create(
+        item = CompanyKnowledgeItem.objects.create(
             user=self.user,
             source_website_page=page,
             category=CompanyKnowledgeItem.Category.CAPABILITY,
             title="교육 운영 역량",
             content="전국 단위 온라인 교육 운영 경험을 보유합니다.",
             source_locations=[page.url],
+            evidence_excerpt='전국 단위 온라인 교육 운영 경험을 보유합니다.',
         )
+        from bids.services.company_evidence import evidence_fingerprint
+        from django.utils import timezone
+        item.review_status='approved';item.reviewed_by=self.user;item.reviewed_at=timezone.now()
+        item.review_fingerprint=evidence_fingerprint(item);item.save()
         mock_prepare.return_value = {
             "item_count": 1,
             "processed_files": [],

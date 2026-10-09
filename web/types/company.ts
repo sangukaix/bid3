@@ -31,6 +31,15 @@ export type CompanyProfileData = {
 export type CompanyDocumentData = {
   id: number;
   original_name: string;
-  document_type: "proposal" | "company_introduction";
+  document_type: "proposal" | "company_introduction" | "evidence";
   uploaded_at: string;
+};
+
+export type CompanyEvidenceItem = {
+  id: number; category: string; category_label: string; title: string; content: string;
+  source_locations: string[]; evidence_excerpt: string; source_document_id: number | null;
+  source_name: string; source_url: string; review_status: "pending" | "approved" | "excluded";
+  effective_status: "pending" | "approved" | "excluded" | "expired" | "changed";
+  reviewed_by: string; reviewed_at: string | null; valid_until: string | null;
+  review_note: string; updated_at: string;
 };
