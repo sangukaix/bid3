@@ -11,21 +11,27 @@ VERSION = 'proposal-output-evidence-v1'
 UNFILLED = re.compile(r'확인\s*필요|자료\s*미제공|자료\s*미확인|증빙\s*미제공|작성\s*예정|미정')
 
 
-def written_pages(content):
-    """Read visible text, including groups and tables; exclude speaker notes."""
+def visible_text_blocks(content):
+    """Read complete text, including fixed shapes, groups and tables; exclude notes."""
     prs = Presentation(BytesIO(content))
-    def blocks(shapes):
-        for shape in shapes:
+    def blocks(shapes, prefix=''):
+        for index, shape in enumerate(shapes):
+            target = f'{prefix}shape-{index}'
             if shape.shape_type == 6:
-                yield from blocks(shape.shapes)
+                yield from blocks(shape.shapes, target+'/')
             elif getattr(shape, 'has_table', False):
-                for row in shape.table.rows:
-                    for cell in row.cells:
+                for row_index, row in enumerate(shape.table.rows):
+                    for cell_index, cell in enumerate(row.cells):
                         if not cell.is_spanned and cell.text.strip():
-                            yield cell.text
+                            yield {'target':f'{target}-cell-{row_index}-{cell_index}','text':cell.text}
             elif getattr(shape, 'has_text_frame', False) and shape.text.strip():
-                yield shape.text
-    return {number: '\n'.join(blocks(slide.shapes)) for number,slide in enumerate(prs.slides,1)}
+                yield {'target':target,'text':shape.text}
+    return {number:list(blocks(slide.shapes)) for number,slide in enumerate(prs.slides,1)}
+
+
+def written_pages(content):
+    return {number:'\n'.join(block['text'] for block in blocks)
+            for number,blocks in visible_text_blocks(content).items()}
 
 
 def output_plan(content):
@@ -83,6 +89,8 @@ def audit_output(content, plan):
 
 def refresh_output_review(content, plan):
     """Invalidate stale coverage counters together with their old passages."""
+    from .proposal_final_review import invalidate_final_review
+    invalidate_final_review(content, plan)
     report = audit_output(content, plan)
     plan['output_review'] = report
     plan['requirement_coverage'] = {**(plan.get('requirement_coverage') or {}),

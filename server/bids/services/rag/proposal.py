@@ -12,6 +12,7 @@ from ..local_context import structured_chain
 from pydantic import BaseModel, Field
 
 from ..company_knowledge import build_company_knowledge_context
+from ..proposal_planning import build_writing_plan, page_brief, bind_output_pages
 from ..proposal_pptx_renderer import (
     MAX_ADDED_SLIDES,
     MAX_OUTPUT_SLIDES,
@@ -303,6 +304,9 @@ revision_prompt = ChatPromptTemplate.from_messages(
 [수주 전략]
 {strategy_context}
 
+[현재 페이지별 수행 설계: 미래 계획이며 증빙 사실이 아님]
+{writing_plan_context}
+
 [회사 문서에서 자동 추출한 지식]
 {company_knowledge_context}
 
@@ -505,12 +509,13 @@ def build_local_slide_plan(slide, inputs, feedback=False):
         ("human", "[작업] {instruction}\n[회사] {company_context}\n[공고 기본정보] {bid_notice_context}\n[공고] {bid_context}\n"
          "[요구사항] {requirement_context}\n"
          "[회사 근거] {company_knowledge_context}\n[유사 제안서: 과거 수치 재사용 금지] {project_reference_context}\n[공개 참고] {web_context}\n"
+         "[평가항목별 수행 설계: 미래 계획] {writing_plan_context}\n"
          "[작성 기준] {proposal_rules_context}\n[현재 페이지] {slide_inventory}")
     ])
     values = {key: inputs.get(key, "") for key in (
         "company_context", "bid_context", "requirement_context", "strategy_context",
         "company_knowledge_context", "web_context", "proposal_rules_context",
-        "bid_notice_context", "project_reference_context")}
+        "bid_notice_context", "project_reference_context", "writing_plan_context")}
     evidence_reports = []
     values["_evidence_query"] = " ".join(str(slide.get(key, "")) for key in
                                          ("title", "role", "use_when", "content_budget"))
@@ -539,7 +544,7 @@ def build_local_slide_plan(slide, inputs, feedback=False):
              "target은 현재 페이지의 정확한 값이어야 합니다."),
             ("human", "[수정 요청] {instruction}\n[현재 페이지] {slide_inventory}\n"
              "[참고 자료] {web_context}\n[회사 직접 입력] {company_context}\n"
-             "[검토 완료·유효한 회사 근거] {company_knowledge_context}")
+             "[검토 완료·유효한 회사 근거] {company_knowledge_context}\n[공고 조건] {requirement_context}")
         ])
     chain = structured_chain(prompt, model, Output)
     output = chain.invoke(values)
@@ -800,10 +805,14 @@ def build_revision_plan_in_batches(inventory, common_inputs):
     batch_reviews = []
 
     for batch_index, batch in enumerate(batches, start=1):
+        from ..proposal_tasks import report_progress
+        report_progress(f'제안서 본문 작성 {batch_index}/{len(batches)} 묶음')
         start_slide = batch[0]["slide_number"]
         end_slide = batch[-1]["slide_number"]
         batch_inputs = {
                 **common_inputs,
+                "writing_plan_context": page_brief(
+                    common_inputs.get('writing_plan', {}), [slide['slide_number'] for slide in batch]),
                 "batch_scope": (
                     f"{batch_index}/{len(batches)} 묶음, "
                     f"{start_slide}~{end_slide}페이지를 모두 검토합니다. "
@@ -973,6 +982,9 @@ def _generate_proposal_from_template(
             MAX_OUTPUT_SLIDES,
         )
 
+    writing_plan = build_writing_plan(requirement_register, inventory, company_knowledge_context,
+                                      build_proposal_model(3500, reasoning_effort="low"))
+
     revision_plan = build_revision_plan_in_batches(
         inventory,
         {
@@ -994,10 +1006,12 @@ def _generate_proposal_from_template(
                 else "없음 - 새 슬라이드 추가 금지"
             ),
             "target_slide_count": effective_target_slide_count,
+            "writing_plan": writing_plan,
         },
     )
     # Preserve the complete register for all providers; review the exported deck below.
     revision_plan["requirement_register"] = requirement_register
+    revision_plan["writing_plan"] = writing_plan
     if model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
         revision_plan["final_review_items"].append("페이지별 관련 원문을 선택한 로컬 작성안입니다. 선택되지 않은 요구사항과 회사 증빙도 최종 대조하세요.")
     revision_plan["version"] = PROPOSAL_REVISION_VERSION
@@ -1046,27 +1060,29 @@ def _generate_proposal_from_template(
         "project_reference_failed_files": project_reference_info["failed_files"],
     }
 
-    from maintenance.routing import read_config
-    if read_config() or model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
-        from ..company_claim_review import review_company_claims
-        review_company_claims(revision_plan, profile_context, company_knowledge_context)
-
     file_result = build_proposal_pptx(
         source_path=source_path,
         bid_notice=saved_bid.bid_notice,
         revision_plan=revision_plan,
     )
+    bind_output_pages(writing_plan, file_result['source_page_map'])
+    from ..proposal_final_review import verify_artifact, repair_once
+    coverage_model = build_proposal_model(2500, reasoning_effort="none")
+    claim_model = build_text_model('CLAIM_REVIEW', 'gpt-4o-mini', 3000, reasoning_effort="none")
+    verify_artifact(file_result['file_bytes'], revision_plan, company_knowledge_context, coverage_model, claim_model)
+    file_result = repair_once(file_result, revision_plan, saved_bid.bid_notice, company_knowledge_context,
+                             profile_context, coverage_model, claim_model,
+                             lambda slide, inputs: build_local_slide_plan(slide, inputs, feedback=True))
+    # Long local runs can outlive an evidence approval or its expiry date.
+    from ..proposal_final_review import invalidate_final_review
+    current_knowledge, _ = build_company_knowledge_context(saved_bid.user, prepare=False)
+    invalidate_final_review(file_result['file_bytes'], revision_plan, current_knowledge)
     revision_plan["source_slide_count"] = file_result["source_slide_count"]
     revision_plan["output_slide_count"] = file_result["output_slide_count"]
     revision_plan["reviewed_slide_count"] = len(inventory)
     revision_plan["revision_log"] = file_result["revision_log"]
     revision_plan["quality_review"] = file_result["quality_review"]
-    from ..proposal_coverage import review_requirement_coverage
-    from ..proposal_output_review import refresh_output_review, output_plan
-    coverage_result = review_requirement_coverage(requirement_register,
-        output_plan(file_result['file_bytes']), build_proposal_model(2500, reasoning_effort="none"))
-    revision_plan['requirement_coverage'] = {**coverage_result, 'reviewed_artifact':'exported_pptx'}
-    refresh_output_review(file_result['file_bytes'], revision_plan)
+    coverage_result = revision_plan['requirement_coverage']
     for requirement in coverage_result['missing_requirements']:
         revision_plan['final_review_items'].append(f'요구사항 반영 확인 필요: {requirement}')
 
@@ -1155,6 +1171,7 @@ def revise_proposal_with_feedback(
             "web_context": web_context,
             "company_context": company_context(profile),
             "company_knowledge_context": knowledge,
+            "requirement_context": json.dumps((proposal.revision_plan or {}).get('requirement_register', {}), ensure_ascii=False),
             "strategy_context": json.dumps(
                 proposal.strategy,
                 ensure_ascii=False,
@@ -1170,11 +1187,6 @@ def revise_proposal_with_feedback(
     feedback_plan = feedback_result.model_dump()
     feedback_plan["sources"] = sources
     feedback_plan["web_sources"] = web_sources
-    from maintenance.routing import read_config
-    if read_config() or model_selection("PROPOSAL", PROPOSAL_MODEL)[0] == "ollama":
-        from ..company_claim_review import review_company_claims
-        review_company_claims(feedback_plan, company_context(profile), knowledge)
-
     file_result = build_proposal_pptx(
         source_path=proposal.generated_file.path,
         bid_notice=saved_bid.bid_notice,
@@ -1182,8 +1194,11 @@ def revise_proposal_with_feedback(
         max_source_slides=MAX_OUTPUT_SLIDES,
         max_output_slides=MAX_OUTPUT_SLIDES,
     )
-    from ..proposal_output_review import audit_output
-    feedback_plan['output_review'] = audit_output(file_result['file_bytes'], proposal.revision_plan or {})
+    from ..proposal_final_review import verify_artifact
+    feedback_plan['requirement_register'] = (proposal.revision_plan or {}).get('requirement_register',{})
+    verify_artifact(file_result['file_bytes'], feedback_plan, knowledge,
+                    build_proposal_model(2500, reasoning_effort="none"),
+                    build_text_model('CLAIM_REVIEW','gpt-4o-mini',3000,reasoning_effort="none"))
     return {
         "revision_plan": feedback_plan,
         **file_result,

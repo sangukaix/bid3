@@ -343,6 +343,22 @@ class ProjectReferenceDocument(models.Model):
         return self.original_name
 
 
+class ProposalTask(models.Model):
+    """One durable long-running proposal operation per saved bid."""
+    saved_bid = models.ForeignKey(SavedBid, on_delete=models.CASCADE, related_name='proposal_tasks')
+    kind = models.CharField(max_length=20, choices=[('generate','생성'),('review','전체 검수')])
+    status = models.CharField(max_length=20, default='queued')
+    payload = models.JSONField(default=dict)
+    error = models.TextField(blank=True)
+    worker_pid = models.PositiveIntegerField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['saved_bid'],
+            condition=models.Q(status__in=['queued','running']), name='bid_one_active_proposal_task')]
+
+
 class RecommendedBid(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

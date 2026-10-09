@@ -2,6 +2,8 @@ from django.urls import path # URL주소 등록하는 장고 기능 가지고 �
 
 from .import views # 같은 bids 폴더의 views.py를 가져오기
 from . import company_evidence_views
+from . import proposal_review_views
+from . import proposal_task_views
 
 urlpatterns = [
     path("proposal-templates/", views.proposal_template_catalog),
@@ -18,6 +20,8 @@ urlpatterns = [
     path("bids/<str:bid_ntce_no>/proposal/feedback/", views.bid_proposal_feedback), #미리보기 채팅 수정
     path("bids/<str:bid_ntce_no>/proposal/finalize/", views.bid_proposal_finalize), #검토한 제안서를 최종본으로 확정
     path("bids/<str:bid_ntce_no>/proposal/output-review/", views.bid_proposal_output_review),
+    path("bids/<str:bid_ntce_no>/proposal/full-review/", proposal_review_views.full_review),
+    path("bids/<str:bid_ntce_no>/proposal/task/", proposal_task_views.task_status),
     path("bids/<str:bid_ntce_no>/proposal/download/", views.bid_proposal_download), #생성 제안서 내려받기
     path("bids/<str:bid_ntce_no>/quantitative-proposal/", views.bid_quantitative_proposal), #정량평가 요구사항 분석과 작성안
     path("bids/<str:bid_ntce_no>/quantitative-proposal/download/", views.bid_quantitative_proposal_download), #정량평가 Word 내려받기

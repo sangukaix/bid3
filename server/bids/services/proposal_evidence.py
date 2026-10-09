@@ -12,7 +12,7 @@ FIELDS = {
     "company_context": 2, "bid_notice_context": 2, "bid_context": 3,
     "requirement_context": 5, "company_knowledge_context": 3,
     "project_reference_context": 1, "proposal_rules_context": 1,
-    "web_context": 1, "strategy_context": 1,
+    "web_context": 1, "strategy_context": 1, "writing_plan_context": 4,
 }
 
 
@@ -51,6 +51,17 @@ def evidence_units(text, field):
         rows = requirement_rows(text)
         if rows:
             return [Evidence(row["id"], json.dumps(row, ensure_ascii=False)) for row in rows]
+    if field == 'writing_plan_context':
+        try:
+            rows = json.loads(text)
+            if isinstance(rows, list):
+                return [Evidence(row['id'], json.dumps(row, ensure_ascii=False)) for row in rows]
+        except (ValueError, KeyError, TypeError):
+            pass
+    if field == 'company_knowledge_context' and '검토 완료 근거 K' in text:
+        # Keep qualifications, review dates and original excerpts in the same unit.
+        return [Evidence(match.group(1), match.group(0).strip()) for match in re.finditer(
+            r'\[검토 완료 근거 (K\d+)\b[\s\S]*?(?=\n\n\[검토 완료 근거 K|\Z)', text)]
     units = []
     header = ""
     for block in re.split(r"(?=^\[[^\n]+\]\s*$)", str(text), flags=re.MULTILINE):

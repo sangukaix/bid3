@@ -792,5 +792,7 @@ def build_proposal_pptx(
         "revision_log": revision_log,
         "source_slide_count": source_slide_count,
         "output_slide_count": len(ordered_slides),
+        "source_page_map": {number: output_numbers.get(id(slide.part))
+                            for number, slide in enumerate(original_slides, 1)},
         "quality_review": quality_review,
     }

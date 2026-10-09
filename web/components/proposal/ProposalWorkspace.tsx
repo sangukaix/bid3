@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import LoginRequiredNotice from "@/components/auth/LoginRequiredNotice";
 import CompanyClaimReviewPanel from "@/components/proposal/CompanyClaimReviewPanel";
 import ProposalOutputReviewPanel from "@/components/proposal/ProposalOutputReviewPanel";
+import ProposalPlanningPanel from "@/components/proposal/ProposalPlanningPanel";
+import ProposalFinalReviewPanel from "@/components/proposal/ProposalFinalReviewPanel";
 import ProposalAssistant from "@/components/proposal/ProposalAssistant";
 import ProposalPreviewModal from "@/components/proposal/ProposalPreviewModal";
 import ProjectAnalysisCard from "@/components/proposal/ProjectAnalysisCard";
@@ -20,6 +22,7 @@ import type {
   BidProposalData,
   BidProposalResponse,
   ProposalTemplateOption,
+  ProposalTaskData,
 } from "@/types/bid";
 
 export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) {
@@ -31,9 +34,13 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
   const [recommendedTemplateId, setRecommendedTemplateId] = useState("");
   const [templateRecommendationReason, setTemplateRecommendationReason] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationRequested, setIsGenerating] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
-  const [isReviewingOutput, setIsReviewingOutput] = useState(false);
+  const [reviewRequested, setIsReviewingOutput] = useState(false);
+  const [proposalTask,setProposalTask] = useState<ProposalTaskData | null>(null);
+  const taskActive = proposalTask?.status==="queued" || proposalTask?.status==="running";
+  const isGenerating = generationRequested || (taskActive && proposalTask?.kind==="generate");
+  const isReviewingOutput = reviewRequested || (taskActive && proposalTask?.kind==="review");
   const [layoutAcknowledgedFor, setLayoutAcknowledgedFor] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
@@ -45,16 +52,18 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
   const [error, setError] = useState("");
   const [isDeletingProject, setIsDeletingProject] = useState(false);
 
-  async function refreshOutputReview() {
+  async function refreshOutputReview(full = false) {
     const token = localStorage.getItem("auth_token");
     if (!token || !proposal) return;
     setIsReviewingOutput(true);
     setError("");
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bids/${bidNtceNo}/proposal/output-review/`, {
-        method: "POST", headers: { Authorization: `Token ${token}` },
+      const response = await fetch(`${API_BASE_URL}/api/bids/${bidNtceNo}/proposal/${full ? "full-review" : "output-review"}/`, {
+        method: "POST", headers: { Authorization: `Token ${token}`, "Content-Type":"application/json" },
+        body:JSON.stringify({async:full}),
       });
-      const data = (await response.json()) as BidProposalResponse & { error?: string };
+      const data = (await response.json()) as BidProposalResponse & { error?: string; task?:ProposalTaskData };
+      if (response.status===202 && data.task) {setProposalTask(data.task);return;}
       if (!response.ok || !data.proposal) throw new Error(data.error ?? "최신 파일을 대조하지 못했습니다.");
       setProposal(data.proposal);
     } catch (error) { setError(error instanceof Error ? error.message : "파일 대조 중 오류가 발생했습니다."); }
@@ -95,6 +104,11 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
 
         setBid(proposalData.item);
         setProposal(currentProposal);
+        const taskResponse=await fetch(`${API_BASE_URL}/api/bids/${bidNtceNo}/proposal/task/`,{headers:{Authorization:`Token ${token}`}});
+        if (taskResponse.ok) {
+          const taskData=await taskResponse.json();setProposalTask(taskData.task);
+          if (taskData.task?.status==="failed") setError(taskData.task.error);
+        }
         setTemplates(availableTemplates);
         setSelectedTemplateId(currentTemplateId);
         setRecommendedTemplateId(proposalData.recommended_template_id ?? "");
@@ -114,6 +128,30 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
 
     void loadWorkspace();
   }, [bidNtceNo]);
+
+  useEffect(()=> {
+    if (!taskActive) return;
+    const token=localStorage.getItem("auth_token");
+    if (!token) return;
+    let cancelled=false;let inFlight=false;
+    async function poll() {
+      if (inFlight) return;
+      inFlight=true;
+      try {
+        const response=await fetch(`${API_BASE_URL}/api/bids/${bidNtceNo}/proposal/task/`,{headers:{Authorization:`Token ${token}`}});
+        if (!response.ok) throw new Error("작업 상태를 읽지 못했습니다. 연결을 확인해 주세요.");
+        const data=await response.json();
+        if (!cancelled) {
+          setProposalTask(data.task);
+          if (data.proposal) setProposal(data.proposal);
+          if (data.task?.status==="failed") setError(data.task.error);
+        }
+      } catch (error) {if (!cancelled) setError(error instanceof Error ? error.message : "작업 상태 확인 실패");}
+      finally {inFlight=false;}
+    }
+    void poll();const timer=window.setInterval(()=>void poll(),3000);
+    return ()=>{cancelled=true;window.clearInterval(timer);};
+  },[bidNtceNo,taskActive,proposalTask?.id]);
 
   useEffect(() => {
     if (!proposal || isGenerating || proposal.status === "generating") {
@@ -190,11 +228,14 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
           generation_mode: "default_template",
           template_id: selectedTemplateId,
           regenerate: Boolean(proposal),
+          async: true,
         }),
       });
       const data = (await response.json().catch(() => ({}))) as BidProposalResponse & {
         error?: string;
+        task?: ProposalTaskData;
       };
+      if (response.status===202 && data.task) {setProposalTask(data.task);return;}
       if (!response.ok || !data.proposal) {
         throw new Error(data.error ?? "제안서를 생성하지 못했습니다.");
       }
@@ -310,8 +351,8 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
   const revisionPlan = proposal?.revision_plan;
   const canGenerate = templates.some(
     (item) => item.id === selectedTemplateId && item.available,
-  );
-  const assistantDisabled = isGenerating || proposal?.status === "generating";
+  ) && !isGenerating && !isReviewingOutput && !isFinalizing;
+  const assistantDisabled = isGenerating || isFinalizing || isReviewingOutput || proposal?.status === "generating";
 
   return (
     <section className="min-w-0">
@@ -335,7 +376,7 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
         </div>
         <button
           className="shrink-0 cursor-pointer px-2 py-1 text-xs font-semibold text-red-600 hover:text-red-800 disabled:cursor-not-allowed disabled:text-slate-300"
-          disabled={isDeletingProject}
+          disabled={isDeletingProject || taskActive}
           onClick={() => void deleteProject()}
           type="button"
         >
@@ -343,6 +384,10 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
         </button>
       </header>
 
+      {taskActive && <p role="status" className="mt-4 rounded-md border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+        서버에서 {proposalTask?.kind==="generate" ? "제안서 생성·검수·보완" : "최종 문서 전체 검수"} 작업을 진행 중입니다. 다시 접속해도 작업 상태를 확인할 수 있습니다.
+        {proposalTask?.progress && <span className="mt-1 block text-xs">{proposalTask.progress}</span>}
+      </p>}
       {error && (
         <p className="mt-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
       )}
@@ -391,7 +436,7 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                     {proposal ? "처음으로 되돌리기" : "제안서 생성"}
                   </button>
                   <p className="mt-2 text-center text-xs leading-5 text-slate-400">
-                    문서 분량에 따라 약 3~5분 정도 소요될 수 있습니다.
+                    문서 분량과 모델에 따라 시간이 걸립니다. 생성과 검수는 서버에서 이어집니다.
                   </p>
                 </div>
               )}
@@ -470,6 +515,11 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                   ) : null}
                 </div>
 
+                <ProposalPlanningPanel plan={proposal.revision_plan.writing_plan}
+                  onPage={page => { setSelectedPreviewPage(page); setReviewPage(page); }} />
+                <ProposalFinalReviewPanel plan={proposal.revision_plan} busy={isReviewingOutput}
+                  disabled={isGenerating || isFinalizing} onReview={()=>void refreshOutputReview(true)}
+                  onPage={page => { setSelectedPreviewPage(page); setReviewPage(page); }} />
                 <CompanyClaimReviewPanel plan={proposal.revision_plan} disabled={assistantDisabled}
                   onReviewPage={(page) => {
                     setSelectedPreviewPage(page); setReviewPage(page);
@@ -477,7 +527,7 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                     document.querySelector<HTMLTextAreaElement>("#proposal-assistant textarea")?.focus({ preventScroll: true });
                   }} />
                 <ProposalOutputReviewPanel review={proposal.revision_plan.output_review}
-                  disabled={isGenerating || isFinalizing} refreshing={isReviewingOutput} onRefresh={refreshOutputReview}
+                  disabled={isGenerating || isFinalizing} refreshing={isReviewingOutput} onRefresh={()=>void refreshOutputReview()}
                   onPage={page => { setSelectedPreviewPage(page); setReviewPage(page); }} />
                 {!!proposal.revision_plan.quality_review?.review_items?.length && (
                   <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">

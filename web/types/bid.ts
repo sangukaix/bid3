@@ -75,6 +75,18 @@ export type CompanyClaimReview = {
     reference_passages?: Array<{ source: string; text: string }>;
   }>;
 };
+export type ProposalWritingPlan = {
+  items: Array<{id:string; requirement:string; channel:string; evaluation_points?:string;
+    method:string; responsible:string; schedule:string; deliverable:string; verification:string;
+    evidence_ids:string[]; question:string; output_slide_numbers?:number[]; sources?:string[]}>;
+  notes:string[];
+};
+export type ProposalFinalReview = {
+  stale:boolean; actual_slide_count:number; reviewed_block_count:number; review_required_count:number;
+  company_claim_review:CompanyClaimReview; failures:string[]; limitation:string;
+  conflicts:Array<{first_page:number; first_quote:string; second_page:number; second_quote:string; reason:string}>;
+};
+export type ProposalTaskData = {id:number;kind:"generate"|"review";status:"queued"|"running"|"completed"|"failed";error:string;progress?:string};
 export type BidProposalData = {
   id: number;
   status: "draft" | "final" | "generating";
@@ -93,6 +105,9 @@ export type BidProposalData = {
     final_review_items?: string[];
     output_review?: ProposalOutputReview;
     company_claim_review?: CompanyClaimReview;
+    writing_plan?: ProposalWritingPlan;
+    final_document_review?: ProposalFinalReview;
+    bounded_repair?: {attempt_count:number; accepted:boolean; pages:number[]; reason:string};
     quality_review?: {
       check_version?: string;
       passed: boolean;

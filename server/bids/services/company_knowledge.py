@@ -449,10 +449,10 @@ def prepare_user_company_knowledge(user):
     }
 
 
-def build_company_knowledge_context(user, max_chars=60000):
+def build_company_knowledge_context(user, max_chars=60000, prepare=True):
     """검토 완료·유효한 회사 근거만 제안서에 전달합니다."""
 
-    processing = prepare_user_company_knowledge(user)
+    processing = prepare_user_company_knowledge(user) if prepare else {}
     context_parts = []
     used_chars = 0
 

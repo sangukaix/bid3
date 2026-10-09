@@ -43,7 +43,8 @@ function Items({ review, disabled, onReviewPage, historical = false }: {
 }
 export default function CompanyClaimReviewPanel({ plan, disabled, onReviewPage }: Props) {
   const history = plan.feedback_history ?? [];
-  const latest = history.length ? history[history.length - 1].company_claim_review : plan.company_claim_review;
+  const final = plan.final_document_review;
+  const latest = final?.company_claim_review ?? (history.length ? history[history.length - 1].company_claim_review : plan.company_claim_review);
   const past = [
     ...(history.length && plan.company_claim_review ? [{ label: "최초 생성 검사", review: plan.company_claim_review }] : []),
     ...history.slice(0, -1).flatMap((entry, i) => entry.company_claim_review ? [{ label: `${i + 1}번째 수정 검사`, review: entry.company_claim_review }] : []),
@@ -51,10 +52,10 @@ export default function CompanyClaimReviewPanel({ plan, disabled, onReviewPage }
   return <section className="mt-6 border-t border-slate-200 pt-5" aria-label="회사 근거 검토">
     <h3 className="text-base font-bold text-slate-950">회사 근거 검토</h3>
     <p className="mt-1 text-xs leading-5 text-slate-500">
-      {history.length ? "최근 수정한 문장의 검사입니다. 변경하지 않은 문장은 이전 기록을 확인하세요." : "생성 시 회사 주장 후보를 대조한 결과입니다."}
+      {final ? (final.stale ? "파일 또는 회사 근거 변경 전의 검사입니다. 전체 AI 검수를 다시 실행해 주세요." : "추가·미수정 페이지를 포함한 실제 최종 본문 검사입니다.") : history.length ? "최근 수정한 문장의 검사입니다. 변경하지 않은 문장은 이전 기록을 확인하세요." : "생성 시 회사 주장 후보를 대조한 결과입니다."}
       {" "}원문 연결은 증빙의 진위나 입찰 자격을 보증하지 않습니다.
     </p>
-    {latest ? <Items review={latest} disabled={disabled} onReviewPage={onReviewPage} /> : <p className="py-4 text-sm text-slate-500">이 버전에 저장된 근거 검사 결과가 없습니다.</p>}
+    {latest ? <Items review={latest} disabled={disabled || !!final?.stale} historical={final?.stale} onReviewPage={onReviewPage} /> : <p className="py-4 text-sm text-slate-500">이 버전에 저장된 근거 검사 결과가 없습니다.</p>}
     {past.length > 0 && <details className="mt-3 border-t border-slate-200 pt-3">
       <summary className="cursor-pointer text-sm font-semibold text-slate-600">이전 검사 기록 {past.length}건</summary>
       <p className="mt-2 text-xs text-slate-500">이전 문장과 페이지 번호는 현재 파일과 다를 수 있습니다.</p>

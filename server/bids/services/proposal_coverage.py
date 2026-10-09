@@ -42,7 +42,7 @@ def confirmed_quote(verdict, requirement, pages):
         return {Decimal(value) for value in re.findall(r"\d+(?:\.\d+)?", dates.sub(' ',text).replace(',', ''))}
     numbers, quoted = numeric_values(requirement), numeric_values(quote)
     # The same digits with different units do not demonstrate the same requirement.
-    quantities = re.compile(r"(\d+(?:,\d{3})*(?:\.\d+)?)\s*(시간|개월|페이지|만원|억원|천원|명|회|분|일|주|년|월|장|부|원|%)")
+    quantities = re.compile(r"(\d+(?:,\d{3})*(?:\.\d+)?)\s*(시간|개월|페이지|만원|억원|천원|개소|퍼센트|명|회|분|일|주|년|월|장|부|원|개|건|대|%)")
     def bindings(text):
         return {(Decimal(value.replace(',', '')), unit) for value,unit in quantities.findall(text)}
     def date_values(text):
@@ -66,6 +66,8 @@ def review_requirement_coverage(register, plan, model):
         ("human", "{review_context}"),
     ])
     for offset in range(0, len(rows), 4):
+        from .proposal_tasks import report_progress
+        report_progress(f'공고 요구사항과 실제 출력 대조 {min(offset+4,len(rows))}/{len(rows)}')
         batch = rows[offset:offset+4]
         payload = []
         for row in batch:

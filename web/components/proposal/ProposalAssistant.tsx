@@ -50,7 +50,7 @@ export default function ProposalAssistant({
         <p className="border-t border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-700">
           {!proposal
             ? "제안서 초안이 완성되기 전에는 공고 질문만 가능합니다."
-            : "제안서 생성 중에는 수정 요청을 반영할 수 없습니다."}
+            : "진행 중인 생성·검수·확정 작업이 끝난 뒤 수정 요청을 반영할 수 있습니다."}
         </p>
       )}
     </section>

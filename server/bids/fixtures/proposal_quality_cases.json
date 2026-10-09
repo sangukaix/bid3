@@ -1,0 +1,135 @@
+{
+  "cases": [
+    {
+      "name": "education",
+      "requirements": [
+        {
+          "requirement": "교육인원 250명, 교육시간 30회, 회당 30분, 주 2회. 운영시간은 과정별 특성에 따라 변경될 수 있음",
+          "category": "사업내용",
+          "priority": "필수",
+          "sources": [
+            "2026년 하반기 해남군교육재단 원어민 화상영어 위탁 운영 용역 제안요청서.pdf"
+          ]
+        },
+        {
+          "requirement": "계약 협상 완료 후 7일 이내 계약체결",
+          "category": "계약 조건",
+          "priority": "필수",
+          "sources": [
+            "2026년 하반기 해남군교육재단 원어민 화상영어 위탁 운영 용역 제안요청서.pdf"
+          ]
+        }
+      ],
+      "expected": {
+        "requirements": {
+          "R0001": true,
+          "R0002": false
+        },
+        "claims": [
+          {
+            "text": "ISO27001",
+            "status": "review_required"
+          }
+        ],
+        "conflict_count": 1
+      },
+      "source": {
+        "bid_number": "R26BK01637158",
+        "url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01637158&bidPbancOrd=001",
+        "latest_correction_verified": false,
+        "case_kind": "원문 조건 기반 의도적 오류 주입 회귀 자료. 실제 제출 제안서 아님.",
+        "original_filename": "2026년 하반기 해남군교육재단 원어민 화상영어 위탁 운영 용역 제안요청서.pdf",
+        "original_file_sha256": "dfffb7dea29aa7cd89c3ed4664a5070f4caf10601eb715189bf9d80c66090b0a",
+        "original_inspected_at": "2026-10-09"
+      },
+      "slides": [
+        "교육인원: 250명, 교육시간: 30회(회당 30분 / 주 2회). 운영시간은 과정별 특성에 따라 변경될 수 있습니다.",
+        "총 교육시간은 회당 30시간으로 운영합니다.",
+        "당사는 ISO27001 인증을 보유하고 있습니다."
+      ]
+    },
+    {
+      "name": "it-license",
+      "requirements": [
+        {
+          "requirement": "시스템 운영에 필요한 인프라 및 소프트웨어 업데이트·유지보수 일체 포함",
+          "category": "사업내용",
+          "priority": "필수",
+          "sources": [
+            "입찰공고문_이러닝 클라우드 VCMS 운영 라이선스 입찰.pdf"
+          ]
+        },
+        {
+          "requirement": "계약기간: 계약체결일로부터 2주 이내",
+          "category": "사업내용",
+          "priority": "필수",
+          "sources": [
+            "입찰공고문_이러닝 클라우드 VCMS 운영 라이선스 입찰.pdf"
+          ]
+        }
+      ],
+      "expected": {
+        "requirements": {
+          "R0001": true,
+          "R0002": false
+        },
+        "conflict_count": 0
+      },
+      "source": {
+        "bid_number": "R26BK01635679",
+        "url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01635679&bidPbancOrd=000",
+        "latest_correction_verified": false,
+        "case_kind": "원문 조건 기반 의도적 오류 주입 회귀 자료. 실제 제출 제안서 아님.",
+        "original_filename": "입찰공고문_이러닝 클라우드 VCMS 운영 라이선스 입찰.pdf",
+        "original_file_sha256": "e135a735ef2836dba9822a30b26883cd502bcfe1789b78eabbdd92ababa8b55e",
+        "original_inspected_at": "2026-10-09"
+      },
+      "slides": [
+        "인프라 및 소프트웨어 업데이트·유지보수 일체 포함해 제공합니다.",
+        "계약기간은 계약체결일로부터 2개월 이내입니다."
+      ]
+    },
+    {
+      "name": "safety",
+      "requirements": [
+        {
+          "requirement": "용역기간: 착수일로부터 90일간",
+          "category": "사업내용",
+          "priority": "필수",
+          "sources": [
+            "공고문(미동저수지 정밀안전진단용역).pdf"
+          ]
+        },
+        {
+          "requirement": "정밀안전진단교육 수리분야 이수 후 실제 수행기간 2년 이상인 책임기술자 특급기술인 이상 보유 및 증빙서류 제출",
+          "category": "참가 자격",
+          "priority": "필수",
+          "sources": [
+            "공고문(미동저수지 정밀안전진단용역).pdf"
+          ]
+        }
+      ],
+      "expected": {
+        "requirements": {
+          "R0001": true,
+          "R0002": false
+        },
+        "conflict_count": 0
+      },
+      "source": {
+        "bid_number": "R26BK01628456",
+        "url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01628456&bidPbancOrd=000",
+        "latest_correction_verified": false,
+        "case_kind": "원문 조건 기반 의도적 오류 주입 회귀 자료. 실제 제출 제안서 아님.",
+        "original_filename": "공고문(미동저수지 정밀안전진단용역).pdf",
+        "original_file_sha256": "bd2fc7db75b331b0413be572346cd5a17489d76b5b47bbb6dbee47775374a509",
+        "original_inspected_at": "2026-10-09"
+      },
+      "slides": [
+        "용역기간은 착수일로부터 90일간입니다.",
+        "책임기술자 교육 이수 및 경력 증빙은 확인 필요입니다."
+      ]
+    }
+  ],
+  "purpose": "Actual stored tender conditions with controlled errors; not full RFP coverage, a winning score estimate, or submitted company evidence."
+}

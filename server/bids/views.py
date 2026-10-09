@@ -565,6 +565,9 @@ def start_bid_proposal_project(request, bid_ntce_no):
         )
 
     if request.method == "DELETE":
+        from .services.proposal_tasks import active_task
+        if active_task(saved_bid):
+            return Response({'error':'진행 중인 생성·검수가 끝난 뒤 프로젝트를 이동해 주세요.'},status=409)
         if saved_bid.proposal_started_at is None and not hasattr(saved_bid, "proposal"):
             return Response(
                 {"error": "이동할 제안서 프로젝트가 없습니다."},
@@ -1358,7 +1361,16 @@ def bid_analysis_pdf(request, bid_ntce_no):
 
 
 def serialize_bid_proposal(proposal):
-    revision_plan = proposal.revision_plan or {}
+    from copy import deepcopy
+    revision_plan = deepcopy(proposal.revision_plan or {})
+    if revision_plan.get('final_document_review'):
+        from .services.company_knowledge import build_company_knowledge_context
+        from .services.proposal_final_review import invalidate_final_review
+        try:
+            knowledge, _ = build_company_knowledge_context(proposal.saved_bid.user, prepare=False)
+            invalidate_final_review(Path(proposal.generated_file.path).read_bytes(), revision_plan, knowledge)
+        except (OSError, ValueError):
+            revision_plan['final_document_review']['stale'] = True
     proposal_status = revision_plan.get("status", "final")
     return {
         "id": proposal.id,
@@ -1673,6 +1685,18 @@ def bid_proposal(request, bid_ntce_no):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    if request.data.get('async') is True:
+        from .proposal_task_views import enqueue_response
+        return enqueue_response(saved_bid, 'generate', {'template_id':template_id})
+    from .models import ProposalTask
+    if ProposalTask.objects.filter(saved_bid=saved_bid,status__in=['queued','running']).exists():
+        return Response({'error':'진행 중인 생성·검수가 끝난 뒤 다시 요청해 주세요.'},status=409)
+    return generate_saved_proposal(saved_bid, profile, template_id, existing_proposal)
+
+
+def generate_saved_proposal(saved_bid, profile, template_id, existing_proposal):
+    template = settings.PROPOSAL_TEMPLATES[template_id]
+    bid_ntce_no = saved_bid.bid_notice.bid_ntce_no
     previous_revision_plan = (
         dict(existing_proposal.revision_plan or {})
         if existing_proposal
@@ -1811,7 +1835,8 @@ def bid_proposal_feedback(request, bid_ntce_no):
             {"error": "먼저 제안서 초안을 만들어 주세요."},
             status=status.HTTP_404_NOT_FOUND,
         )
-    if (proposal.revision_plan or {}).get("status") == "generating":
+    from .services.proposal_tasks import active_task
+    if (proposal.revision_plan or {}).get("status") == "generating" or active_task(proposal.saved_bid):
         return Response(
             {"error": "제안서 생성이 끝난 뒤 수정해 주세요."},
             status=status.HTTP_409_CONFLICT,
@@ -1965,6 +1990,12 @@ def bid_proposal_feedback(request, bid_ntce_no):
         "quality_review",
         current_plan.get("quality_review", {}),
     )
+    for key in ('final_document_review', 'requirement_coverage'):
+        if key in feedback_plan:
+            current_plan[key] = feedback_plan[key]
+    for row in current_plan.get('writing_plan', {}).get('items', []):
+        mapping = result.get('source_page_map', {})
+        row['output_slide_numbers'] = [mapping[n] for n in row.get('output_slide_numbers', []) if mapping.get(n)]
     from .services.proposal_output_review import refresh_output_review
     refresh_output_review(result['file_bytes'], current_plan)
     current_plan["final_review_items"] = list(
@@ -2039,7 +2070,8 @@ def bid_proposal_finalize(request, bid_ntce_no):
             {"error": "확정할 제안서 초안이 없습니다."},
             status=status.HTTP_404_NOT_FOUND,
         )
-    if (proposal.revision_plan or {}).get("status") == "generating":
+    from .services.proposal_tasks import active_task
+    if (proposal.revision_plan or {}).get("status") == "generating" or active_task(proposal.saved_bid):
         return Response(
             {"error": "제안서 생성이 끝난 뒤 최종본을 만들어 주세요."},
             status=status.HTTP_409_CONFLICT,
@@ -2056,6 +2088,10 @@ def bid_proposal_finalize(request, bid_ntce_no):
     proposal.revision_plan = {**(proposal.revision_plan or {}), 'quality_review':quality}
     from .services.proposal_output_review import refresh_output_review
     refresh_output_review(content, proposal.revision_plan)
+    from .services.company_knowledge import build_company_knowledge_context
+    from .services.proposal_final_review import invalidate_final_review
+    knowledge, _ = build_company_knowledge_context(request.user, prepare=False)
+    invalidate_final_review(content, proposal.revision_plan, knowledge)
     save_with_sqlite_retry(proposal)
     if quality['unresolved_placeholders'] or quality['template_leftovers']:
         return Response({'error':'미완성 문구 또는 양식 안내 문구가 남아 있습니다. 검수 목록의 페이지를 수정한 뒤 확정해 주세요.',
@@ -2081,7 +2117,8 @@ def bid_proposal_output_review(request, bid_ntce_no):
         saved_bid__bid_notice__bid_ntce_no=bid_ntce_no).select_related('saved_bid__bid_notice').first()
     if proposal is None or not proposal.generated_file:
         return Response({'error':'대조할 제안서가 없습니다.'},status=404)
-    if (proposal.revision_plan or {}).get('status')=='generating':
+    from .services.proposal_tasks import active_task
+    if (proposal.revision_plan or {}).get('status')=='generating' or active_task(proposal.saved_bid):
         return Response({'error':'생성이 끝난 뒤 파일을 대조해 주세요.'},status=409)
     from .services.proposal_output_review import refresh_output_review
     from .services.proposal_pptx_renderer import inspect_proposal_quality
@@ -2091,6 +2128,10 @@ def bid_proposal_output_review(request, bid_ntce_no):
         content = Path(proposal.generated_file.path).read_bytes()
         plan = dict(proposal.revision_plan or {})
         refresh_output_review(content, plan)
+        from .services.company_knowledge import build_company_knowledge_context
+        from .services.proposal_final_review import invalidate_final_review
+        knowledge, _ = build_company_knowledge_context(request.user, prepare=False)
+        invalidate_final_review(content, plan, knowledge)
         plan['quality_review'] = inspect_proposal_quality(content)
     except (OSError,ValueError,KeyError,BadZipFile,XMLSyntaxError):
         return Response({'error':'PPTX를 읽지 못했습니다. 정상 파일로 다시 생성해 주세요.'},status=422)

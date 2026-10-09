@@ -8,6 +8,8 @@
 - AI: 기능별 OpenAI / Ollama 선택
 - 출력: PPTX 제안서, PDF 미리보기, 정량평가 DOCX
 
+평가항목별 작성 계획, 최종 본문 전체 AI 검수·1회 보완, 긴 작업의 상태 복원과 로컬 회귀 검증은 [제안서 작성·검수 검증](docs/PROPOSAL_QUALITY_VALIDATION.md)을 참고하세요.
+
 ## 설치된 노트북에서 실행 / 팀원 접속
 
 [실행 명령과 같은 네트워크 공유 안내](docs/RUN_TEAM_LAN.md)를 참고하세요. `scripts/Start-Bid3.ps1`이 실행 중인 API 주소와 허용 출처를 설정합니다.
