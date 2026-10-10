@@ -282,7 +282,9 @@ class FeedbackPipelineTests(SimpleTestCase):
             source=Path(directory)/'draft.pptx';source.write_bytes(content)
             saved=SimpleNamespace(user=Mock(),bid_notice=SimpleNamespace(bid_ntce_no='INTEGRATION'))
             proposal=SimpleNamespace(generated_file=SimpleNamespace(path=str(source)),strategy={},
-                                     revision_plan={'requirement_register':{'requirements':[]}})
+                                     revision_plan={'requirement_register':{'requirements':[]},
+                                         'writing_plan':{'items':[{'id':'R0001','output_slide_numbers':[2],
+                                             'detail_slide_numbers':[2]}], 'detail_pages':{'placements':{'R0001':2}}}})
             feedback={'summary':'첫 페이지 수정','slide_changes':[{'slide_number':1,'action':'UPDATE',
                 'text_changes':[{'target':'shape-0','revised_text':'수정된 첫 페이지'}]}],
                 'added_slides':[],'final_review_items':[]}
@@ -303,6 +305,9 @@ class FeedbackPipelineTests(SimpleTestCase):
             result=revise_proposal_with_feedback(saved,Mock(),proposal,'첫 페이지 변경',slide_number=1)
             self.assertEqual(source.read_bytes(),content)
             self.assertEqual(written_pages(result['file_bytes']),{1:'수정된 첫 페이지',2:'수정하지 않은 회사 실적'})
+            self.assertEqual(result['revision_plan']['writing_plan']['items'][0]['output_slide_numbers'],[2])
+            self.assertEqual(result['revision_plan']['writing_plan']['detail_pages']['placements'],{'R0001':2})
+            self.assertEqual(proposal.revision_plan['writing_plan']['detail_pages'],{'placements':{'R0001':2}})
             report=result['revision_plan']['final_document_review']
             self.assertEqual(report['file_sha256'],sha256(result['file_bytes']).hexdigest())
             self.assertEqual({row['claim'] for row in report['company_claim_review']['items']},

@@ -11,12 +11,17 @@ VERSION = 'proposal-output-evidence-v1'
 UNFILLED = re.compile(r'확인\s*필요|자료\s*미제공|자료\s*미확인|증빙\s*미제공|작성\s*예정|미정')
 
 
-def visible_text_blocks(content):
+def visible_text_blocks(content, exclude_conditions=False, exclude_labels=False):
     """Read complete text, including fixed shapes, groups and tables; exclude notes."""
     prs = Presentation(BytesIO(content))
     def blocks(shapes, prefix=''):
         for index, shape in enumerate(shapes):
             target = f'{prefix}shape-{index}'
+            if exclude_conditions and shape.name.startswith('bid3-requirement-'):
+                continue
+            if exclude_labels and (shape.name in {'bid3-title','cover-title','section-title'}
+                    or shape.name.startswith(('footer-','section-label-','number-'))):
+                continue
             if shape.shape_type == 6:
                 yield from blocks(shape.shapes, target+'/')
             elif getattr(shape, 'has_table', False):
@@ -29,19 +34,19 @@ def visible_text_blocks(content):
     return {number:list(blocks(slide.shapes)) for number,slide in enumerate(prs.slides,1)}
 
 
-def written_pages(content):
+def written_pages(content, exclude_conditions=False, exclude_labels=False):
     return {number:'\n'.join(block['text'] for block in blocks)
-            for number,blocks in visible_text_blocks(content).items()}
+            for number,blocks in visible_text_blocks(content,exclude_conditions,exclude_labels).items()}
 
 
 def output_plan(content):
     """The semantic reviewer receives the exported pages, not proposed changes."""
     return {'slide_changes': [{'slide_number':number, 'action':'UPDATE',
-        'text_changes':[{'revised_text':text}]} for number,text in written_pages(content).items()]}
+        'text_changes':[{'revised_text':text}]} for number,text in written_pages(content,exclude_conditions=True).items()]}
 
 
 def audit_output(content, plan):
-    pages = written_pages(content)
+    pages = written_pages(content,exclude_conditions=True)
     rows = requirement_rows(plan.get('requirement_register', {}))
     previous = {item.get('id'):item for item in (plan.get('requirement_coverage') or {}).get('checks', [])}
     checks = []
@@ -61,7 +66,7 @@ def audit_output(content, plan):
             'reason':old.get('reason','') if matched else (
                 '이전 검수 인용이 현재 파일의 요구 조건과 일치하지 않습니다.' if old.get('covered')
                 else old.get('reason') or '현재 파일에서 해당 요구사항의 답변을 검수해야 합니다.')})
-    open_text = [{'slide_number':number, 'text':line.strip()} for number,text in pages.items()
+    open_text = [{'slide_number':number, 'text':line.strip()} for number,text in written_pages(content).items()
                  for line in text.splitlines() if UNFILLED.search(line)]
     notes = []
     if not rows:

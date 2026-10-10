@@ -47,6 +47,8 @@ def review_saved_proposal(proposal, user):
         plan['writing_plan']=build_writing_plan(plan.get('requirement_register',{}),inventory_bytes(content),knowledge,coverage)
         for row in plan['writing_plan']['items']:
             row['output_slide_numbers']=row['source_slide_numbers']
+        from .services.proposal_detail_pages import bind_existing_details
+        bind_existing_details(content,plan['writing_plan'])
         verify_artifact(content,plan,knowledge,coverage,claims)
         plan['quality_review']=inspect_proposal_quality(content)
         current,_=build_company_knowledge_context(user,prepare=False)

@@ -105,24 +105,26 @@ def review_final_document(content, knowledge, model, register=None):
                 'status':'source_matched' if valid else 'review_required','reason':verdict['reason'],
                 'evidence_quote':quote if valid else '', 'evidence_source':'검토 완료 회사 근거' if valid else '',
                 'reference_passages':[{'source':'대조한 검토 완료 근거','text':evidence}] if evidence else []})
-    pages = written_pages(content)
+    pages = written_pages(content,exclude_conditions=True,exclude_labels=True)
     # Inspect every pair of pages. Small numeric/dated passages keep cross-page input bounded.
     # Only quote-backed contradictions survive; omissions and different cohorts are not contradictions.
-    anchors = {n:[line.strip() for line in text.splitlines() if re.search(r'\d',line) and len(line.strip())>=6]
+    anchors = {n:[line.strip() for line in text.splitlines()
+                 if re.search(r'\d',re.sub(r'\b[RK]\d+\b','',line)) and len(line.strip())>=6]
                for n,text in pages.items()}
     pairs = []
+    field_label = re.compile(r'^(?:수행안|담당|일정|산출물|검증|확인 필요|대조할 회사 근거 후보)\s*[:：]\s*')
     for first, lines in anchors.items():
         for second, other in anchors.items():
             if second < first:
                 continue
             candidates = []
             for a_index,a in enumerate(lines):
-                label = re.sub(r'\d+(?:[.,/-]\d+)*','',a)
+                label = re.sub(r'\d+(?:[.,/-]\d+)*','',field_label.sub('',a))
                 words = set(re.findall(r'[가-힣A-Za-z]{2,}',label))
                 for b_index,b in enumerate(other):
                     if first==second and b_index<=a_index:
                         continue
-                    if normalize(a)==normalize(b) or not words & set(re.findall(r'[가-힣A-Za-z]{2,}',re.sub(r'\d+(?:[.,/-]\d+)*','',b))):
+                    if normalize(a)==normalize(b) or not words & set(re.findall(r'[가-힣A-Za-z]{2,}',re.sub(r'\d+(?:[.,/-]\d+)*','',field_label.sub('',b)))):
                         continue
                     quantities = r'\d+(?:[.,/-]\d+)*\s*(?:시간|개월|만원|천원|억원|명|회|분|일|주|년|월|원|%)?'
                     if re.findall(quantities,a)==re.findall(quantities,b):
@@ -139,34 +141,54 @@ def review_final_document(content, knowledge, model, register=None):
     batches, batch, size = [], [], 0
     for pair in pairs:
         length = len(json.dumps(pair,ensure_ascii=False).encode())
-        if batch and (size+length>6000 or len(batch)>=5):
+        if batch and (size+length>8000 or len(batch)>=8):
             batches.append(batch); batch=[];size=0
         batch.append(pair);size+=length
     if batch:
         batches.append(batch)
+    retry_prompt = ChatPromptTemplate.from_messages([*conflict_prompt.messages,
+        ('system','앞선 묶음의 응답 형식이 유효하지 않아 한 문장 쌍만 다시 검수합니다. '
+         'items는 없거나 1개입니다. 인용은 각 250자 이내의 연속 원문, reason은 한국어 160자 이내입니다. '
+         '인용을 지어내거나 대상·단위·전체와 일부가 다른 문장을 모순으로 단정하지 마세요.')])
+    retry_pair_count = 0
     for index, batch in enumerate(batches,1):
         report_progress(f'문장 간 수치·일정 모순 검수 {index}/{len(batches)} 묶음')
+        results = []
         try:
             result = structured_chain(conflict_prompt,model,Conflicts).invoke({
                 'pairs':json.dumps(batch,ensure_ascii=False),'_evidence_query':'final-conflicts'})
+            results.append((result,batch))
+        except Exception as error:
+            if not isinstance(error,ValueError) or len(batch)==1:
+                failures.append(f'문장 간 모순 검수 {index}: {type(error).__name__}')
+                continue
+            for pair_index,pair in enumerate(batch,1):
+                retry_pair_count += 1
+                report_progress(f'모순 검수 응답 재확인 {index}/{len(batches)} · {pair_index}/{len(batch)}쌍')
+                try:
+                    result = structured_chain(retry_prompt,model,Conflicts).invoke({
+                        'pairs':json.dumps([pair],ensure_ascii=False),'_evidence_query':'final-conflicts-single-retry'})
+                    results.append((result,[pair]))
+                except Exception as retry_error:
+                    failures.append(f'문장 간 모순 검수 {index}-{pair_index}: {type(retry_error).__name__}')
+        for result, candidates in results:
             for item in result.items:
                 value=item.model_dump()
                 if len(normalize(item.first_quote))>=6 and len(normalize(item.second_quote))>=6 and any(
                     item.first_page==pair['first_page'] and item.second_page==pair['second_page']
                     and normalize(item.first_quote) in normalize(pair['first_quote'])
-                    and normalize(item.second_quote) in normalize(pair['second_quote']) for pair in batch):
+                    and normalize(item.second_quote) in normalize(pair['second_quote']) for pair in candidates):
                     if value not in conflicts:
                         conflicts.append(value)
-        except Exception as error:
-            failures.append(f'문장 간 모순 검수: {type(error).__name__}')
     return {'version':'final-document-v2','file_sha256':sha256(content).hexdigest(),
         'requirement_register_sha256':digest(json.dumps(register or {},ensure_ascii=False,sort_keys=True)),
         'company_evidence_sha256':digest(knowledge), 'stale':False,
         'scope':'추가·미수정 페이지를 포함한 최종 PPTX의 모든 텍스트 블록',
         'reviewed_block_count':len(blocks),'actual_slide_count':len(visible),
         'company_claim_review':{'items':findings}, 'conflicts':conflicts,'failures':failures,
+        'conflict_retry_pair_count':retry_pair_count,
         'review_required_count':sum(item['status']!='source_matched' for item in findings)+len(conflicts)+len(failures),
-        'limitation':'회사 주장 분류는 AI 판단입니다. 숫자가 있는 관련 문장 쌍의 모순을 검토하며 모든 의미 모순 탐지를 보장하지 않습니다. 직접 입력만으로 증빙 확인 처리하지 않습니다.'}
+        'limitation':'회사 주장 분류는 AI 판단입니다. 원문 조건의 재인용·제목·꼬리말·관리 ID를 제외한 숫자가 있는 관련 본문 문장 쌍의 모순을 검토하며 모든 의미 모순 탐지를 보장하지 않습니다. 직접 입력만으로 증빙 확인 처리하지 않습니다.'}
 
 
 def invalidate_final_review(content, plan, knowledge=None):
@@ -179,7 +201,9 @@ def invalidate_final_review(content, plan, knowledge=None):
 
 
 def verify_artifact(content, plan, knowledge, coverage_model, claim_model):
-    plan['requirement_coverage'] = review_requirement_coverage(plan.get('requirement_register',{}),output_plan(content),coverage_model)
+    exported = output_plan(content)
+    exported['writing_plan'] = plan.get('writing_plan',{})
+    plan['requirement_coverage'] = review_requirement_coverage(plan.get('requirement_register',{}),exported,coverage_model)
     plan['final_document_review'] = review_final_document(content,knowledge,claim_model,plan.get('requirement_register',{}))
     refresh_output_review(content,plan)
 

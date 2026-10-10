@@ -99,6 +99,18 @@ class OllamaChatModel(BaseChatModel):
             response = requests.post(
                 self.base_url.rstrip("/") + "/api/chat", json=payload, timeout=(10, self.timeout),
             )
+            # Gemma4 can fail transiently while Ollama initializes its context.
+            # Retry this observed runner error once, without changing the model,
+            # context budget, route or handling of other HTTP failures.
+            if response.status_code == 500:
+                try:
+                    initialization_error = 'Gemma4Assistant requires ctx_other' in str(response.json().get('error',''))
+                except (ValueError, AttributeError):
+                    initialization_error = False
+                if initialization_error:
+                    response = requests.post(
+                        self.base_url.rstrip("/") + "/api/chat", json=payload, timeout=(10, self.timeout),
+                    )
         response.raise_for_status()
         data = response.json()
         if data.get("error"):

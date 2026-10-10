@@ -21,6 +21,34 @@ class Result(BaseModel):
 @patch.dict(os.environ, {"AI_MODE": "local"})
 class LocalModeTests(SimpleTestCase):
     @patch('bids.services.llm.requests.post')
+    def test_gemma_context_initialization_failure_retries_same_local_request_once(self,post):
+        import requests
+        def response(status,data):
+            result=requests.Response();result.status_code=status;result._content=json.dumps(data).encode()
+            return result
+        failed=response(500,{'error':'Gemma4Assistant requires ctx_other to be set; failed to initialize the context'})
+        succeeded=response(200,{'message':{'content':'정상 응답'}})
+        post.side_effect=[failed,succeeded]
+        self.assertEqual(OllamaChatModel(model='gemma4:26b').invoke('검증').content,'정상 응답')
+        self.assertEqual(post.call_count,2)
+        self.assertEqual(post.call_args_list[0],post.call_args_list[1])
+        post.reset_mock();post.side_effect=[failed,failed]
+        with self.assertRaises(requests.HTTPError):
+            OllamaChatModel(model='gemma4:26b').invoke('검증')
+        self.assertEqual(post.call_count,2)
+
+    @patch('bids.services.llm.requests.post')
+    def test_other_local_http_errors_are_not_retried(self,post):
+        import requests
+        for status in (400,401,404,429,500,503):
+            with self.subTest(status=status):
+                failed=requests.Response();failed.status_code=status;failed._content=b'{"error":"unrelated error"}'
+                post.reset_mock();post.side_effect=None;post.return_value=failed
+                with self.assertRaises(requests.HTTPError):
+                    OllamaChatModel(model='gemma4:26b').invoke('검증')
+                self.assertEqual(post.call_count,1)
+
+    @patch('bids.services.llm.requests.post')
     def test_task_model_retention_does_not_change_other_calls(self, post):
         from bids.services.llm import TASK_KEEP_ALIVE
         post.return_value.json.return_value={'message':{'content':'확인'}}

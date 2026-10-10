@@ -1084,6 +1084,14 @@ def _generate_proposal_from_template(
         revision_plan=revision_plan,
     )
     bind_output_pages(writing_plan, file_result['source_page_map'])
+    if revision_plan['provider'] == 'ollama':
+        from ..proposal_detail_pages import append_detail_pages
+        report_progress('공고 조건별 상세 수행안 페이지 배치 중')
+        file_result = append_detail_pages(file_result, writing_plan, detected_page_limit)
+        if file_result['output_slide_count'] > effective_target_slide_count:
+            revision_plan['final_review_items'].append(
+                f'조건별 상세 답변을 위해 권장 {effective_target_slide_count}장보다 많은 '
+                f'{file_result["output_slide_count"]}장을 작성했습니다. 실제 제출 분량을 확인하세요.')
     from ..proposal_final_review import verify_artifact, repair_once
     coverage_model = build_proposal_model(2500, reasoning_effort="none")
     claim_model = build_text_model('CLAIM_REVIEW', 'gpt-4o-mini', 3000, reasoning_effort="none")
@@ -1214,6 +1222,21 @@ def revise_proposal_with_feedback(
     )
     from ..proposal_final_review import verify_artifact
     feedback_plan['requirement_register'] = (proposal.revision_plan or {}).get('requirement_register',{})
+    from copy import deepcopy
+    feedback_plan['writing_plan'] = deepcopy((proposal.revision_plan or {}).get('writing_plan',{}))
+    for item in feedback_plan['writing_plan'].get('items',[]):
+        for key in ('output_slide_numbers','detail_slide_numbers'):
+            item[key] = [file_result['source_page_map'][number] for number in item.get(key,[])
+                         if file_result['source_page_map'].get(number) is not None]
+    detail = feedback_plan['writing_plan'].get('detail_pages')
+    if detail:
+        mapped = file_result['source_page_map']
+        for requirement_id, number in list(detail.get('placements',{}).items()):
+            if mapped.get(number) is None:
+                detail.setdefault('omitted',[]).append({'id':requirement_id,'reason':'수정 중 상세 페이지가 삭제되어 직접 보완이 필요합니다.'})
+        detail['placements'] = {key:mapped[number] for key,number in detail.get('placements',{}).items() if mapped.get(number) is not None}
+        detail['placed_count'] = len(detail['placements'])
+        detail['added_slide_count'] = len(set(detail['placements'].values()))
     verify_artifact(file_result['file_bytes'], feedback_plan, knowledge,
                     build_proposal_model(2500, reasoning_effort="none"),
                     build_text_model('CLAIM_REVIEW','gpt-4o-mini',3000,reasoning_effort="none"))
