@@ -15,7 +15,7 @@ CHANNELS = {'body':'제안서 본문', 'form':'별도 서식', 'eligibility':'�
 def channel_for(row):
     text = row.get('category', '') + ' ' + row.get('requirement', '')
     # Mixed conditions must not disappear into a narrative writing task.
-    eligibility = bool(re.search(r'참가\s*자격|입찰\s*자격|면허|등록증|실적증명|경력증명|신용평가|납세증명|인증서|정량\s*평가', text))
+    eligibility = bool(re.search(r'참가\s*자격|입찰\s*자격|면허|등록증|실적증명|경력증명|신용평가|납세증명|인증서|정량\s*(?:적\s*)?평가', text))
     price = bool(re.search(r'가격제안|입찰금액|가격입찰|산출내역서|견적서|가격평가', text))
     if eligibility and price:
         return 'manual'
@@ -25,6 +25,12 @@ def channel_for(row):
         return 'price'
     if row.get('form_name') or re.search(r'별지|별도\s*서식|제출\s*서류|제출서류', text):
         return 'form'
+    # A separately scored qualitative response still needs a written answer;
+    # only the general evaluation rules belong to the submission checklist.
+    if re.search(r'정성\s*(?:적\s*)?평가|평가\s*항목',row.get('category','')) and explicit_points(row.get('evaluation_points','')) is not None:
+        return 'body'
+    if re.search(r'제안서\s*(?:작성|제출|발표|목차)|평가\s*(?:항목|및\s*낙찰)|정성\s*(?:적\s*)?평가|탈락|감점|제재|손해배상',row.get('category','')):
+        return 'manual'
     if re.search(r'제출\s*기한|제출\s*방법|제출일시|제출장소|제출부수|분량|마감|계약\s*조건|공동수급|지역\s*제한', text):
         return 'manual'
     return 'body'
@@ -32,7 +38,7 @@ def channel_for(row):
 
 def explicit_points(value):
     """Only a single explicit score can influence allocation; never parse ranges/totals."""
-    if re.search(r'합계|총점|총\s*배점|총계|만점', str(value)):
+    if re.search(r'합계|총점|총\s*(?:배점|계|\d)|만점', str(value)):
         return None
     matches = re.findall(r'(?<![\d.])(\d+(?:\.\d+)?)\s*점', str(value))
     return float(Decimal(matches[0])) if len(matches) == 1 and not re.search(r'[~∼～]|\d\s*[-–]\s*\d', str(value)) else None

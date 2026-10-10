@@ -1,14 +1,15 @@
 from io import BytesIO
 import json
+import re
 from unittest.mock import Mock, patch
 
 from django.test import SimpleTestCase
 from pptx import Presentation
-from pptx.util import Inches
+from pptx.util import Inches,Pt
 
 from .services.proposal_coverage import review_requirement_coverage, confirmed_quote, CoverageVerdict
 from .services.proposal_detail_pages import append_detail_pages, bind_existing_details, prepare_default_template_output
-from .services.proposal_output_review import output_plan, written_pages, audit_output
+from .services.proposal_output_review import output_plan, written_pages, audit_output, refresh_output_review
 from .services.proposal_final_review import review_final_document
 
 
@@ -32,6 +33,63 @@ def brief(number=1, **values):
 
 
 class DetailPageTests(SimpleTestCase):
+    @patch('bids.services.proposal_coverage.structured_chain')
+    def test_optimistic_model_reason_does_not_hide_failed_numeric_quote_check(self,chain):
+        row=brief();quote='학생 100명 대상 주 3회 20분의 교육을 운영합니다.'
+        def factory(prompt,model,schema):
+            return Mock(invoke=Mock(return_value=schema.model_validate({'R0001':{
+                'covered':True,'slide_number':1,'quote':quote,'reason':'모든 조건을 명시했습니다.'}})))
+        chain.side_effect=factory
+        report=review_requirement_coverage({'requirements':[row]},
+            {'slide_changes':[{'slide_number':1,'action':'UPDATE','text_changes':[{'revised_text':quote}]}]},Mock())
+        check=report['checks'][0]
+        self.assertFalse(check['covered'])
+        self.assertEqual(check['status'],'review_required')
+        self.assertIn('대조를 통과하지 못했습니다',check['reason'])
+        self.assertEqual(report['unverified_count'],0)
+
+    def test_complete_long_answer_quote_keeps_its_trailing_numeric_condition(self):
+        original=source_result();prs=Presentation(BytesIO(original['file_bytes']))
+        quote='학생 지원 수행 계획을 수립하여 운영하고 결과를 대조합니다. '*12+'총 30회 수업을 제공합니다.'
+        self.assertGreater(len(quote),300);self.assertLess(len(quote),600)
+        prs.slides[0].shapes[0].text=quote
+        buffer=BytesIO();prs.save(buffer);content=buffer.getvalue()
+        row={'id':'R0001','requirement':'총 30회 수업 제공'}
+        plan={'requirement_register':{'requirements':[row]},'requirement_coverage':{'checks':[
+            {**row,'covered':True,'slide_number':1,'quote':quote,'status':'passage_matched'}]}}
+        report=refresh_output_review(content,plan)
+        self.assertEqual(report['matched_count'],1)
+        self.assertEqual(report['checks'][0]['quote'],quote)
+        prs.slides[0].shapes[0].text=quote.replace('30회','20회')
+        buffer=BytesIO();prs.save(buffer)
+        self.assertEqual(audit_output(buffer.getvalue(),plan)['matched_count'],0)
+
+    def test_actual_file_refresh_preserves_technical_coverage_failure(self):
+        row=brief()
+        plan={'requirement_register':{'requirements':[row]},'requirement_coverage':{'checks':[
+            {**row,'covered':False,'status':'unverified','reason':'자동 대조 실패: ValidationError'}]}}
+        report=refresh_output_review(source_result()['file_bytes'],plan)
+        self.assertEqual(report['checks'][0]['status'],'unverified')
+        self.assertEqual(report['verification_failure_count'],1)
+        self.assertEqual(plan['requirement_coverage']['unverified_count'],1)
+        self.assertTrue(any('자동 대조 실패 1개' in note for note in report['review_notes']))
+
+    def test_fresh_builtin_company_copy_does_not_assert_unprovided_proof(self):
+        result=source_result();prs=Presentation(BytesIO(result['file_bytes']));page=prs.slides[0]
+        for text in ('모든 제안 내용은 실제 보유한 실적, 인력, 인증 및 정량적 수치에 근거합니다.',
+                     '실제 수행 경험과\n검증된 전문 인력이\n사업의 성공을 보장합니다.',
+                     '사업과 직접 관련된 자료만 배치합니다.',
+                     '사용자가 제공한 실적: 교육 운영 3건'):
+            page.shapes.add_textbox(0,0,Inches(8),Inches(1)).text=text
+        buffer=BytesIO();prs.save(buffer);result['file_bytes']=buffer.getvalue()
+        clean=prepare_default_template_output(result,{'requirements':[]})
+        text=written_pages(clean['file_bytes'])[1]
+        self.assertNotIn('사업의 성공을 보장',text)
+        self.assertNotIn('모든 제안 내용은 실제 보유한',text)
+        self.assertNotIn('자료만 배치합니다',text)
+        self.assertIn('회사 근거 확인 필요',text)
+        self.assertIn('사용자가 제공한 실적: 교육 운영 3건',text)
+
     def test_full_korean_and_numeric_dates_match_but_a_different_day_or_duration_does_not(self):
         numeric='교육 시작일은 2026.08.31.이며 총 15주간 운영합니다.'
         korean='교육 시작일은 2026년 8월 31일이며 총 15주간 운영합니다.'
@@ -90,6 +148,23 @@ class DetailPageTests(SimpleTestCase):
         self.assertGreaterEqual(question.top,answer.top+answer.height)
         for box in (answer,question):
             self.assertTrue(all(p.line_spacing.pt==15 for p in box.text_frame.paragraphs))
+
+    def test_long_answer_uses_a_wide_card_with_separate_condition_column(self):
+        row=brief(method='교육과정 운영과 학습자 지원 계획을 수립하여 수행합니다. '*6,
+                  verification='출석과 수업 결과를 원문 조건에 대조하여 확인합니다. '*3,
+                  question='투입 가능 인원을 확인해야 합니다.',category='교육과정 운영')
+        original=source_result()
+        result=append_detail_pages(original,{'items':[row]})
+        shapes=Presentation(BytesIO(result['file_bytes'])).slides[1].shapes
+        condition=next(s for s in shapes if s.name=='bid3-requirement-R0001')
+        answer=next(s for s in shapes if s.name=='bid3-answer-R0001')
+        question=next(s for s in shapes if s.name=='bid3-question-R0001')
+        self.assertEqual(condition.top,answer.top)
+        self.assertGreater(answer.left,condition.left+condition.width)
+        self.assertGreaterEqual(question.top,answer.top+answer.height)
+        self.assertIn(row['method'],answer.text)
+        self.assertIn('교육과정 운영',next(s.text for s in shapes if s.name=='bid3-title'))
+        self.assertEqual(result['quality_review']['severe_overflow_items'],[])
 
     def test_page_limit_keeps_original_and_reports_every_omitted_body_condition(self):
         original=source_result();plan={'items':[brief(),brief(2)]}
@@ -160,7 +235,8 @@ class DetailPageTests(SimpleTestCase):
             def invoke(inputs):
                 if 'candidate' in inputs:
                     return schema.model_validate({'verdict':'conflict','same_subject':True,'same_metric':True,
-                        'same_time_scope':True,'reason':json.loads(inputs['candidate'])['reason']})
+                        'same_time_scope':True,'reason':'동일 교육 인원 불일치',
+                        **{side+'_value':re.search(r'\d+명',json.loads(inputs['candidate'])[side+'_quote']).group() for side in ('first','second')}})
                 if 'blocks' in inputs:
                     return schema.model_validate({block['id']:{'kind':'future_plan','reason':'계획'}
                                                   for block in json.loads(inputs['blocks'])})
@@ -187,7 +263,8 @@ class DetailPageTests(SimpleTestCase):
             def invoke(inputs):
                 if 'candidate' in inputs:
                     return schema.model_validate({'verdict':'conflict','same_subject':True,'same_metric':True,
-                        'same_time_scope':True,'reason':json.loads(inputs['candidate'])['reason']})
+                        'same_time_scope':True,'reason':'동일 교육 인원 불일치',
+                        **{side+'_value':re.search(r'\d+명',json.loads(inputs['candidate'])[side+'_quote']).group() for side in ('first','second')}})
                 if 'blocks' in inputs:
                     return schema.model_validate({block['id']:{'kind':'other','reason':'설명'} for block in json.loads(inputs['blocks'])})
                 pairs=json.loads(inputs['pairs'])
@@ -282,3 +359,24 @@ class DetailPageTests(SimpleTestCase):
         result=source_result()
         clean=prepare_default_template_output(result,{'requirements':[]})
         self.assertEqual(written_pages(clean['file_bytes']),written_pages(result['file_bytes']))
+
+    def test_known_builtin_source_labels_are_readable_without_enlarging_other_shapes(self):
+        result=source_result();prs=Presentation(BytesIO(result['file_bytes']));page=prs.slides[0]
+        for name in ('understanding-source','closing-eyebrow','custom-user-label'):
+            shape=page.shapes.add_textbox(0,0,Inches(8),Inches(1));shape.name=name;shape.text='출처 안내'
+            shape.text_frame.paragraphs[0].runs[0].font.size=Pt(10.5)
+        buffer=BytesIO();prs.save(buffer);result['file_bytes']=buffer.getvalue()
+        clean=prepare_default_template_output(result,{'requirements':[]})
+        sizes={s.name:s.text_frame.paragraphs[0].runs[0].font.size.pt for s in Presentation(BytesIO(clean['file_bytes'])).slides[0].shapes
+               if s.name in {'understanding-source','closing-eyebrow','custom-user-label'}}
+        self.assertEqual(sizes,{'understanding-source':11,'closing-eyebrow':11,'custom-user-label':10.5})
+
+    def test_unknown_metric_remains_visible_when_generic_closing_heading_is_repaired(self):
+        result=source_result();prs=Presentation(BytesIO(result['file_bytes']));page=prs.slides[0]
+        for name in ('closing-title','metric-value-298'):
+            shape=page.shapes.add_textbox(0,0,Inches(8),Inches(1));shape.name=name;shape.text='확인 필요'
+        buffer=BytesIO();prs.save(buffer);result['file_bytes']=buffer.getvalue()
+        clean=prepare_default_template_output(result,{'requirements':[]})
+        texts={s.name:s.text for s in Presentation(BytesIO(clean['file_bytes'])).slides[0].shapes if s.has_text_frame}
+        self.assertEqual(texts['closing-title'].strip(),'성과 목표와 검증 계획')
+        self.assertEqual(texts['metric-value-298'],'확인 필요')

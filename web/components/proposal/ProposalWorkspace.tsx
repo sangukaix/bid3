@@ -565,7 +565,7 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                       onClick={() => void finalizeProposal()}
                       type="button"
                     >
-                      {isFinalizing ? "최종본 생성 중..." : "제안서 만들기"}
+                      {isFinalizing ? "최종본 확정 중..." : "최종본으로 확정"}
                     </button>
                   ) : (
                     <button

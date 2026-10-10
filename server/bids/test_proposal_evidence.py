@@ -76,7 +76,7 @@ class ProposalEvidenceTests(SimpleTestCase):
             def invoke(inputs):
                 payload = json.loads(inputs["review_context"])
                 requested.extend(item["id"] for item in payload)
-                if len(requested) == 4:
+                if payload[0]['id'] == 'R0001':
                     raise ValueError("failed batch")
                 return schema.model_validate({item["id"]: {"covered": False} for item in payload})
             return Mock(invoke=invoke)
@@ -89,6 +89,26 @@ class ProposalEvidenceTests(SimpleTestCase):
         self.assertEqual(len(result["checks"]), 9)
         self.assertEqual(result["unverified_count"], 4)
         self.assertEqual(result["covered_count"], 0)
+
+    @patch("bids.services.proposal_coverage.structured_chain")
+    def test_format_retry_recovers_without_dropping_requirement_ids(self, factory):
+        from unittest.mock import Mock
+        from bids.services.proposal_coverage import review_requirement_coverage
+        attempts=[]
+        def create_chain(prompt, model, schema):
+            def invoke(inputs):
+                attempts.append(json.loads(inputs['review_context']))
+                if len(attempts)==1:
+                    raise ValueError('quote too long')
+                return schema.model_validate({item['id']:{'covered':False,'reason':'수행 답변 확인 필요'} for item in attempts[-1]})
+            return Mock(invoke=invoke)
+        factory.side_effect=create_chain
+        result=review_requirement_coverage({'requirements':[{'requirement':'교육 30회 제공'}]},
+                                         {'slide_changes':[]},Mock())
+        self.assertEqual(attempts[0],attempts[1])
+        self.assertEqual(len(attempts),2)
+        self.assertEqual(result['unverified_count'],0)
+        self.assertEqual(result['checks'][0]['status'],'review_required')
 
     def test_late_relevant_source_is_selected_with_provenance(self):
         source = "[출처 1: 일반.pdf, 1페이지]\n" + "일반 행정 안내. " * 100

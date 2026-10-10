@@ -3,6 +3,7 @@ from contextlib import ExitStack
 from hashlib import sha256
 from io import BytesIO
 import json
+import re
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 from django.test import SimpleTestCase
@@ -17,7 +18,7 @@ from .services.proposal_tasks import enqueue, run_task, recover_dead_task, proce
 from pptx import Presentation
 from pptx.util import Inches
 from .services.proposal_planning import channel_for, explicit_points, build_writing_plan, bind_output_pages
-from .services.proposal_final_review import review_final_document, invalidate_final_review, repair_once, digest, confirm_conflicts, comparable_quantities
+from .services.proposal_final_review import review_final_document, invalidate_final_review, repair_once, digest, confirm_conflicts, comparable_quantities, unequal_values
 from .services.proposal_evidence import evidence_units
 
 
@@ -30,6 +31,15 @@ def deck(*texts):
 
 
 class WritingPlanTests(SimpleTestCase):
+    def test_submission_and_evaluation_rules_are_separate_from_delivery_answers(self):
+        for category in ('제안서작성','제안서 제출','제안서 목차','정성적 평가','평가 및 낙찰','탈락/감점 조건'):
+            self.assertEqual(channel_for({'category':category,'requirement':'원문 조건'}),'manual')
+        self.assertEqual(channel_for({'category':'정량적 평가','requirement':'실적 증빙 확인'}),'eligibility')
+        self.assertEqual(channel_for({'category':'제안서 제출','requirement':'원문','form_name':'별지 1호'}),'form')
+        self.assertEqual(channel_for({'category':'교육과정 운영','requirement':'250명에게 30회 수업 제공'}),'body')
+        self.assertEqual(channel_for({'category':'정성적 평가','requirement':'교육과정 운영 방안','evaluation_points':'15점'}),'body')
+        self.assertEqual(channel_for({'category':'정성적 평가','requirement':'평가 배점 합계','evaluation_points':'총 60점'}),'manual')
+
     @patch('bids.services.proposal_planning.structured_chain')
     def test_invalid_brief_format_retries_once_without_dropping_the_condition(self,chain):
         schemas=[]
@@ -112,6 +122,15 @@ class WritingPlanTests(SimpleTestCase):
 
 class FinalDocumentTests(SimpleTestCase):
     @patch('bids.services.proposal_final_review.structured_chain')
+    def test_bare_pending_fields_are_not_company_facts_but_a_mixed_assertion_is(self,chain):
+        chain.side_effect=self.chain()
+        report=review_final_document(deck('확인 필요','유사 사업 수행 실적: 확인 필요',
+            '주요 산출물\n확인 필요','회사 근거 확인 필요\n실적·인력·인증 자료를\n검토 후 반영합니다.',
+            '해당 사업의 회사 증빙 확인 필요','당사는 ISO27001을 보유합니다. 인증 유효기간은 확인 필요'),'',Mock())
+        self.assertEqual(len(report['company_claim_review']['items']),1)
+        self.assertIn('ISO27001',report['company_claim_review']['items'][-1]['claim'])
+
+    @patch('bids.services.proposal_final_review.structured_chain')
     def test_batch_never_has_more_candidates_than_the_response_schema_can_report(self,chain):
         sizes=[]
         def factory(prompt,model,schema):
@@ -119,8 +138,10 @@ class FinalDocumentTests(SimpleTestCase):
                 if 'blocks' in inputs:
                     return schema.model_validate({b['id']:{'kind':'other','reason':'설명'} for b in json.loads(inputs['blocks'])})
                 if 'candidate' in inputs:
+                    candidate=json.loads(inputs['candidate'])
                     return schema.model_validate({'verdict':'conflict','same_subject':True,'same_metric':True,
-                        'same_time_scope':True,'reason':'동일 교육 인원 불일치'})
+                        'same_time_scope':True,'reason':'동일 교육 인원 불일치',
+                        **{side+'_value':re.search(r'\d+명',candidate[side+'_quote']).group() for side in ('first','second')}})
                 pairs=json.loads(inputs['pairs']);sizes.append(len(pairs))
                 # A constrained model cannot emit more than the schema permits.
                 return schema.model_validate({'items':[{**pair,'reason':'동일 교육 인원 불일치'} for pair in pairs[:5]]})
@@ -136,6 +157,57 @@ class FinalDocumentTests(SimpleTestCase):
         self.assertTrue(comparable_quantities('용역 기간 90일','용역 기간 90개월'))
         self.assertFalse(comparable_quantities('동시접속 150명','동시접속 40class'))
         self.assertFalse(comparable_quantities('사업 예산 250만원','교육 인원 250명'))
+
+    def test_actual_value_comparison_preserves_units_and_equivalent_dates(self):
+        for first,second in [('30분','30시간'),('회당 30분','회당 30시간'),('250명','300명'),('2026.08.31','2026년 8월 30일')]:
+            self.assertIs(unequal_values(first,second),True)
+        for first,second in [('30분','0.5시간'),('2주','14일'),('1만원','10,000원'),('2026.08.31','2026년 8월 31일')]:
+            self.assertIs(unequal_values(first,second),False)
+        for first,second in [('5%','250명'),('30일','1개월'),('확인 필요','30명')]:
+            self.assertIsNone(unequal_values(first,second))
+
+    @patch('bids.services.proposal_final_review.structured_chain')
+    def test_independent_judge_gets_native_role_context_without_previous_accusation(self,chain):
+        candidate={'first_page':1,'first_quote':'검증: 학력 4년제 확인',
+                   'second_page':2,'second_quote':'검증: 경력 1년 확인','reason':'서로 같은 인력이라는 잘못된 추론'}
+        visible={1:[{'name':'bid3-requirement-R0001','text':'강사 자격 요건'},
+                    {'name':'bid3-answer-R0001','text':'담당: 티칭센터 강사\n검증: 학력 4년제 확인'}],
+                 2:[{'name':'bid3-requirement-R0002','text':'학습매니저 자격 요건'},
+                    {'name':'bid3-answer-R0002','text':'담당: 코칭센터 매니저\n검증: 경력 1년 확인'}]}
+        def factory(prompt,model,schema):
+            def invoke(inputs):
+                self.assertNotIn('reason',json.loads(inputs['candidate']))
+                self.assertIn('강사 자격 요건',inputs['page_context'])
+                self.assertIn('학습매니저 자격 요건',inputs['page_context'])
+                return schema.model_validate({'verdict':'compatible','same_subject':False,'same_metric':False,
+                    'same_time_scope':True,'reason':'서로 다른 역할'})
+            return Mock(invoke=Mock(side_effect=invoke))
+        chain.side_effect=factory
+        accepted,dismissed,failures=confirm_conflicts([candidate],{1:candidate['first_quote'],2:candidate['second_quote']},{},Mock(),visible)
+        self.assertEqual((len(accepted),len(dismissed),len(failures)),(0,1,0))
+
+    @patch('bids.services.proposal_final_review.structured_chain')
+    def test_unquoted_or_cross_metric_values_cannot_become_repairable_conflicts(self,chain):
+        from .services.proposal_final_review import ConflictDecision
+        candidate={'first_page':1,'first_quote':'상위 5% 강사 우선 배정, 수업 30회',
+                   'second_page':2,'second_quote':'전체 250명에게 수업 30회','reason':'후보'}
+        for first,second in [('5%','250명'),('30회','30회'),('250명','300명')]:
+            chain.return_value.invoke.return_value=ConflictDecision(verdict='conflict',same_subject=True,same_metric=True,
+                same_time_scope=True,first_value=first,second_value=second,reason='잘못된 수치 비교')
+            accepted,dismissed,failures=confirm_conflicts([candidate],{1:candidate['first_quote'],2:candidate['second_quote']},{},Mock())
+            self.assertEqual(accepted[0]['verification'],'uncertain')
+            self.assertEqual(dismissed,[])
+
+    @patch('bids.services.proposal_final_review.structured_chain')
+    def test_value_quote_cannot_match_only_a_numeric_suffix(self,chain):
+        from .services.proposal_final_review import ConflictDecision
+        candidate={'first_page':1,'first_quote':'교육 인원 250명',
+                   'second_page':2,'second_quote':'교육 인원 300명','reason':'후보'}
+        chain.return_value.invoke.return_value=ConflictDecision(verdict='conflict',same_subject=True,same_metric=True,
+            same_time_scope=True,first_value='50명',second_value='300명',reason='존재하지 않는 첫 번째 수치')
+        accepted,_,failures=confirm_conflicts([candidate],{1:candidate['first_quote'],2:candidate['second_quote']},{},Mock())
+        self.assertEqual(accepted[0]['verification'],'uncertain')
+        self.assertEqual(failures,[])
 
     @patch('bids.services.proposal_final_review.structured_chain')
     def test_generic_schedule_language_does_not_relate_unidentified_tasks(self,chain):
@@ -186,8 +258,11 @@ class FinalDocumentTests(SimpleTestCase):
         def make(prompt,model,schema):
             def invoke(values):
                 if 'candidate' in values:
+                    candidate=json.loads(values['candidate'])
+                    reason=next((c['reason'] for c in conflicts or [] if c['first_quote']==candidate['first_quote']),'수치 차이')
                     return schema.model_validate({'verdict':'conflict','same_subject':True,'same_metric':True,
-                        'same_time_scope':True,'reason':json.loads(values['candidate'])['reason']})
+                        'same_time_scope':True,'reason':reason,
+                        **{side+'_value':re.search(r'\d+\s*(?:시간|명|분)',candidate[side+'_quote']).group() for side in ('first','second')}})
                 if 'blocks' in values:
                     return schema.model_validate({b['id']:{'kind':kind,'supported':supported,
                         'evidence_quote':quote,'reason':'회사 근거 대조'} for b in json.loads(values['blocks'])})
@@ -341,6 +416,11 @@ class BoundedRepairTests(SimpleTestCase):
 
     def test_verification_failure_prevents_blind_auto_repair(self):
         file,plan=self.fixture();plan['final_document_review']['failures']=['검수 실패'];edit=Mock()
+        self.assertIs(repair_once(file,plan,Mock(),'','',Mock(),Mock(),edit),file)
+        edit.assert_not_called();self.assertEqual(plan['bounded_repair']['attempt_count'],0)
+
+    def test_coverage_failure_prevents_blind_auto_repair(self):
+        file,plan=self.fixture();plan['requirement_coverage']['unverified_count']=4;edit=Mock()
         self.assertIs(repair_once(file,plan,Mock(),'','',Mock(),Mock(),edit),file)
         edit.assert_not_called();self.assertEqual(plan['bounded_repair']['attempt_count'],0)
 

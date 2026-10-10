@@ -55,6 +55,9 @@ class Command(BaseCommand):
                     errors.append('회사 주장 판정 불일치: '+expected['text'])
             if 'conflict_count' in case.get('expected',{}) and len(report['conflicts'])!=case['expected']['conflict_count']:
                 errors.append('모순 검출 수 불일치')
+            if 'confirmed_conflict_count' in case.get('expected',{}) and sum(
+                    item.get('verification')!='uncertain' for item in report['conflicts'])!=case['expected']['confirmed_conflict_count']:
+                errors.append('실제 수치 차이까지 확인된 모순 후보 수 불일치')
             if report['failures'] or any(row.get('status')=='unverified' for row in checks.values()):
                 errors.append('자동 검수 실패 있음')
             source=case.get('source',{})

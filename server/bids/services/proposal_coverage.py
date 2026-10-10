@@ -14,7 +14,7 @@ from .proposal_evidence import evidence_units, relevance, requirement_rows, sele
 class CoverageVerdict(BaseModel):
     covered: bool
     slide_number: int = 0
-    quote: str = Field(default="", max_length=300)
+    quote: str = Field(default="", max_length=600)
     reason: str = Field(default="", max_length=120)
 
 
@@ -65,7 +65,8 @@ def review_requirement_coverage(register, plan, model):
          "공고 조건을 반복한 것만으로는 답변이 아닙니다. 해당 조건을 어떻게 수행·검증할지 구체적인 답변이 있어야 합니다. "
          "미정·확인 질문으로 남은 조건은 완료가 아닙니다. quote는 원문 조건의 재인용 대신 실제 수행 답변에서 선택하세요. "
          "공고가 요구하지 않은 세부 일정의 미정 여부는 별도 확인 사항이며, 이미 명시된 해당 조건의 답변을 부정하는 이유로 삼지 마세요. "
-         "quote는 해당 페이지의 연속 원문을 그대로 인용하며 300자 이내입니다. "
+         "quote는 해당 페이지의 연속 원문을 그대로 인용하며 가급적 300자, 조건 보존에 필요한 경우 최대 600자입니다. "
+         "covered=false이면 quote는 빈 문자열, slide_number는 0으로 남기세요. "
          "주제가 비슷한 것만으로는 부족합니다. 불확실하면 false. reason은 120자 이내 한국어."),
         ("human", "{review_context}"),
     ])
@@ -92,9 +93,17 @@ def review_requirement_coverage(register, plan, model):
         result_schema = create_model("RequirementChecks", __config__=ConfigDict(extra="forbid"),
                                      **{row["id"]: (CoverageVerdict, ...) for row in batch})
         try:
-            result = structured_chain(prompt, model, result_schema).invoke({
+            inputs = {
                 "review_context": json.dumps(payload, ensure_ascii=False), "_evidence_query": "coverage",
-            })
+            }
+            try:
+                result = structured_chain(prompt, model, result_schema).invoke(inputs)
+            except ValueError:
+                retry_prompt = ChatPromptTemplate.from_messages([*prompt.messages,
+                    ('system','형식 검증 재시도입니다. 모든 요구 ID의 필드를 작성하세요. '
+                     'quote는 실제 답변의 연속 원문 250자 이내, reason은 한국어 80자 이내입니다. '
+                     '인용을 잘라 조건을 충족한 것처럼 보이지 마세요. 불확실하면 covered=false입니다.')])
+                result = structured_chain(retry_prompt, model, result_schema).invoke(inputs)
             values = result.model_dump()
             for row in batch:
                 verdict = CoverageVerdict.model_validate(values[row["id"]])
@@ -104,8 +113,11 @@ def review_requirement_coverage(register, plan, model):
                 if not any(normalize(verdict.quote) in normalize(text) for text in pages.values()):
                     verdict.quote = re.sub(r'^\[[0-9a-f]{12}\]\s*','',verdict.quote)
                 valid = confirmed_quote(verdict, row.get("requirement", ""), pages)
+                reason = verdict.reason
+                if verdict.covered and not valid:
+                    reason = 'AI는 반영으로 판단했지만 실제 출력의 연속 인용·수치·단위 대조를 통과하지 못했습니다. ' + reason
                 checks.append({**row, "covered": valid, "slide_number": quote_page(verdict, pages) if valid else None,
-                               "quote": verdict.quote if valid else "", "reason": verdict.reason,
+                               "quote": verdict.quote if valid else "", "reason": reason,
                                "status": "passage_matched" if valid else "review_required"})
         except (ValueError, OSError, requests.RequestException) as error:
             checks.extend({**row, "covered": False, "slide_number": None, "quote": "",

@@ -22,7 +22,7 @@ def submission_report(content, saved_plan, knowledge):
         checks.append({'id':key,'title':title,'status':status,'detail':detail})
     add('requirements','본문 요구사항 인용',
         'unchecked' if not rows else 'attention' if output['review_required_count'] else 'checked',
-        f"등록된 요구사항 {output['total_count']}개 중 현재 본문 인용 {output['matched_count']}개. 별도 서류의 제출 완료 판정은 아닙니다."
+        f"등록된 요구사항 {output['total_count']}개 중 현재 본문 인용 {output['matched_count']}개, 자동 대조 실패 {output['verification_failure_count']}개. 별도 서류의 제출 완료 판정은 아닙니다."
         if rows else '공고 요구사항 목록이 없습니다. 공고 원문 확인 후 생성·검수가 필요합니다.')
     add('claims','회사 주장·문서 내 모순',
         'unchecked' if not final or final.get('stale') else 'attention' if final['review_required_count'] else 'checked',

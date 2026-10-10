@@ -59,11 +59,11 @@ def audit_output(content, plan):
         # A former page may have moved after insertions. Rebind only unambiguously.
         page = old.get('slide_number') if old.get('slide_number') in matches else (matches[0] if len(matches)==1 else None)
         verdict = CoverageVerdict(covered=old.get('covered') is True and same_requirement,
-                                 slide_number=page or 0, quote=old.get('quote', '')[:300])
+                                 slide_number=page or 0, quote=old.get('quote', '')[:600])
         matched = confirmed_quote(verdict, row.get('requirement',''), pages)
         checks.append({**row, 'covered':bool(matched), 'slide_number':page if matched else None,
             'quote':old.get('quote','') if matched else '',
-            'status':'passage_matched' if matched else 'review_required',
+            'status':'passage_matched' if matched else 'unverified' if old.get('status')=='unverified' else 'review_required',
             'reason':old.get('reason','') if matched else (
                 '이전 검수 인용이 현재 파일의 요구 조건과 일치하지 않습니다.' if old.get('covered')
                 else old.get('reason') or '현재 파일에서 해당 요구사항의 답변을 검수해야 합니다.')})
@@ -74,6 +74,9 @@ def audit_output(content, plan):
         notes.append('공고 요구사항 목록이 저장되지 않아 전체 반영 여부는 미검수입니다. 원문을 확인하고 새 생성 시 목록을 함께 저장하세요.')
     if checks and any(not item['covered'] for item in checks):
         notes.append('본문 답변을 확인하지 못한 요구사항이 있습니다. 별도 제출서류·자격 요건도 원문과 증빙으로 확인하세요.')
+    failure_count=sum(item['status']=='unverified' for item in checks)
+    if failure_count:
+        notes.append(f'자동 대조 실패 {failure_count}개가 남아 있습니다. 전체 AI 검수를 다시 실행하거나 원문을 직접 대조하세요.')
     processing = plan.get('document_processing') or {}
     failed = processing.get('failed_files') or []
     if failed:
@@ -88,6 +91,7 @@ def audit_output(content, plan):
         'scope':'최종 PPTX 본문의 요구사항 인용 대조', 'source_register_available':bool(rows),
         'actual_slide_count':len(pages), 'matched_count':sum(item['covered'] for item in checks),
         'total_count':len(rows), 'review_required_count':sum(not item['covered'] for item in checks),
+        'verification_failure_count':failure_count,
         'checks':checks, 'open_text_items':open_text, 'failed_files':failed,
         'page_limit_exceeded':limit_exceeded, 'review_notes':notes,
         'limitation':'본문 인용 일치는 자격·증빙의 진위, 조건 전체 충족, 평가 점수 또는 제출 가능성을 보증하지 않습니다.'}
@@ -102,6 +106,6 @@ def refresh_output_review(content, plan):
     plan['requirement_coverage'] = {**(plan.get('requirement_coverage') or {}),
         'covered_count':report['matched_count'], 'total_count':report['total_count'],
         'checks':report['checks'], 'missing_requirements':[i['requirement'] for i in report['checks'] if not i['covered']],
-        'unverified_count':report['review_required_count'], 'reviewed_artifact':'exported_pptx',
+        'unverified_count':report['verification_failure_count'], 'reviewed_artifact':'exported_pptx',
         'source_register_available':report['source_register_available'], 'file_sha256':report['file_sha256']}
     return report
