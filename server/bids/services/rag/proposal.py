@@ -1084,6 +1084,9 @@ def _generate_proposal_from_template(
         revision_plan=revision_plan,
     )
     bind_output_pages(writing_plan, file_result['source_page_map'])
+    if template_mode == 'default_template':
+        from ..proposal_detail_pages import prepare_default_template_output
+        file_result = prepare_default_template_output(file_result, requirement_register)
     if revision_plan['provider'] == 'ollama':
         from ..proposal_detail_pages import append_detail_pages
         report_progress('공고 조건별 상세 수행안 페이지 배치 중')

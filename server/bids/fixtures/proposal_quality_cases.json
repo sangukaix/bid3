@@ -129,6 +129,20 @@
         "용역기간은 착수일로부터 90일간입니다.",
         "책임기술자 교육 이수 및 경력 증빙은 확인 필요입니다."
       ]
+    },
+    {
+      "name": "education-compatible-scopes",
+      "requirements": [],
+      "expected": {"conflict_count": 0},
+      "source": {
+        "bid_number": "R26BK01637158",
+        "case_kind": "저장된 교육 공고 조건을 바탕으로 전체 사업/교육 기간과 우선 강사 배정의 오탐을 확인하는 합성 회귀 자료. 실제 제출 제안서 아님."
+      },
+      "slides": [
+        "사업 전체는 착수일로부터 2026년 12월 31일까지 수행할 계획입니다.",
+        "교육 운영은 2026년 8월 31일부터 12월 13일까지 총 15주간 실시할 계획입니다. 모든 학습자 250명에게 1:1 수업을 주 2회, 회당 30분씩 총 30회 제공할 계획입니다.",
+        "전체 학습자를 교육하고, 레벨테스트 결과 상위 5% 학습자에게는 영미권 강사를 우선 배정할 계획입니다."
+      ]
     }
   ],
   "purpose": "Actual stored tender conditions with controlled errors; not full RFP coverage, a winning score estimate, or submitted company evidence."

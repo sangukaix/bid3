@@ -20,7 +20,7 @@ def visible_text_blocks(content, exclude_conditions=False, exclude_labels=False)
             if exclude_conditions and shape.name.startswith('bid3-requirement-'):
                 continue
             if exclude_labels and (shape.name in {'bid3-title','cover-title','section-title'}
-                    or shape.name.startswith(('footer-','section-label-','number-'))):
+                    or shape.name.startswith(('footer-','section-label-','number-','title-'))):
                 continue
             if shape.shape_type == 6:
                 yield from blocks(shape.shapes, target+'/')
@@ -30,7 +30,7 @@ def visible_text_blocks(content, exclude_conditions=False, exclude_labels=False)
                         if not cell.is_spanned and cell.text.strip():
                             yield {'target':f'{target}-cell-{row_index}-{cell_index}','text':cell.text}
             elif getattr(shape, 'has_text_frame', False) and shape.text.strip():
-                yield {'target':target,'text':shape.text}
+                yield {'target':target,'name':shape.name,'text':shape.text}
     return {number:list(blocks(slide.shapes)) for number,slide in enumerate(prs.slides,1)}
 
 
@@ -42,7 +42,8 @@ def written_pages(content, exclude_conditions=False, exclude_labels=False):
 def output_plan(content):
     """The semantic reviewer receives the exported pages, not proposed changes."""
     return {'slide_changes': [{'slide_number':number, 'action':'UPDATE',
-        'text_changes':[{'revised_text':text}]} for number,text in written_pages(content,exclude_conditions=True).items()]}
+        'text_changes':[{'revised_text':block['text'],'shape_name':block.get('name','')} for block in blocks]}
+        for number,blocks in visible_text_blocks(content,exclude_conditions=True).items()]}
 
 
 def audit_output(content, plan):

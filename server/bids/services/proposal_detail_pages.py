@@ -1,13 +1,15 @@
 """Editable, source-linked detail pages from the already generated writing briefs."""
 from io import BytesIO
+import re
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.util import Pt
 
-from .proposal_pptx_renderer import MAX_OUTPUT_SLIDES, inspect_proposal_quality
+from .proposal_pptx_renderer import MAX_OUTPUT_SLIDES, inspect_proposal_quality, _replace_text_frame
 from .text_geometry import measure_text
+from .proposal_evidence import requirement_rows
 
 FONT = '맑은 고딕'
 BODY_SIZE = 12
@@ -30,7 +32,9 @@ def _text(slide, name, text, x, y, width, height, size=BODY_SIZE, color=INK, bol
     frame.margin_left = frame.margin_right = frame.margin_top = frame.margin_bottom = 0
     frame.text = text
     for paragraph in frame.paragraphs:
-        paragraph.line_spacing = 1.25
+        # Use the same point leading as the height calculation. Office's
+        # proportional leading includes font metrics and can overrun the box.
+        paragraph.line_spacing = Pt(size * 1.25)
         paragraph.space_before = paragraph.space_after = Pt(0)
         paragraph.font.name = FONT
         paragraph.font.size = Pt(size)
@@ -48,6 +52,55 @@ def _card(row, width):
         answer += '\n대조할 회사 근거 후보: ' + ', '.join(row['evidence_ids'])
     heights = [_height(text,width) if text else 0 for text in (condition,answer,question)]
     return (condition,answer,question), heights, sum(heights) + 28
+
+
+def prepare_default_template_output(file_result, register):
+    """Replace known illustrative schedule bars only in fresh built-in-template output."""
+    prs = Presentation(BytesIO(file_result['file_bytes']))
+    rows = [row for row in requirement_rows(register)
+            if re.search(r'^(?:교육|사업|용역|과업|수행|계약|운영)\s*기간\s*(?:[:：]|은)',row.get('requirement',''))]
+    changed = []
+    for number,slide in enumerate(prs.slides,1):
+        for shape in slide.shapes:
+            if shape.name.startswith('phase-output-') and getattr(shape,'has_text_frame',False):
+                match = re.fullmatch(r'주요 산출물\s*\[([^\[\]]+)\]\s*',shape.text)
+                if match:
+                    _replace_text_frame(shape.text_frame,'주요 산출물\n'+match.group(1))
+        names = {shape.name for shape in slide.shapes}
+        if not {'schedule-header','week-0','schedule-bar-0'} <= names:
+            continue
+        # The built-in sample's fixed durations are not grounded in this RFP.
+        for shape in list(slide.shapes):
+            if shape.name.startswith(('schedule-','week-')):
+                shape._element.getparent().remove(shape._element)
+        width = prs.slide_width.pt - 108
+        y, bottom = 160, prs.slide_height.pt - 70
+        _text(slide,'schedule-source-heading','공고에 명시된 일정',54,y,width,23,16,ACCENT,True)
+        y += 32
+        for row in rows:
+            text = row['requirement']
+            height = _height(text,width)
+            if y+height > bottom-45:
+                break
+            _text(slide,'bid3-requirement-schedule-'+row['id'],text,54,y,width,height)
+            y += height+10
+        message = '단계별 세부 기간은 착수 시 협의하여 확정합니다.'
+        if not rows:
+            message = '공고에서 사업·교육 기간을 확인하지 못했습니다. 단계별 세부 기간은 원문·담당자 확인 후 확정합니다.'
+        _text(slide,'schedule-pending',message,54,min(y+8,bottom-40),width,40,12,'9A5B15')
+        slide.notes_slide.notes_text_frame.text += '\n공고 일정 원문:\n'+'\n'.join(
+            row['id']+' '+row['requirement']+' | '+' · '.join(row.get('sources',[])) for row in rows)
+        changed.append(number)
+    buffer=BytesIO();prs.save(buffer)
+    result = {**file_result,'file_bytes':buffer.getvalue()}
+    if changed:
+        result['revision_log'] = [*file_result['revision_log'], *[
+            {'source_slide_number':next((source for source,output in file_result.get('source_page_map',{}).items() if output==number),None),
+             'output_slide_number':number,'action':'UPDATE',
+             'title':'공고 일정 안내','reason':'고정 예시 주차·막대를 공고 원문 일정으로 교체',
+             'changes':[],'warnings':[]} for number in changed]]
+    result['quality_review'] = inspect_proposal_quality(result['file_bytes'],result['revision_log'])
+    return result
 
 
 def bind_existing_details(content, writing_plan):

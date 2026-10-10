@@ -37,16 +37,16 @@ def confirmed_quote(verdict, requirement, pages):
     if not verdict.covered or len(quote) < 8 or quote not in normalize(pages.get(quote_page(verdict, pages), "")):
         return False
     # A passage without the requirement's quantities cannot prove numeric coverage.
-    dates = re.compile(r"(?<!\d)(20\d{2})[./-](\d{1,2})[./-](\d{1,2})(?!\d)")
+    dates = re.compile(r"(?<!\d)(?:(20\d{2})\s*[./-]\s*(\d{1,2})\s*[./-]\s*(\d{1,2})|(20\d{2})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일)(?!\d)")
     def numeric_values(text):
         return {Decimal(value) for value in re.findall(r"\d+(?:\.\d+)?", dates.sub(' ',text).replace(',', ''))}
     numbers, quoted = numeric_values(requirement), numeric_values(quote)
     # The same digits with different units do not demonstrate the same requirement.
     quantities = re.compile(r"(\d+(?:,\d{3})*(?:\.\d+)?)\s*(시간|개월|페이지|만원|억원|천원|개소|퍼센트|명|회|분|일|주|년|월|장|부|원|개|건|대|%)")
     def bindings(text):
-        return {(Decimal(value.replace(',', '')), unit) for value,unit in quantities.findall(text)}
+        return {(Decimal(value.replace(',', '')), unit) for value,unit in quantities.findall(dates.sub(' ',text))}
     def date_values(text):
-        return {tuple(map(int, parts)) for parts in dates.findall(text)}
+        return {tuple(map(int, parts[:3] if parts[0] else parts[3:])) for parts in dates.findall(text)}
     uncertain = re.search(r"미구현|미실시|미충족|미측정|미제공|미확인|확인\s*필요|추후\s*확인", quote)
     return numbers <= quoted and bindings(requirement) <= bindings(quote) and date_values(requirement) <= date_values(quote) and not uncertain
 
@@ -64,6 +64,7 @@ def review_requirement_coverage(register, plan, model):
          "공고에 있거나 작성 단계에 전달됐다는 이유로 반영됐다고 하지 마세요. "
          "공고 조건을 반복한 것만으로는 답변이 아닙니다. 해당 조건을 어떻게 수행·검증할지 구체적인 답변이 있어야 합니다. "
          "미정·확인 질문으로 남은 조건은 완료가 아닙니다. quote는 원문 조건의 재인용 대신 실제 수행 답변에서 선택하세요. "
+         "공고가 요구하지 않은 세부 일정의 미정 여부는 별도 확인 사항이며, 이미 명시된 해당 조건의 답변을 부정하는 이유로 삼지 마세요. "
          "quote는 해당 페이지의 연속 원문을 그대로 인용하며 300자 이내입니다. "
          "주제가 비슷한 것만으로는 부족합니다. 불확실하면 false. reason은 120자 이내 한국어."),
         ("human", "{review_context}"),
@@ -79,7 +80,13 @@ def review_requirement_coverage(register, plan, model):
             candidates = list(dict.fromkeys([n for n in destinations.get(row['id'],[]) if n in pages]+ranked))[:2]
             excerpts = []
             for number in candidates:
-                text, _ = select_evidence(evidence_units(pages[number], "written_page"), query, 1550)
+                direct = [change['revised_text'] for slide in plan.get('slide_changes',[]) if slide['slide_number']==number
+                          for change in slide.get('text_changes',[])
+                          if change.get('shape_name') in {'bid3-answer-'+row['id'],'bid3-question-'+row['id']}]
+                # Keep this condition's native answer together, including verification.
+                text = '\n'.join(direct)
+                if not text:
+                    text, _ = select_evidence(evidence_units(pages[number], "written_page"), query, 1550)
                 excerpts.append({"slide_number": number, "text": text})
             payload.append({"id": row["id"], "requirement": query, "candidates": excerpts})
         result_schema = create_model("RequirementChecks", __config__=ConfigDict(extra="forbid"),

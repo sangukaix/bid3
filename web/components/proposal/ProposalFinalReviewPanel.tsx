@@ -15,7 +15,7 @@ export default function ProposalFinalReviewPanel({plan,busy,disabled,onReview,on
         <p className="mt-3 text-sm text-slate-700">{review.actual_slide_count}쪽 · 텍스트 {review.reviewed_block_count}개 검토 · 확인 필요 {review.review_required_count}건</p>}
       {!!review.failures.length && <details className="mt-3 text-xs text-amber-900"><summary className="cursor-pointer">자동 검수 실패 {review.failures.length}건</summary>{review.failures.map((text,i)=><p key={i}>{text}</p>)}</details>}
       {review.conflicts.map((item,i)=><article key={i} className="mt-3 rounded border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
-        <p className="font-semibold">문서 내 조건 모순 후보</p><p>{item.reason}</p>
+        <p className="font-semibold">{item.verification === "uncertain" ? "비교 관계 확인 필요" : "문서 내 조건 모순 후보"}</p><p>{item.reason}</p>
         <blockquote className="mt-2">{item.first_page}쪽: {item.first_quote}</blockquote>
         <blockquote className="mt-2">{item.second_page}쪽: {item.second_quote}</blockquote>
         {!review.stale && <div className="mt-2 flex gap-2">{[...new Set([item.first_page,item.second_page])].map(n=><button key={n} type="button" onClick={()=>onPage(n)} className="cursor-pointer rounded border border-amber-300 bg-white px-2 py-1">{n}쪽 확인</button>)}</div>}

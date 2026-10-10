@@ -84,7 +84,7 @@ export type ProposalWritingPlan = {
 export type ProposalFinalReview = {
   stale:boolean; actual_slide_count:number; reviewed_block_count:number; review_required_count:number;
   company_claim_review:CompanyClaimReview; failures:string[]; limitation:string;
-  conflicts:Array<{first_page:number; first_quote:string; second_page:number; second_quote:string; reason:string}>;
+  conflicts:Array<{first_page:number; first_quote:string; second_page:number; second_quote:string; reason:string; verification?:"uncertain"}>;
 };
 export type ProposalTaskData = {id:number;kind:"generate"|"review";status:"queued"|"running"|"completed"|"failed";error:string;progress?:string};
 export type BidProposalData = {

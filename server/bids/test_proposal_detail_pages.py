@@ -6,8 +6,8 @@ from django.test import SimpleTestCase
 from pptx import Presentation
 from pptx.util import Inches
 
-from .services.proposal_coverage import review_requirement_coverage
-from .services.proposal_detail_pages import append_detail_pages, bind_existing_details
+from .services.proposal_coverage import review_requirement_coverage, confirmed_quote, CoverageVerdict
+from .services.proposal_detail_pages import append_detail_pages, bind_existing_details, prepare_default_template_output
 from .services.proposal_output_review import output_plan, written_pages, audit_output
 from .services.proposal_final_review import review_final_document
 
@@ -32,6 +32,17 @@ def brief(number=1, **values):
 
 
 class DetailPageTests(SimpleTestCase):
+    def test_full_korean_and_numeric_dates_match_but_a_different_day_or_duration_does_not(self):
+        numeric='교육 시작일은 2026.08.31.이며 총 15주간 운영합니다.'
+        korean='교육 시작일은 2026년 8월 31일이며 총 15주간 운영합니다.'
+        spaced=numeric.replace('2026.08.31','2026. 08. 31')
+        for source,quote in ((numeric,korean),(korean,numeric),(spaced,korean),(korean,spaced)):
+            self.assertTrue(confirmed_quote(CoverageVerdict(covered=True,slide_number=1,quote=quote),source,{1:quote}))
+        for quote in (korean.replace('31일','30일'),korean.replace('15주','15개월'),korean.replace('2026년','2027년')):
+            self.assertFalse(confirmed_quote(CoverageVerdict(covered=True,slide_number=1,quote=quote),numeric,{1:quote}))
+        self.assertFalse(confirmed_quote(CoverageVerdict(covered=True,slide_number=1,quote=numeric),
+            '2026년 8월 31개 교육 자료를 총 15주간 제공합니다.',{1:numeric}))
+
     def test_read_only_full_review_reconnects_actual_detail_pages_and_ignores_unrelated_ids(self):
         result=append_detail_pages(source_result(),{'items':[brief()]})
         plan={'items':[brief(output_slide_numbers=[1]),brief(2,output_slide_numbers=[1])],'notes':[]}
@@ -70,6 +81,15 @@ class DetailPageTests(SimpleTestCase):
         self.assertIn('제안요청서 3쪽',prs.slides[number-1].notes_slide.notes_text_frame.text)
         self.assertEqual(result['quality_review']['overflow_items'],[])
         self.assertEqual(result['quality_review']['small_text_items'],[])
+
+    def test_question_follows_answer_with_explicit_point_leading(self):
+        result=append_detail_pages(source_result(),{'items':[brief(question='투입 인원 확인 필요')]})
+        shapes=Presentation(BytesIO(result['file_bytes'])).slides[1].shapes
+        answer=next(s for s in shapes if s.name=='bid3-answer-R0001')
+        question=next(s for s in shapes if s.name=='bid3-question-R0001')
+        self.assertGreaterEqual(question.top,answer.top+answer.height)
+        for box in (answer,question):
+            self.assertTrue(all(p.line_spacing.pt==15 for p in box.text_frame.paragraphs))
 
     def test_page_limit_keeps_original_and_reports_every_omitted_body_condition(self):
         original=source_result();plan={'items':[brief(),brief(2)]}
@@ -138,6 +158,9 @@ class DetailPageTests(SimpleTestCase):
         captured=[]
         def make(prompt,model,schema):
             def invoke(inputs):
+                if 'candidate' in inputs:
+                    return schema.model_validate({'verdict':'conflict','same_subject':True,'same_metric':True,
+                        'same_time_scope':True,'reason':json.loads(inputs['candidate'])['reason']})
                 if 'blocks' in inputs:
                     return schema.model_validate({block['id']:{'kind':'future_plan','reason':'계획'}
                                                   for block in json.loads(inputs['blocks'])})
@@ -162,6 +185,9 @@ class DetailPageTests(SimpleTestCase):
         retried=[]
         def make(prompt,model,schema):
             def invoke(inputs):
+                if 'candidate' in inputs:
+                    return schema.model_validate({'verdict':'conflict','same_subject':True,'same_metric':True,
+                        'same_time_scope':True,'reason':json.loads(inputs['candidate'])['reason']})
                 if 'blocks' in inputs:
                     return schema.model_validate({block['id']:{'kind':'other','reason':'설명'} for block in json.loads(inputs['blocks'])})
                 pairs=json.loads(inputs['pairs'])
@@ -212,3 +238,47 @@ class DetailPageTests(SimpleTestCase):
             {'requirement':'착수일로부터 90개월'}]},output_plan(buffer.getvalue()),Mock())
         self.assertEqual([r['covered'] for r in report['checks']],[True,False,False])
         self.assertEqual(report['checks'][0]['quote'],'용역기간은 착수일로부터 90일간입니다.')
+
+    @patch('bids.services.proposal_coverage.structured_chain')
+    def test_native_answer_is_sent_whole_without_other_cards_or_source_echo(self,chain):
+        seen=[]
+        def make(prompt,model,schema):
+            def invoke(inputs):
+                seen.extend(json.loads(inputs['review_context']))
+                return schema.model_validate({'R0001':{'covered':False,'reason':'별도 검토'}})
+            return Mock(invoke=Mock(side_effect=invoke))
+        chain.side_effect=make
+        row=brief(method='학습자 교육 운영 방법 '*24,verification='끝부분 검증 방법을 확인합니다.',question='투입 가능 인원을 확인해야 합니다.')
+        result=append_detail_pages(source_result(),{'items':[row,brief(2,method='별도 조건의 답변')]})
+        plan=output_plan(result['file_bytes']);plan['writing_plan']={'items':[row]}
+        review_requirement_coverage({'requirements':[row]},plan,Mock())
+        text=seen[0]['candidates'][0]['text']
+        self.assertIn(row['method'],text)
+        self.assertIn(row['verification'],text)
+        self.assertIn(row['question'],text)
+        self.assertNotIn('별도 조건의 답변',text)
+        self.assertNotIn('공고 조건',text)
+
+    def test_fresh_builtin_schedule_removes_invented_bars_and_keeps_source_dates(self):
+        result=source_result();prs=Presentation(BytesIO(result['file_bytes']));page=prs.slides[0]
+        for name,text in [('schedule-header',''),('week-0','1주'),('schedule-bar-0',''),
+                          ('phase-output-0','주요 산출물\n[운영 설계서]')]:
+            shape=page.shapes.add_textbox(0,0,Inches(2),Inches(1));shape.name=name;shape.text=text
+        buffer=BytesIO();prs.save(buffer);result['file_bytes']=buffer.getvalue()
+        original=result['file_bytes']
+        clean=prepare_default_template_output(result,{'requirements':[
+            {'requirement':'교육기간: 2026.08.31.~12.13. 총 15주','sources':['공고 2쪽']},
+            {'requirement':'개인정보 누출 시 사업 기간 또는 종료 후라도 제안사가 책임을 짐'}]})
+        page=Presentation(BytesIO(clean['file_bytes'])).slides[0]
+        self.assertFalse(any(s.name.startswith(('week-','schedule-bar-')) for s in page.shapes))
+        self.assertIn('2026.08.31.~12.13.', '\n'.join(s.text for s in page.shapes if s.has_text_frame))
+        self.assertNotIn('개인정보 누출','\n'.join(s.text for s in page.shapes if s.has_text_frame))
+        self.assertIn('공고 2쪽',page.notes_slide.notes_text_frame.text)
+        self.assertEqual(next(s.text for s in page.shapes if s.name=='phase-output-0').strip(),'주요 산출물\n운영 설계서')
+        self.assertEqual(result['file_bytes'],original)
+        self.assertEqual(clean['quality_review']['timeline_range_items'],[])
+
+    def test_unrecognized_schedule_is_preserved(self):
+        result=source_result()
+        clean=prepare_default_template_output(result,{'requirements':[]})
+        self.assertEqual(written_pages(clean['file_bytes']),written_pages(result['file_bytes']))
