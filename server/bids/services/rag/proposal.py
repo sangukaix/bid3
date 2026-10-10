@@ -21,6 +21,7 @@ from ..proposal_pptx_renderer import (
     build_proposal_pptx,
     extract_pptx_inventory,
     get_content_template_numbers,
+    TEMPLATE_TEXT_MARKERS,
 )
 from ..project_reference import build_project_reference_context
 from ..proposal_rules import build_proposal_rules_context, load_proposal_rules
@@ -489,7 +490,8 @@ def build_local_slide_plan(slide, inputs, feedback=False):
         return result_type(summary="텍스트 없는 페이지: 직접 확인", slide_changes=[], final_review_items=["텍스트 없는 페이지 직접 확인"])
     from pydantic import ConfigDict
     Edits = create_model("LocalSlideEdits", __config__=ConfigDict(extra="forbid"),
-        **{target: (str | None, Field(description=f"실제 교체 문구. 유지하면 null. 최대 {element.get('max_chars', 200)}자."))
+        **{target: (str | None if feedback or element.get('label') else str,
+                   Field(description=f"실제 작성 문구. 새 작성의 본문은 null 금지. 최대 {element.get('max_chars', 200)}자."))
            for target, element in elements.items()})
     Output = create_model("LocalSlideOutput",
         edits=(Edits, ...),
@@ -505,7 +507,9 @@ def build_local_slide_plan(slide, inputs, feedback=False):
          "빈 표 행을 채우려고 요구사항을 추가하지 마세요. 근거가 없는 항목은 확인 필요로 남기세요. "
          "자료 출처의 번호나 새 수치를 만들어내지 마세요. "
          "수정 요청 모드에서는 요청과 무관한 target 값을 null로 두고, 해당 텍스트만 바꾸세요. "
-         "새 제안서 작성 모드에서는 기존 사업명과 기존 사업 내용을 현재 공고에 맞게 모두 바꾸세요."),
+         "새 제안서 작성 모드에서는 라벨을 제외한 모든 칸에 현재 공고의 실제 내용을 작성하세요. "
+         "새 작성의 본문에는 null을 반환하지 마세요. 기존 양식의 예시 수치·사업명·회사 주장은 근거가 아니며 재사용하지 마세요. "
+         "공고나 회사 자료로 확인할 수 없는 값은 확인 필요라고 쓰세요."),
         ("human", "[작업] {instruction}\n[회사] {company_context}\n[공고 기본정보] {bid_notice_context}\n[공고] {bid_context}\n"
          "[요구사항] {requirement_context}\n"
          "[회사 근거] {company_knowledge_context}\n[유사 제안서: 과거 수치 재사용 금지] {project_reference_context}\n[공개 참고] {web_context}\n"
@@ -549,10 +553,17 @@ def build_local_slide_plan(slide, inputs, feedback=False):
     chain = structured_chain(prompt, model, Output)
     output = chain.invoke(values)
     candidate_edits = output.edits.model_dump()
+    if not feedback:
+        for target, element in elements.items():
+            if element.get('label') and element['text'].strip() == '사업명 제안서':
+                candidate_edits[target] = '입찰 제안서'
     review_notes = list(output.review_notes)
     def unfilled(target, value):
         markers = re.findall(r"\[[^\[\]\n]+\]", elements[target]["text"])
-        return bool(markers) and (value is None or any(marker in value for marker in markers))
+        copied_template = value is not None and value.strip() in TEMPLATE_TEXT_MARKERS
+        broken_delimiters = value is not None and any(value.count(a)!=value.count(b)
+            for a,b in (('(',')'),('[',']'),('{','}')))
+        return broken_delimiters or copied_template or bool(markers) and (value is None or any(marker in value for marker in markers))
     pending = [target for target, text in candidate_edits.items() if unfilled(target, text)]
     if pending and not feedback:
         RequiredEdits = create_model("RequiredSlideEdits", __config__=ConfigDict(extra="forbid"),
@@ -560,7 +571,8 @@ def build_local_slide_plan(slide, inputs, feedback=False):
         RequiredOutput = create_model("RequiredSlideOutput", edits=(RequiredEdits, ...),
                                       review_notes=(list[str], ...))
         required_prompt = prompt + ChatPromptTemplate.from_messages([
-            ("system", "앞선 응답에 미작성 칸이 남아 있습니다. 이번 target은 모두 필수 작성입니다. "
+            ("system", "앞선 응답에 미작성 칸이나 짝이 맞지 않는 괄호가 남아 있습니다. 이번 target은 모두 필수 작성입니다. "
+             "JSON 구조 기호를 작성 문구에 섞지 말고 완결된 문구로 작성하세요. "
              "대괄호 안의 안내문을 그대로 복사하지 마세요. 공고 근거의 대상·기간·수치·배점과 "
              "현재 페이지의 목적에 맞는 내용을 작성하세요. 요구사항 열에는 짧은 항목명을 쓰세요. "
              "근거 없이 회사가 이미 보유·완료했다고 하지 마세요. 자료가 없으면 '확인 필요'라고 쓰세요.")

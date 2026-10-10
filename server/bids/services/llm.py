@@ -3,8 +3,10 @@
 import json
 import os
 import threading
+from contextvars import ContextVar
 
 LOCAL_MODEL_LOCK = threading.Lock()
+TASK_KEEP_ALIVE = ContextVar('bid_local_keep_alive', default=None)
 
 
 def local_only():
@@ -82,7 +84,7 @@ class OllamaChatModel(BaseChatModel):
             "messages": wire_messages,
             "stream": False,
             "think": False,
-            "keep_alive": os.getenv("LOCAL_LLM_KEEP_ALIVE", "0"),
+            "keep_alive": TASK_KEEP_ALIVE.get() or os.getenv("LOCAL_LLM_KEEP_ALIVE", "0"),
             "options": {
                 "temperature": 0,
                 "num_ctx": self.num_ctx,

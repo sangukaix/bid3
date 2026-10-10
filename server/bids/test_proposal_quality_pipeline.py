@@ -414,11 +414,18 @@ class FullReviewApiTests(TestCase):
     def test_generation_task_delegates_to_validated_generation_helper(self,generate,spawn):
         from rest_framework.response import Response
         from .models import CompanyProfile
+        from .services.llm import TASK_KEEP_ALIVE
         CompanyProfile.objects.create(user=self.user,company_name='검증회사',business_registration_number='TEST-001',representative_name='검증')
-        generate.return_value=Response({},status=201)
+        def generated(*args):
+            self.assertEqual(TASK_KEEP_ALIVE.get(),'1m')
+            return Response({},status=201)
+        generate.side_effect=generated
         task=enqueue(self.proposal.saved_bid,'generate',{'template_id':'test-template'})
-        run_task(task.pk);task.refresh_from_db()
+        with patch.dict('os.environ',{'PROPOSAL_LLM_KEEP_ALIVE':'1m'}):
+            run_task(task.pk)
+        task.refresh_from_db()
         self.assertEqual(task.status,'completed');self.assertEqual(generate.call_args.args[2],'test-template')
+        self.assertIsNone(TASK_KEEP_ALIVE.get())
 
     @patch('bids.services.proposal_tasks.subprocess.Popen')
     @patch('bids.proposal_review_views.review_saved_proposal',side_effect=TimeoutError())
@@ -427,6 +434,8 @@ class FullReviewApiTests(TestCase):
         self.proposal.revision_plan={'status':'generating'};self.proposal.save()
         task.payload['proposal_updated_at']=self.proposal.updated_at.isoformat();task.save()
         run_task(task.pk);task.refresh_from_db();self.proposal.refresh_from_db()
+        from .services.llm import TASK_KEEP_ALIVE
+        self.assertIsNone(TASK_KEEP_ALIVE.get())
         self.assertEqual(task.status,'failed');self.assertEqual(self.proposal.revision_plan['status'],'final')
         task=enqueue(self.proposal.saved_bid,'review',{});task.status='running';task.worker_pid=9999999;task.save()
         self.proposal.revision_plan={'status':'generating'};self.proposal.save()

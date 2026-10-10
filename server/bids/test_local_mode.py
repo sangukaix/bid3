@@ -20,6 +20,21 @@ class Result(BaseModel):
 
 @patch.dict(os.environ, {"AI_MODE": "local"})
 class LocalModeTests(SimpleTestCase):
+    @patch('bids.services.llm.requests.post')
+    def test_task_model_retention_does_not_change_other_calls(self, post):
+        from bids.services.llm import TASK_KEEP_ALIVE
+        post.return_value.json.return_value={'message':{'content':'확인'}}
+        model=OllamaChatModel(model='gemma4:26b')
+        with patch.dict(os.environ,{'LOCAL_LLM_KEEP_ALIVE':'0'}):
+            token=TASK_KEEP_ALIVE.set('1m')
+            try:
+                model.invoke('검증')
+                self.assertEqual(post.call_args.kwargs['json']['keep_alive'],'1m')
+            finally:
+                TASK_KEEP_ALIVE.reset(token)
+            model.invoke('검증')
+            self.assertEqual(post.call_args.kwargs['json']['keep_alive'],'0')
+
     def test_local_mode_blocks_cloud_and_vector(self):
         with patch.dict(os.environ, {"ANALYSIS_PROVIDER": "openai", "RAG_SEARCH_MODE": "vector"}):
             self.assertEqual(model_selection("ANALYSIS", "gpt-4o-mini")[0], "ollama")
@@ -112,18 +127,66 @@ class LocalModeTests(SimpleTestCase):
                 return Mock(invoke=Mock(return_value=schema.model_validate({
                     "edits":{"shape-0":"[회사명]"},"review_notes":[]})))
             return Mock(invoke=Mock(return_value=schema.model_validate({
-                "edits":{"shape-0":None,"shape-1":None},"review_notes":[]})))
+                "edits":{"shape-0":"[회사명]","shape-1":None},"review_notes":[]})))
         factory.side_effect=setup
         slide={"slide_number":1,"title":"표지","elements":[
-            {"target":"shape-0","text":"[회사명]"},{"target":"shape-1","text":"제안서"}]}
+            {"target":"shape-0","text":"[회사명]"},{"target":"shape-1","text":"제안서","label":True}]}
         result=build_local_slide_plan(slide,{})
         self.assertEqual(len(result.slide_changes[0].text_changes),1)
         self.assertEqual(result.slide_changes[0].text_changes[0].revised_text,"확인 필요")
         self.assertTrue(any("shape-0" in note for note in result.final_review_items))
         slide["elements"][0]["text"]="회사 개요"
+        slide["elements"][0]["label"]=True
+        def keep_labels(prompt, model, schema):
+            return Mock(invoke=Mock(return_value=schema.model_validate({
+                "edits":{"shape-0":None,"shape-1":None},"review_notes":[]})))
+        factory.side_effect=keep_labels
         result=build_local_slide_plan(slide,{})
         self.assertEqual(result.slide_changes[0].action,"REVIEW")
         self.assertEqual(result.slide_changes[0].text_changes,[])
+
+    @patch("bids.services.rag.proposal.structured_chain")
+    def test_new_body_cannot_silently_keep_template_but_feedback_can(self, factory):
+        from unittest.mock import Mock
+        from pydantic import ValidationError
+        from bids.services.rag.proposal import build_local_slide_plan
+        slide={"slide_number":1,"title":"사업명 제안서","elements":[
+            {"target":"shape-0","text":"사업명 제안서"},
+            {"target":"shape-1","text":"사업명 제안서","label":True}]}
+        def fresh(prompt, model, schema):
+            with self.assertRaises(ValidationError):
+                schema.model_validate({"edits":{"shape-0":None,"shape-1":None},"review_notes":[]})
+            text="사업명 제안서" if schema.__name__!='RequiredSlideOutput' else "교육 운영 제안"
+            edits={"shape-0":text}
+            if schema.__name__!='RequiredSlideOutput':
+                edits['shape-1']=None
+            return Mock(invoke=Mock(return_value=schema.model_validate({
+                "edits":edits,"review_notes":[]})))
+        factory.side_effect=fresh
+        result=build_local_slide_plan(slide,{})
+        self.assertEqual(result.slide_changes[0].text_changes[0].revised_text,"교육 운영 제안")
+        self.assertEqual(result.slide_changes[0].text_changes[1].revised_text,"입찰 제안서")
+        def keep(prompt, model, schema):
+            return Mock(invoke=Mock(return_value=schema.model_validate({
+                "edits":{"shape-0":None,"shape-1":None},"review_notes":[]})))
+        factory.side_effect=keep
+        result=build_local_slide_plan(slide,{'instruction':'다른 페이지 수정'},feedback=True)
+        self.assertEqual(result.slide_changes[0].action,'REVIEW')
+
+    @patch("bids.services.rag.proposal.structured_chain")
+    def test_short_broken_model_text_is_refilled_without_touching_valid_text(self, factory):
+        from unittest.mock import Mock
+        from bids.services.rag.proposal import build_local_slide_plan
+        def create(prompt,model,schema):
+            edits={'shape-0':'교육 성과 확보}} [-] {','shape-1':'정상 문구'}
+            if schema.__name__=='RequiredSlideOutput':
+                self.assertEqual(set(schema.model_fields['edits'].annotation.model_fields),{'shape-0'})
+                edits={'shape-0':'학습 성취도 확인'}
+            return Mock(invoke=Mock(return_value=schema.model_validate({'edits':edits,'review_notes':[]})))
+        factory.side_effect=create
+        result=build_local_slide_plan({'slide_number':1,'title':'목표','elements':[
+            {'target':'shape-0','text':'교육 목표'},{'target':'shape-1','text':'기존 문구'}]}, {})
+        self.assertEqual([c.revised_text for c in result.slide_changes[0].text_changes],['학습 성취도 확인','정상 문구'])
 
     @patch("bids.services.rag.proposal.structured_chain")
     def test_copied_placeholder_is_refilled_without_rewriting_other_targets(self, factory):

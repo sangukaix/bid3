@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from ..models import ProposalTask, BidProposal, CompanyProfile
+from .llm import TASK_KEEP_ALIVE
 
 CURRENT_TASK = ContextVar('bid_proposal_task',default=None)
 
@@ -105,6 +106,7 @@ def run_task(task_id):
         return
     task=ProposalTask.objects.select_related('saved_bid__user','saved_bid__bid_notice').get(pk=task_id)
     token=CURRENT_TASK.set(task.pk)
+    model_token=TASK_KEEP_ALIVE.set(os.getenv('PROPOSAL_LLM_KEEP_ALIVE','1m'))
     try:
         proposal=BidProposal.objects.filter(saved_bid=task.saved_bid).select_related('saved_bid__bid_notice').first()
         if (proposal.updated_at.isoformat() if proposal else None)!=task.payload['proposal_updated_at']:
@@ -135,4 +137,5 @@ def run_task(task_id):
         detail=str(error) if isinstance(error,ValueError) else f'작업 실패 ({type(error).__name__}). 원래 파일을 확인해 주세요.'
         ProposalTask.objects.filter(pk=task.pk,status='running').update(status='failed',error=detail[:1000],updated_at=timezone.now())
     finally:
+        TASK_KEEP_ALIVE.reset(model_token)
         CURRENT_TASK.reset(token)

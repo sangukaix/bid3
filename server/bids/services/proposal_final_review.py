@@ -247,6 +247,7 @@ def repair_once(file_result, plan, bid_notice, knowledge, profile, coverage_mode
             and len(candidate['quality_review']['severe_overflow_items'])<=len(file_result['quality_review']['severe_overflow_items'])
             and len(candidate['quality_review']['template_leftovers'])<=len(file_result['quality_review']['template_leftovers'])
             and len(candidate['quality_review'].get('small_text_items',[]))<=len(file_result['quality_review'].get('small_text_items',[]))
+            and len(candidate['quality_review'].get('timeline_range_items',[]))<=len(file_result['quality_review'].get('timeline_range_items',[]))
             and len(candidate['quality_review']['unresolved_placeholders'])<=len(file_result['quality_review']['unresolved_placeholders']))
         attempt.update(before_issue_count=issues(plan),after_issue_count=issues(candidate_plan))
         if safe:

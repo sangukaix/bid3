@@ -30,6 +30,13 @@ def _clean_text(value):
     return " ".join(str(value or "").split())
 
 
+def _tight_label_fits(element, measured):
+    return (element.get('label') and measured['line_count']==1
+            and measured['font_size'] < MIN_BODY_FONT_PT
+            and measured['required_height'] <= measured['available_height'] * 1.5 + 1
+            and measured['measured_width'] <= measured['available_width']+1)
+
+
 def _font_size_points(text_frame, fallback):
     """텍스트 상자에 지정된 첫 글자 크기를 읽고 테마 글꼴이면 기본값을 씁니다."""
 
@@ -350,6 +357,8 @@ def _apply_text_changes(slide, text_changes):
 
         measured_size, measured = fitting_size(revised_text, {**element, 'font_size': adjusted_font_size},
                                                MIN_TITLE_FONT_PT if element.get('kind') == 'title' else MIN_BODY_FONT_PT)
+        if measured_size is None and _tight_label_fits(element, measured):
+            measured_size = measured['font_size']
         if measured_size is None:
             warnings.append(f"{target}: 폰트 폭 기준으로 표시 공간을 초과해 자동 수정을 건너뛰었습니다.")
             continue
@@ -472,6 +481,7 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
     small_text_items = []
     overflow_items = []
     template_leftovers = []
+    timeline_range_items = []
     title_locations = {}
     slide_roles = []
 
@@ -483,6 +493,14 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
             if _clean_text(element.get("text", ""))
         ]
         total_text_length = len("".join(texts))
+        week_axis = sorted({int(match.group(1)) for text in texts
+                            if (match := re.fullmatch(r'(\d{1,3})주', text))})
+        totals = {int(value) for value in re.findall(r'총\s*(\d{1,3})\s*주', ' '.join(texts))}
+        if len(week_axis)>=3 and week_axis == list(range(1,len(week_axis)+1)):
+            for total in sorted(totals):
+                if total != week_axis[-1]:
+                    timeline_range_items.append({'slide_number':slide_number,'total_weeks':total,
+                                                 'axis_weeks':week_axis[-1]})
         if total_text_length < 20:
             empty_slide_numbers.append(slide_number)
         if total_text_length > 1800:
@@ -496,10 +514,7 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
             measured = measure_text(element['text'], element)
             # Short footer/page labels often use Office leading inside tight boxes.
             # Still flag wrapped labels and horizontal overflow.
-            if not measured['fits'] and not (element.get('label') and measured['line_count']==1
-                                             and measured['font_size'] < MIN_BODY_FONT_PT
-                                             and measured['required_height'] <= measured['available_height'] * 1.5 + 1
-                                             and measured['measured_width'] <= measured['available_width']+1):
+            if not measured['fits'] and not _tight_label_fits(element, measured):
                 overflow_items.append({'slide_number': slide_number, 'target': element['target'], **measured})
             font_size = float(element.get("font_size_pt") or 0)
             if font_size and font_size < MIN_BODY_FONT_PT and not element.get('label'):
@@ -572,6 +587,8 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
         )
     if template_leftovers:
         review_items.append('양식 안내 문구가 남은 페이지: ' + ', '.join(map(str,sorted({i['slide_number'] for i in template_leftovers}))))
+    for item in timeline_range_items:
+        review_items.append(f"일정 축 범위 확인 {item['slide_number']}쪽: 본문 총 {item['total_weeks']}주 / 축 {item['axis_weeks']}주. 일부 기간의 도표인지 확인하세요.")
     if empty_slide_numbers:
         review_items.append(
             "내용이 거의 없는 슬라이드를 확인해 주세요: "
@@ -619,6 +636,7 @@ def inspect_proposal_quality(file_bytes, revision_log=None):
         "overflow_items": overflow_items,
         "unresolved_placeholders": unresolved_placeholders,
         'template_leftovers': template_leftovers,
+        'timeline_range_items': timeline_range_items,
         'severe_overflow_items': [i for i in overflow_items if
             i['required_height'] > i['available_height'] * 1.5 + 1
             or i['measured_width'] > i['available_width'] * 1.5 + 1],
