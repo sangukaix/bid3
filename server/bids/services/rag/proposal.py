@@ -929,8 +929,11 @@ def _generate_proposal_from_template(
     """공고 자료와 자동 정리한 회사 지식으로 Bid2 템플릿을 채웁니다."""
 
     bid_ntce_no = saved_bid.bid_notice.bid_ntce_no
+    from ..proposal_tasks import report_progress
+    report_progress('공고 첨부·검색 자료 준비 중')
     bid_index_info = prepare_docs_for_ai(bid_ntce_no)
 
+    report_progress('공고 원문과 요구사항 목록 확인 중')
     bid_documents = collect_proposal_documents(bid_ntce_no)
     requirement_register, requirement_info = build_document_requirement_register(
         bid_ntce_no,
@@ -956,6 +959,7 @@ def _generate_proposal_from_template(
     proposal_rules_context = build_proposal_rules_context()
     inventory = extract_pptx_inventory(source_path)
     allowed_template_numbers = get_content_template_numbers(inventory)
+    report_progress('공고와 회사 근거로 제안 전략 설계 중')
     strategy_result = build_strategy_chain().invoke(
         {
             "company_context": profile_context,
@@ -982,6 +986,7 @@ def _generate_proposal_from_template(
             MAX_OUTPUT_SLIDES,
         )
 
+    report_progress('평가항목별 작성 계획 설계 중')
     writing_plan = build_writing_plan(requirement_register, inventory, company_knowledge_context,
                                       build_proposal_model(3500, reasoning_effort="low"))
 
@@ -1060,6 +1065,7 @@ def _generate_proposal_from_template(
         "project_reference_failed_files": project_reference_info["failed_files"],
     }
 
+    report_progress('PPTX 출력·레이아웃 검사 중')
     file_result = build_proposal_pptx(
         source_path=source_path,
         bid_notice=saved_bid.bid_notice,

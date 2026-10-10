@@ -243,7 +243,9 @@ def build_document_requirement_register(bid_ntce_no, chunk_documents):
         batch_cache = {}
 
     results = []
-    for batch in batches:
+    for batch_index, batch in enumerate(batches, 1):
+        from ..proposal_tasks import report_progress
+        report_progress(f'공고 요구사항 읽기 {batch_index}/{len(batches)} 묶음')
         batch_key = hashlib.sha256(batch.encode("utf-8")).hexdigest()
         if batch_key in batch_cache:
             result = RequirementBatchSchema.model_validate(batch_cache[batch_key])

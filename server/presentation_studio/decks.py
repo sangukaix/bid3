@@ -125,7 +125,14 @@ class Deck:
         order = self.presentation.find('p:sldIdLst', NS)
         identifier = max(int(s.get('id')) for s in order) + 1
         ET.SubElement(order, f'{{{NS["p"]}}}sldId', id=str(identifier), attrib={f'{{{NS["r"]}}}id':rid})
-        return len(original) + 1
+        number = len(original) + 1
+        # Only bundled designs identify page numbers explicitly. Never guess
+        # which text in a user-uploaded slide is a page number.
+        root = xml(self.parts[part])
+        page_numbers = root.xpath('.//p:cNvPr[@name="bid3-fixed-page"]', namespaces=NS)
+        if page_numbers:
+            self.edit(number,[{'target':node.get('id'),'text':f'{number:02d}'} for node in page_numbers])
+        return number
 
     def order(self, numbers):
         order = self.presentation.find('p:sldIdLst', NS)

@@ -9,6 +9,7 @@ import CompanyClaimReviewPanel from "@/components/proposal/CompanyClaimReviewPan
 import ProposalOutputReviewPanel from "@/components/proposal/ProposalOutputReviewPanel";
 import ProposalPlanningPanel from "@/components/proposal/ProposalPlanningPanel";
 import ProposalFinalReviewPanel from "@/components/proposal/ProposalFinalReviewPanel";
+import ProposalSubmissionPanel from "@/components/proposal/ProposalSubmissionPanel";
 import ProposalAssistant from "@/components/proposal/ProposalAssistant";
 import ProposalPreviewModal from "@/components/proposal/ProposalPreviewModal";
 import ProjectAnalysisCard from "@/components/proposal/ProjectAnalysisCard";
@@ -515,6 +516,8 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                   ) : null}
                 </div>
 
+                <ProposalSubmissionPanel bidNtceNo={bidNtceNo} proposalUpdatedAt={proposal.updated_at}
+                  busy={isGenerating || isReviewingOutput || isFinalizing} />
                 <ProposalPlanningPanel plan={proposal.revision_plan.writing_plan}
                   onPage={page => { setSelectedPreviewPage(page); setReviewPage(page); }} />
                 <ProposalFinalReviewPanel plan={proposal.revision_plan} busy={isReviewingOutput}

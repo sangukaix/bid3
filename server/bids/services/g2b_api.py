@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+import time
 
 import requests # 다른 서버에 HTTP 요청을 보내는 패키지
 
@@ -39,11 +40,16 @@ def fetch_bid_notices(
         "bidNtceEndDt": end_at.strftime("%Y%m%d%H%M"),
     }
 
-    response = requests.get( #나라장터에 겟방식으로 정보를 요청하고 제이슨으로 받음
-        SERVICE_URL,
-        params=params,
-        timeout=30, #대량 응답을 고려해 최대 30초 대기
-    )
+    # This read-only request can be repeated after a temporary network failure.
+    # Authentication/quota errors are not retried.
+    for attempt in range(3):
+        try:
+            response = requests.get(SERVICE_URL, params=params, timeout=30)
+            break
+        except (requests.ConnectionError, requests.Timeout):
+            if attempt == 2:
+                raise
+            time.sleep(0.5 * (2 ** attempt))
 
     response.raise_for_status() #400, 500 같은 http 오류 있으면 에러 발생
 

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 import tempfile
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import zipfile
 from zoneinfo import ZoneInfo
 
@@ -1344,6 +1344,31 @@ class BidSyncHelperTests(TestCase):
         self.assertEqual(params["numOfRows"], 999)
         self.assertEqual(params["bidNtceBgnDt"], "202607010000")
         self.assertEqual(params["bidNtceEndDt"], "202607120000")
+
+    @override_settings(G2B_API_KEY="test-key")
+    @patch("bids.services.g2b_api.time.sleep")
+    @patch("bids.services.g2b_api.requests.get")
+    def test_g2b_temporary_network_failure_retries_same_read(self, mock_get, mock_sleep):
+        import requests
+        response=MagicMock(); response.json.return_value={'response':{'body':{'totalCount':1}}}
+        mock_get.side_effect=[requests.ConnectTimeout(),requests.ConnectionError(),response]
+        self.assertEqual(fetch_bid_notices()['response']['body']['totalCount'],1)
+        self.assertEqual(mock_get.call_count,3)
+        self.assertTrue(all(call==mock_get.call_args_list[0] for call in mock_get.call_args_list))
+        self.assertEqual(mock_sleep.call_count,2)
+
+    @override_settings(G2B_API_KEY="test-key")
+    @patch("bids.services.g2b_api.time.sleep")
+    @patch("bids.services.g2b_api.requests.get")
+    def test_g2b_retry_is_bounded_and_http_errors_are_not_retried(self, mock_get, mock_sleep):
+        import requests
+        mock_get.side_effect=requests.ReadTimeout()
+        with self.assertRaises(requests.ReadTimeout):fetch_bid_notices()
+        self.assertEqual(mock_get.call_count,3)
+        mock_get.reset_mock();mock_get.side_effect=None
+        mock_get.return_value.raise_for_status.side_effect=requests.HTTPError('403')
+        with self.assertRaises(requests.HTTPError):fetch_bid_notices()
+        mock_get.assert_called_once()
 
 
 class RecommendationTests(TestCase):

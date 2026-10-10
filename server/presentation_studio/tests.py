@@ -65,6 +65,21 @@ class DeckTests(SimpleTestCase):
         deck.edit(6,[{'target':cell['target'],'text':'수정된 셀'}])
         self.assertIn('수정된 셀',[e['text'] for e in inventory(deck.bytes())[5]['elements']])
 
+    def test_clone_updates_only_explicit_bundled_page_number(self):
+        from .decks import xml,dump,NS
+        original=example_deck(); deck=Deck(original)
+        number=deck.clone(3); result=deck.bytes()
+        assert_protected(original,result,[1,2,3,4,5])
+        footer=next(e for e in inventory(result)[number-1]['elements'] if e['name']=='bid3-fixed-page')
+        self.assertEqual(footer['text'],'06')
+        custom=Deck(original); part=custom.slide_parts()[2]; root=xml(custom.parts[part])
+        root.xpath('.//p:cNvPr[@name="bid3-fixed-page"]',namespaces=NS)[0].set('name','user-page-label')
+        custom.parts[part]=dump(root); custom_original=custom.bytes()
+        custom.clone(3); result=custom.bytes()
+        assert_protected(custom_original,result,[1,2,3,4,5])
+        footer=next(e for e in inventory(result)[5]['elements'] if e['name']=='user-page-label')
+        self.assertEqual(footer['text'],'03')
+
     def test_invalid_pptx_and_deleted_protected_page(self):
         with self.assertRaises(ValueError): Deck(b'not a zip')
         original=example_deck(); shorter=Deck(original); shorter.order([1])

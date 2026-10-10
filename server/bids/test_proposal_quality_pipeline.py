@@ -56,6 +56,7 @@ class WritingPlanTests(SimpleTestCase):
         chain.side_effect=make
         result=build_writing_plan(rows,inventory,'[검토 완료 근거 K1 | 실적]\n확인된 내용',Mock())
         high,low,price=result['items']
+        self.assertEqual(set(chain.call_args.args[2].model_fields),{'R0001','R0002'})
         self.assertEqual(len(result['items']),3)
         self.assertGreater(len(high['source_slide_numbers']),len(low['source_slide_numbers']))
         self.assertEqual(high['evidence_ids'],['K1']);self.assertEqual(price['source_slide_numbers'],[])
@@ -79,6 +80,19 @@ class WritingPlanTests(SimpleTestCase):
         plan={'items':[{'source_slide_numbers':[1,2,3]}]}
         bind_output_pages(plan,{1:1,2:None,3:2})
         self.assertEqual(plan['items'][0]['output_slide_numbers'],[1,2])
+
+    @patch('bids.services.proposal_planning.structured_chain')
+    def test_separate_submission_tasks_preserve_conditions_without_ai_or_body_pages(self,chain):
+        rows={'requirements':[{'requirement':'가격입찰 부가세 10% 포함'},
+                             {'requirement':'입찰 참가 자격 면허 증빙 제출'},
+                             {'requirement':'작성 서류 제출','form_name':'별지 1호'},
+                             {'requirement':'제출 방법 방문접수'}]}
+        plan=build_writing_plan(rows,[], '',Mock())
+        chain.assert_not_called()
+        self.assertEqual([r['requirement'] for r in plan['items']],[r['requirement'] for r in rows['requirements']])
+        self.assertEqual([r['channel'] for r in plan['items']],['price','eligibility','form','manual'])
+        self.assertEqual(plan['items'][2]['deliverable'],'별지 1호')
+        self.assertTrue(all(r['question'] and not r['evidence_ids'] and not r['source_slide_numbers'] for r in plan['items']))
 
 
 class FinalDocumentTests(SimpleTestCase):
@@ -134,6 +148,27 @@ class FinalDocumentTests(SimpleTestCase):
         chain.side_effect=self.chain(kind='other',conflicts=[conflict])
         report=review_final_document(deck(conflict['first_quote'],conflict['second_quote']),'',Mock())
         self.assertEqual(report['conflicts'],[conflict])
+
+    @patch('bids.services.proposal_final_review.structured_chain')
+    def test_rfp_conditions_are_classification_context_but_never_company_proof(self,chain):
+        claim='당사는 교육 250명을 수행한 실적이 있습니다.'
+        register={'requirements':[{'requirement':'교육 250명 수행'}]}
+        calls=[]
+        def factory(prompt,model,schema):
+            proxy=self.chain(supported=True,quote='교육 250명 수행')(prompt,model,schema)
+            invoke=proxy.invoke.side_effect
+            proxy.invoke.side_effect=lambda values:(calls.append(values) or invoke(values))
+            return proxy
+        chain.side_effect=factory
+        content=deck(claim)
+        report=review_final_document(content,'',Mock(),register)
+        self.assertIn('교육 250명 수행',calls[0]['requirements'])
+        self.assertNotIn('교육 250명 수행',calls[0]['company_knowledge_context'])
+        self.assertEqual(report['review_required_count'],1)
+        plan={'requirement_register':register,'final_document_review':report}
+        invalidate_final_review(content,plan);self.assertFalse(report['stale'])
+        plan['requirement_register']={'requirements':[{'requirement':'교육 300명 수행'}]}
+        invalidate_final_review(content,plan);self.assertTrue(report['stale'])
 
     @patch('bids.services.proposal_final_review.structured_chain',side_effect=TimeoutError())
     def test_failed_classification_is_never_all_clear(self,chain):
@@ -288,6 +323,34 @@ class FullReviewApiTests(TestCase):
 
     def post(self):
         return self.client.post('/api/bids/FULL-REVIEW/proposal/full-review/',{},format='json')
+
+    @patch('bids.services.llm.build_text_model',side_effect=AssertionError('No LLM in preflight'))
+    def test_submission_check_is_read_only_owner_scoped_and_never_clears_manual_tasks(self,model):
+        from pathlib import Path
+        path='/api/bids/FULL-REVIEW/proposal/submission-check/'
+        self.proposal.revision_plan={'status':'draft','requirement_register':{'requirements':[
+            {'requirement':'가격제안서 부가세 포함 제출','sources':['공고 2쪽']}]}}
+        self.proposal.save();before=deepcopy(self.proposal.revision_plan);updated=self.proposal.updated_at
+        response=self.client.get(path);self.assertEqual(response.status_code,200)
+        report=response.data['report']
+        self.assertEqual(len(report['manual_checks']),3)
+        self.assertEqual(report['separate_requirements'][0]['channel'],'price')
+        self.assertTrue(any(row['status']=='unchecked' for row in report['automatic_checks']))
+        self.assertEqual(report['file_sha256'],sha256(self.content).hexdigest())
+        self.proposal.refresh_from_db()
+        self.assertEqual(self.proposal.revision_plan,before);self.assertEqual(self.proposal.updated_at,updated)
+        self.assertEqual(Path(self.proposal.generated_file.path).read_bytes(),self.content)
+        self.client.force_authenticate(get_user_model().objects.create_user(username='other-preflight'))
+        self.assertEqual(self.client.get(path).status_code,404)
+        self.client.force_authenticate(None);self.assertEqual(self.client.get(path).status_code,401)
+
+    def test_submission_check_rejects_active_jobs_and_invalid_pptx(self):
+        path='/api/bids/FULL-REVIEW/proposal/submission-check/'
+        ProposalTask.objects.create(saved_bid=self.proposal.saved_bid,kind='generate')
+        self.assertEqual(self.client.get(path).status_code,409)
+        ProposalTask.objects.filter(saved_bid=self.proposal.saved_bid).update(status='completed')
+        self.proposal.generated_file.save('invalid.pptx',ContentFile(b'broken'))
+        self.assertEqual(self.client.get(path).status_code,422)
 
     @patch('bids.proposal_review_views.build_text_model')
     @patch('bids.proposal_review_views.verify_artifact')
