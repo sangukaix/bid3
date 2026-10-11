@@ -10,12 +10,15 @@ export default function DashboardTopbar() { // 대시보드에서 공통으로 �
         <p className="text-sm font-semibold text-slate-900">{studio ? "발표자료 작업실" : "AI비드 업무공간"}</p>
         <p className="mt-0.5 text-xs text-slate-500">{studio ? "나의 양식과 자료로 함께 만드는 프레젠테이션" : "입찰공고 검토부터 제안서 작성까지"}</p>
       </div>
-      <Link
-        className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950"
-        href="/mainPage"
-      >
-        메인으로
-      </Link>
+      <div className="flex items-center gap-2">
+        <Link className="rounded-md px-3 py-2 text-sm font-medium text-teal-700 hover:bg-teal-50" href="/mainPage#product-demo">서비스 시연</Link>
+        <Link
+          className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+          href="/mainPage"
+        >
+          메인으로
+        </Link>
+      </div>
     </header>
   );
 }

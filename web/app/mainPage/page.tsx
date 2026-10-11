@@ -1,5 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import Header from "@/components/layout/Header";
+import ProductDemo from "@/features/product-demo/ProductDemo";
+import storyboard from "@/features/product-demo/storyboard.json";
+import demoPoster from "@/public/product-demo/poster.webp";
+
+const demoDuration = storyboard.scenes.reduce((total, scene) => total + scene.duration, 0);
 
 const steps = [
   ["01", "자료를 모으고", "공고와 회사 근거, 참고할 문서를 준비합니다."],
@@ -29,26 +35,16 @@ export default function MainPage() {
           </div>
           <p className="mt-5 text-xs leading-6 text-slate-500">회사 자료와 공고 원문을 참고하고, 확인이 필요한 내용은 따로 검토합니다.</p>
         </div>
-        <div className="relative min-w-0 rounded-2xl bg-[#e4e9e5] p-4 sm:p-7" aria-label="제안서 작업 흐름 예시">
-          <div className="mb-5 flex items-center justify-between text-[11px] font-medium text-slate-600"><span>FROM SOURCE TO PROPOSAL</span><span className="rounded-full border border-slate-400/40 px-2.5 py-1">작업 흐름 예시</span></div>
-          <div className="overflow-hidden rounded-xl border border-white/80 bg-white shadow-[0_18px_45px_-20px_rgba(23,44,58,0.35)]">
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3 text-xs"><span className="font-semibold">AI비드 · 제안서 작업실</span><span className="text-slate-400">수행 계획</span></div>
-            <div className="grid grid-cols-[38px_1fr] sm:grid-cols-[50px_1fr]">
-              <div className="space-y-4 border-r border-slate-100 bg-slate-50 px-2 py-5 text-center text-[10px] text-slate-400"><span className="block">01</span><span className="block rounded bg-blue-100 py-1.5 font-bold text-blue-700">02</span><span className="block">03</span><span className="block">04</span></div>
-              <div className="p-5 sm:p-7">
-                <div className="flex items-center justify-between text-[9px] tracking-wider text-slate-400"><span>PROJECT PROPOSAL</span><span>02 / 04</span></div>
-                <h2 className="mt-7 text-2xl font-bold leading-snug sm:text-3xl">목표를 실행으로 잇는<br />구체적인 수행 계획</h2>
-                <div className="mb-6 mt-4 h-1 w-9 bg-teal-500" />
-                <div className="grid grid-cols-3 gap-2 border-t border-slate-200 pt-4">
-                  {[['요구사항','원문 분석'],['수행 방법','단계별 설계'],['결과 확인','산출물 검토']].map(([title,body],i)=><div key={title}><p className="text-[10px] text-teal-700">0{i+1}</p><p className="mt-2 text-xs font-semibold">{title}</p><p className="mt-1 text-[10px] text-slate-400">{body}</p></div>)}
-                </div>
-              </div>
-            </div>
+        <a href="#product-demo" aria-label="AI비드 서비스 소개 영상 보기" className="group relative block min-w-0 rounded-2xl border border-[#cbd8d0] bg-[#e4e9e5] p-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-600 sm:p-5">
+          <div className="mb-4 flex items-center justify-between text-[10px] font-semibold tracking-wider text-slate-600"><span>A LOOK INSIDE AI BID</span><span className="rounded-full border border-[#bacbc1] px-2.5 py-1">{demoDuration}초 서비스 시연</span></div>
+          <div className="relative overflow-hidden rounded-xl bg-[#102630] shadow-[0_18px_45px_-20px_rgba(23,44,58,0.45)]">
+            <Image src={demoPoster} alt="공고 검토부터 제안서 작성, Gemma와 발표자료 수정까지 보여주는 AI비드 소개" sizes="(min-width: 1024px) 550px, (min-width: 640px) 85vw, 90vw" priority className="h-auto w-full transition-transform duration-500 motion-safe:group-hover:scale-[1.025]" />
+            <span aria-hidden="true" className="absolute bottom-4 right-4 flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-white/90 text-[#102630] shadow-lg transition-colors group-hover:bg-[#8ee0c7]"><svg width="17" height="17" viewBox="0 0 20 20" fill="currentColor"><path d="M6 3.8a.8.8 0 0 1 1.2-.7l10 6.2a.8.8 0 0 1 0 1.4l-10 6.2a.8.8 0 0 1-1.2-.7Z" /></svg></span>
           </div>
-          <div className="ml-6 mt-4 flex items-start gap-3 rounded-lg border border-white/80 bg-[#f7faf7] p-4 shadow-sm sm:ml-12"><span aria-hidden="true" className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-teal-100 text-sm text-teal-800">✓</span><div><p className="text-xs font-semibold">작성된 문장에 근거를 연결합니다</p><p className="mt-1 text-[11px] leading-5 text-slate-500">요구사항 · 원문 출처 · 답변 페이지를 함께 대조</p></div></div>
-          <p className="mt-4 text-[10px] leading-5 text-slate-500">기능을 설명하기 위한 예시입니다. 실제 생성 문서나 검수 결과가 아닙니다.</p>
-        </div>
+          <div className="mt-5 flex items-start justify-between gap-4 px-1"><div><p className="text-sm font-bold">자료에서 문서까지, 실제 화면으로.</p><p className="mt-2 text-xs leading-6 text-slate-600">공고 찾기 · 제안서 검토 · 내 PPTX 이어 만들기</p></div><span aria-hidden="true" className="mt-1 text-lg text-teal-800">↗</span></div>
+        </a>
       </section>
+      <ProductDemo />
       <section id="workspaces" className="scroll-mt-24 border-y border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20">
           <div className="mb-9 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-semibold tracking-widest text-teal-700">CHOOSE YOUR WORKSPACE</p><h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">지금, 어떤 문서를 만들까요?</h2></div><Link href="/dashBoard/templates" className="text-sm text-slate-600 underline decoration-slate-300 underline-offset-4 hover:text-blue-700">PPT 양식 둘러보기 ↗</Link></div>

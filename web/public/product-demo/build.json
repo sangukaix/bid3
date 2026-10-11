@@ -1,0 +1,22 @@
+{
+  "version": "20261012-1",
+  "duration": 90,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "fps": 24,
+  "storyboard_sha256": "6c29eb4e0b12e90edd8fcbf5cb0733e32e577bd3f1ed65790e3c5c7ae370b5c8",
+  "narration": true,
+  "sha256": "eb298df6082261854be429cd026a8e87e640b546ccc14053858e46b634a98ca9",
+  "sources": {
+    "chat.jpg": "c99a3dba4be73055d93d7280511c6e45cc097672ecbdc9cb147116edbd94231d",
+    "history.jpg": "883c54feffd5f2d85be727d4950734084742815fde8d61ee745a39c70cb65f98",
+    "plan.jpg": "58c880232c5589617f50f1ff23467e5b658db99668facde4dc28ed7ec545679c",
+    "references.jpg": "8f3265dc0538c1c6aba33cbd2f805144e8857c35ff46ec94ba18587d3aa0536d",
+    "review.jpg": "63dd04cfe2f44cc0716f54181cfe5097037ef9f8d0b402764689d037776b2a3a",
+    "search.jpg": "94c339d96c5703407746d7d460efbe253bc952bd2588a8a560b880f520ffadab",
+    "studio.jpg": "2c43446b2878413a16122e8a6220c72b9350802495c337929fbeaa4dffe9f30a",
+    "templates.jpg": "2130367488b1b8468f73141411552ab4315946819a73764b6527a5c80ea8bba3"
+  }
+}

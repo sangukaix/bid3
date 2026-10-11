@@ -14,6 +14,7 @@
 
 ## 참고 문서
 
+- `PRODUCT_DEMO.md`: 첫 화면 소개 영상 구성, UI 변경 후 화면 교체·재제작·검증 방법
 - `PROPOSAL_REFERENCE_GUIDE.md`: 좋은 제안서의 구성과 Bid2 적용 원칙
 - `BID2_과제_설계_문서.md`: 수업 과제 제출용 아키텍처·Prompt·RAG 설명
 

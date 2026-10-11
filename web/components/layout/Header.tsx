@@ -9,7 +9,7 @@ export default function Header({ home = false }: { home?: boolean }) { // 사이
           AI비드
         </Link>
         <nav aria-label="상단 메뉴" className="flex items-center gap-1 text-sm text-slate-600 sm:gap-2"> {/* 오른쪽 메뉴 */}
-          {home && <div className="mr-4 hidden items-center gap-6 lg:flex"><Link href="#workspaces" className="hover:text-blue-700">작업실</Link><Link href="#how-it-works" className="hover:text-blue-700">이용 방법</Link><Link href="#questions" className="hover:text-blue-700">자주 묻는 질문</Link></div>}
+          {home && <div className="mr-4 hidden items-center gap-6 lg:flex"><a href="#product-demo" className="hover:text-blue-700">서비스 시연</a><Link href="#workspaces" className="hover:text-blue-700">작업실</Link><Link href="#questions" className="hover:text-blue-700">자주 묻는 질문</Link></div>}
           <Link className={`${home ? "hidden sm:block" : ""} rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950`} href="/dashBoard">대시보드</Link>
           <Link className="rounded-md px-3 py-2 hover:bg-slate-100 hover:text-slate-950" href="/login">로그인</Link>
           <Link className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 font-semibold text-blue-700 hover:border-blue-300 hover:bg-blue-100" href="/signup">회원가입</Link>
