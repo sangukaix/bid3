@@ -13,7 +13,7 @@ from .split_documents import split_bid_documents  # 긴 문서를 Chunk로 분�
 from .vector_store import create_or_load_vector_store, get_bid_db_path
 
 
-INDEX_VERSION = 2  # 여러 문서 형식과 ZIP을 처리하는 현재 인덱스 버전
+INDEX_VERSION = 3  # HWP 표 안의 텍스트까지 보존하는 인덱스 버전
 
 
 def prepare_docs_for_ai(bid_ntce_no):
@@ -24,7 +24,13 @@ def prepare_docs_for_ai(bid_ntce_no):
     index_info_path = db_path / ("keyword_info.json" if mode == "keyword" else "index_info.json")
     if mode == "keyword":
         documents = load_keyword_documents(bid_ntce_no)
-        if documents:
+        try:
+            index_info = json.loads(index_info_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            index_info = {}
+        hwp_changed = any((d.metadata.get("file_name") or d.metadata.get("source", "")).lower().endswith(".hwp")
+                          for d in documents) and index_info.get("version") != INDEX_VERSION
+        if documents and not hwp_changed:
             files = sorted({d.metadata.get("file_name") or Path(d.metadata.get("source", "")).name for d in documents})
             return {
                 "created": False, "message": "로컬 키워드 검색 문서를 재사용합니다.",

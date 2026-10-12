@@ -706,6 +706,42 @@ class RecommendedBidViewTests(TestCase):
 
 
 class DocumentExtractionTests(TestCase):
+    @patch("bids.services.rag.extract_document.subprocess.run")
+    def test_HWP_표의_배점과_병합셀_중첩표를_본문_순서대로_보존한다(self, run):
+        xml = """<HwpDoc><DocInfo><Text>본문이 아닌 글꼴 정보</Text></DocInfo><BodyText><SectionDef>
+          <Paragraph><LineSeg><Text>평가 기준</Text></LineSeg></Paragraph>
+          <Paragraph><TableControl><TableBody>
+            <TableRow><TableCell><Paragraph><Text>평가항목</Text></Paragraph></TableCell>
+              <TableCell><Paragraph><Text>배점</Text></Paragraph></TableCell></TableRow>
+            <TableRow><TableCell colspan="2"><Paragraph><Text>운영 계획</Text></Paragraph>
+              <Paragraph><Text>강사 관리</Text></Paragraph></TableCell>
+              <TableCell><Paragraph><Text>30점</Text></Paragraph></TableCell></TableRow>
+            <TableRow><TableCell><Paragraph><Text>필수 제출</Text><TableControl><TableBody><TableRow>
+              <TableCell><Paragraph><Text>실적증명서</Text></Paragraph></TableCell>
+            </TableRow></TableBody></TableControl></Paragraph></TableCell></TableRow>
+          </TableBody></TableControl></Paragraph><Paragraph><Text>마감 18시</Text></Paragraph>
+        </SectionDef></BodyText></HwpDoc>"""
+
+        def convert(args, **kwargs):
+            from types import SimpleNamespace
+            Path(args[args.index("--output") + 1]).write_text(xml, encoding="utf-8")
+            return SimpleNamespace(returncode=0)
+
+        run.side_effect = convert
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder) / "request.hwp"
+            source.write_bytes(b"fixture")
+            result = extract_document(source)
+        self.assertEqual(result.failed_files, [])
+        text = result.documents[0].page_content
+        self.assertIn("평가항목 | 배점", text)
+        self.assertIn("운영 계획; 강사 관리 | 30점", text)
+        self.assertEqual(text.count("실적증명서"), 1)
+        self.assertLess(text.index("평가 기준"), text.index("30점"))
+        self.assertLess(text.index("30점"), text.index("마감 18시"))
+        self.assertNotIn("글꼴 정보", text)
+        self.assertEqual(result.documents[0].metadata["location"], "문서 전체")
+
     def test_HWPX_텍스트와_문서위치를_추출한다(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = Path(temp_dir) / "request.hwpx"

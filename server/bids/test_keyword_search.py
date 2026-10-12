@@ -14,6 +14,31 @@ from bids.services.rag.retriever import search_bid_documents
 
 class KeywordSearchTests(SimpleTestCase):
     @patch.dict("os.environ", {"RAG_SEARCH_MODE": "keyword"})
+    @patch("bids.services.rag.prepare_docs_for_ai.extract_documents")
+    @patch("bids.services.rag.prepare_docs_for_ai.download_bid_attachment")
+    @patch("bids.services.rag.prepare_docs_for_ai.fetch_bid_attachments")
+    @patch("bids.services.rag.prepare_docs_for_ai.BidNotice")
+    def test_old_hwp_index_is_refreshed_to_include_table_text(self, notice, fetch, download, extract):
+        with tempfile.TemporaryDirectory() as directory, override_settings(BASE_DIR=Path(directory)):
+            source = Path(directory) / "request.hwp"
+            old = Document(page_content="평가 기준 <표>", metadata={"source":str(source), "file_name":source.name})
+            save_keyword_documents("BID1", [old])
+            folder = Path(directory) / "chroma_db" / "BID1"
+            (folder / "keyword_info.json").write_text(json.dumps({"version":2}), encoding="utf-8")
+            notice.objects.filter.return_value.order_by.return_value.first.return_value = SimpleNamespace(
+                bid_ntce_no="BID1", bid_ntce_ord="000", business_type="용역")
+            fetch.return_value = [{"filename":source.name}]
+            download.return_value = source
+            extract.return_value = SimpleNamespace(documents=[Document(
+                page_content="평가 기준\n수행 계획 | 30점", metadata=old.metadata)],
+                failed_files=[], processed_files=[source.name])
+            result = prepare_docs_for_ai("BID1")
+            self.assertTrue(result["created"])
+            self.assertIn("30점", search_keyword_documents("BID1", "평가")[0].page_content)
+            self.assertFalse(prepare_docs_for_ai("BID1")["created"])
+            fetch.assert_called_once()
+
+    @patch.dict("os.environ", {"RAG_SEARCH_MODE": "keyword"})
     @patch("bids.services.rag.retriever.get_bid_vector_store")
     def test_keyword_search_uses_no_embedding_and_preserves_sources(self, vector):
         with tempfile.TemporaryDirectory() as directory, override_settings(BASE_DIR=Path(directory)):

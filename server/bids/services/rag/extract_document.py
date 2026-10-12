@@ -115,13 +115,31 @@ def _load_standard_document(file_path):
     return _add_reference_metadata(loader.load(), file_path)
 
 
+def _hwp_xml_text(element):
+    """Keep table rows and cells; pyhwp's plain-text transform omits tables."""
+    if element.tag == "Text":
+        return element.text or ""
+    if element.tag in {"ControlChar", "Tab"}:
+        return " "
+    if element.tag == "TableRow":
+        return " | ".join(_hwp_xml_text(cell).strip().replace("\n", "; ")
+                          for cell in element if cell.tag == "TableCell") + "\n"
+    text = "".join(_hwp_xml_text(child) for child in element)
+    if element.tag == "TableControl":
+        return "\n[표]\n" + text + "[/표]\n"
+    if element.tag == "Paragraph":
+        return text.strip() + "\n"
+    return text
+
+
 def _load_hwp(file_path):
-    """hwp5txt가 설치된 서버에서 HWP 문서를 일반 텍스트로 변환합니다."""
+    """Parse HWP body and table text in an isolated, time-limited pyhwp process."""
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        output_path = Path(temp_dir) / "converted.txt"
+        output_path = Path(temp_dir) / "converted.xml"
         process = subprocess.run(
-            [sys.executable, "-c", "from hwp5.hwp5txt import main; main()", "--output", str(output_path), str(file_path)],
+            [sys.executable, "-c", "from hwp5.hwp5proc import main; main()", "xml",
+             "--no-validate-wellformed", "--output", str(output_path), str(file_path)],
             capture_output=True,
             text=True,
             timeout=120,
@@ -131,7 +149,11 @@ def _load_hwp(file_path):
         if process.returncode != 0 or not output_path.exists():
             raise ValueError("HWP 파일이 손상되었거나 암호화되어 텍스트를 추출할 수 없습니다.")
 
-        text = output_path.read_text(encoding="utf-8", errors="replace").strip()
+        try:
+            root = ElementTree.parse(output_path).getroot()
+        except ElementTree.ParseError as error:
+            raise ValueError("HWP 문서 구조를 읽을 수 없습니다.") from error
+        text = "\n".join(_hwp_xml_text(body) for body in root.findall("BodyText")).strip()
 
     if not text:
         raise ValueError("HWP 파일에서 읽을 수 있는 텍스트가 없습니다.")
