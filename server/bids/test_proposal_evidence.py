@@ -67,6 +67,27 @@ class ProposalEvidenceTests(SimpleTestCase):
         self.assertEqual(verified_page_limit(30, "제안서 본문은 30페이지 이내 작성"), 30)
         self.assertEqual(verified_page_limit(30, "제안서 본문 30매 미만"), 29)
 
+    @patch("bids.services.proposal_text_fit.structured_chain")
+    def test_shortening_retries_rejected_candidates_without_dropping_uncertainty(self, factory):
+        from unittest.mock import Mock
+        from bids.services.proposal_text_fit import fit_slide_edits
+        inputs = []
+        def create_chain(prompt, model, schema):
+            def invoke(values):
+                inputs.append(json.loads(values['edit_context']))
+                candidates = (["직원 교육", "외국어 교육", "직원 외국어 교육"] if len(inputs) == 1
+                              else ["인원 확인 필요", "직원 인원 확인 필요", "교육 인원 확인 필요"])
+                return schema.model_validate({'body': candidates})
+            return Mock(invoke=invoke)
+        factory.side_effect = create_chain
+        result = fit_slide_edits({'body': '외국어 교육을 받는 직원의 세부 인원은 확인 필요'},
+                                {'body': {'text': '교육 대상', 'max_chars': 14}}, Mock())
+        self.assertLessEqual(len(result['body']), 14)
+        self.assertIn('확인 필요', result['body'])
+        self.assertEqual(inputs[0]['targets']['body']['required_phrases'], ['확인 필요'])
+        self.assertEqual(inputs[1]['targets']['body']['rejected_candidates'],
+                         ['직원 교육', '외국어 교육', '직원 외국어 교육'])
+
     @patch("bids.services.proposal_coverage.structured_chain")
     def test_full_register_is_reviewed_even_when_one_batch_fails(self, factory):
         from unittest.mock import Mock

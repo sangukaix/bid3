@@ -35,14 +35,23 @@ def fit_slide_edits(edits, elements, model):
          "첫 후보는 목표 글자 수 이하, 둘째는 최대 길이의 70%, 셋째는 90% 정도로 쓰세요. "
          "주요 대상·기간·수치를 우선 남기세요. 긴 문장은 불필요한 수식어를 빼고 핵심 명사구로 고치세요. "
          "회사명과 긴 사업명은 생략할 수 있습니다. "
+         "원문의 앞부분만 떼어낸 후보는 거절됩니다. 반드시 핵심 의미를 다시 표현하세요. "
+         "날짜 범위는 연·월·일을 보존하면서 점 주변 공백을 줄여 표현할 수 있습니다. "
+         "조정 가능·미보장 같은 조건은 생략하지 말고 짧게 표현하세요. "
          "단어나 문장 중간을 자르지 마세요. 새 사실·수치·날짜를 추가하지 마세요. "
          "예: '전문 인력이 체계적으로 교육 서비스를 운영합니다' → ['체계적 교육 운영', '전문 인력 기반 교육 운영', '전문 인력으로 교육 운영 체계화']. "
-         "확인 필요라는 조건과 부정 표현은 유지하세요. null이나 빈 문자열은 허용되지 않습니다."),
+         "required_phrases의 모든 문구는 각 후보에 반드시 그대로 포함하세요. "
+         "확인 필요라는 조건과 부정 표현은 유지하세요. "
+         "rejected_candidates는 길이 초과·조건 누락·미완성 때문에 거절된 문구이므로 반복하지 마세요. "
+         "null이나 빈 문자열은 허용되지 않습니다."),
         ("human", "{edit_context}"),
     ])
+    rejected = {}
     for attempt in range(2):
         pending = {target: {"text": text, "max_chars": text_limit(elements[target]),
-                            "target_chars": max(4, text_limit(elements[target]) // (2 + attempt))}
+                            "target_chars": max(4, text_limit(elements[target]) // (2 + attempt)),
+                            "required_phrases": ["확인 필요"] if "확인 필요" in text else [],
+                            "rejected_candidates": rejected.get(target, [])}
                    for target, text in fitted.items()
                    if text and len(" ".join(text.split())) > text_limit(elements[target])}
         if not pending:
@@ -59,6 +68,8 @@ def fit_slide_edits(edits, elements, model):
                 text, fitted[target], text_limit(elements[target]))]
             if valid:
                 fitted[target] = max(valid, key=lambda text: len(" ".join(text.split())))
+            else:
+                rejected[target] = candidates
     if any(text and len(" ".join(text.split())) > text_limit(elements[target])
            for target, text in fitted.items()):
         raise ValueError("슬라이드 문구가 상자 크기를 초과했습니다. 더 짧은 문구로 요청해 주세요.")
