@@ -59,6 +59,23 @@ class ProposalEvidenceTests(SimpleTestCase):
         self.assertFalse(usable_short_text("증빙(서식", "증빙(서식 12)을 제출", 35))
         self.assertTrue(usable_short_text("실적 확인 필요", "운영 실적 확인 필요", 35))
 
+    def test_numbered_feedback_does_not_send_another_pages_target_instructions(self):
+        from bids.services.rag.proposal import feedback_instruction_for_slide
+        instruction = ('다른 페이지는 그대로 유지하세요.\n'
+                       '1페이지: shape-0 공고명 교체\n회사명은 확인 필요로 표시\n'
+                       '5페이지: shape-0 사업 목표 교체\n'
+                       '1페이지: shape-2 부제 교체')
+        first = feedback_instruction_for_slide(instruction, 1)
+        self.assertIn('공고명 교체', first)
+        self.assertIn('회사명은 확인 필요', first)
+        self.assertIn('부제 교체', first)
+        self.assertIn('다른 페이지는 그대로', first)
+        self.assertNotIn('사업 목표', first)
+        self.assertNotIn('공고명', feedback_instruction_for_slide(instruction, 5))
+        self.assertIsNone(feedback_instruction_for_slide(instruction, 14))
+        self.assertEqual(feedback_instruction_for_slide('표지의 제목만 바꾸세요', 1),
+                         '표지의 제목만 바꾸세요')
+
     def test_page_limit_requires_explicit_original_limit_not_copies_or_minutes(self):
         from bids.services.proposal_text_fit import verified_page_limit
         self.assertIsNone(verified_page_limit(10, "제안서 10부 제출, 제안 설명 10분"))
@@ -66,6 +83,9 @@ class ProposalEvidenceTests(SimpleTestCase):
         self.assertIsNone(verified_page_limit(10, "제안서 110페이지 이내"))
         self.assertEqual(verified_page_limit(30, "제안서 본문은 30페이지 이내 작성"), 30)
         self.assertEqual(verified_page_limit(30, "제안서 본문 30매 미만"), 29)
+        self.assertEqual(verified_page_limit(40, "정성제안서 | 최대 40쪽; (표지,간지 포함) | PDF변환 (A4크기)"), 40)
+        self.assertIsNone(verified_page_limit(40, "정성제안서 | 최대 140쪽"))
+        self.assertIsNone(verified_page_limit(40, "정성제안서 | 최대 40부"))
 
     @patch("bids.services.proposal_text_fit.structured_chain")
     def test_shortening_retries_rejected_candidates_without_dropping_uncertainty(self, factory):

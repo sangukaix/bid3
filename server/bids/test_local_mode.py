@@ -147,6 +147,18 @@ class LocalModeTests(SimpleTestCase):
         self.assertEqual(result.slide_changes[0].text_changes[1].revised_text,"정상 문구")
 
     @patch("bids.services.rag.proposal.structured_chain")
+    def test_target_id_cannot_replace_visible_slide_text(self, factory):
+        from unittest.mock import Mock
+        from bids.services.rag.proposal import build_local_slide_plan
+        factory.side_effect = lambda prompt, model, schema: Mock(invoke=Mock(
+            return_value=schema.model_validate({'edits': {'shape-1': 'shape-1'}, 'review_notes': []})))
+        slide = {'slide_number': 1, 'title': '표지', 'elements': [
+            {'target': 'shape-1', 'text': '실제 사업명', 'max_chars': 30}]}
+        for feedback in (False, True):
+            with self.subTest(feedback=feedback), self.assertRaisesMessage(ValueError, '대상 ID'):
+                build_local_slide_plan(slide, {'instruction': '제목을 유지하세요'}, feedback=feedback)
+
+    @patch("bids.services.rag.proposal.structured_chain")
     def test_null_placeholder_is_flagged_but_static_text_can_stay(self, factory):
         from unittest.mock import Mock
         from bids.services.rag.proposal import build_local_slide_plan

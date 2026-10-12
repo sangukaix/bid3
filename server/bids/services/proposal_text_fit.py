@@ -84,6 +84,10 @@ def verified_page_limit(candidate, original_text):
     # '제안서 10부' and '발표 10분' are not page limits. Require an explicit
     # proposal/document noun and an upper-bound expression in the same span.
     text = " ".join(original_text.split())
+    prefix_bound = (r"(?:제안서|제안\s*설명서|제안\s*발표자료)[^.;。]{0,50}?최대\s*"
+                    + r"(?<!\d)" + str(candidate) + r"\s*(?:페이지|쪽|매|장)(?![가-힣])")
+    if re.search(prefix_bound, text):
+        return candidate
     pattern = (r"(?:제안서|제안\s*설명서|제안\s*발표자료)[^.;。]{0,50}?"
                + r"(?<!\d)" + str(candidate) + r"\s*(?:페이지|쪽|매|장)\s*(이내|이하|미만|한도)")
     match = re.search(pattern, text)

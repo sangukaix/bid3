@@ -553,6 +553,10 @@ def build_local_slide_plan(slide, inputs, feedback=False):
     chain = structured_chain(prompt, model, Output)
     output = chain.invoke(values)
     candidate_edits = output.edits.model_dump()
+    if any(value is not None and value.strip() in elements
+           and value.strip() != elements[target]['text'].strip()
+           for target, value in candidate_edits.items()):
+        raise ValueError('슬라이드 대상 ID가 작성 문구로 반환되었습니다. 수정 요청을 다시 실행해 주세요.')
     if not feedback:
         for target, element in elements.items():
             if element.get('label') and element['text'].strip() == '사업명 제안서':
@@ -637,8 +641,12 @@ def build_feedback_plan(inventory, inputs):
     inventory = restrict_feedback_inventory(inventory, inputs["instruction"])
     reviews = []
     for slide in inventory:
+        instruction = feedback_instruction_for_slide(inputs['instruction'], slide['slide_number'])
+        if instruction is None:
+            continue
         result = build_local_slide_plan(slide, {
             **inputs,
+            "instruction": instruction,
             "selected_slide": f"{slide['slide_number']}페이지 (요청과 무관하면 변경 생략)",
             "slide_inventory": build_inventory_context([slide], max_chars=1000000),
         }, feedback=True)
@@ -649,6 +657,18 @@ def build_feedback_plan(inventory, inputs):
     return ProposalFeedbackPlanSchema.model_validate({
         key: merged[key] for key in ("summary", "slide_changes", "added_slides", "final_review_items")
     })
+
+
+def feedback_instruction_for_slide(instruction, number):
+    """Keep numbered chat requests isolated when slide target IDs are reused."""
+    sections = re.split(r'(?m)^\s*(\d+)\s*페이지\s*:\s*', instruction)
+    if len(sections) == 1:
+        return instruction
+    selected = [sections[index + 1] for index in range(1, len(sections), 2)
+                if int(sections[index]) == number]
+    if not selected:
+        return None
+    return '\n'.join([sections[0], *selected]).strip()
 
 
 def search_web_for_proposal(instruction):
