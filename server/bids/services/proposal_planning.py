@@ -35,6 +35,8 @@ def channel_for(row):
     # only the general evaluation rules belong to the submission checklist.
     if re.search(r'정성\s*(?:적\s*)?평가|평가\s*항목',row.get('category','')) and explicit_points(row.get('evaluation_points','')) is not None:
         return 'body'
+    if re.search(r'보안\s*교육|보안\s*관리',text):
+        return 'body'
     if re.search(r'제안서\s*(?:작성|제출|발표|목차|형식|평가회|내용)|입찰\s*(?:방식|일정)|선정\s*방법|제출\s*및\s*심사|문서\s*우선순위|청렴\s*계약|낙찰|협상|평가\s*(?:항목|및\s*낙찰)|정성\s*(?:적\s*)?평가|탈락|감점|제재|손해배상',row.get('category','')):
         return 'manual'
     if re.search(r'제출\s*기한|제출\s*방법|제출일시|제출장소|제출부수|접수\s*기간|계약\s*방법|분량|마감|계약\s*조건|공동수급|지역\s*제한', text):

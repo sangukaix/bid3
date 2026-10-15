@@ -90,6 +90,27 @@ class DetailPageTests(SimpleTestCase):
         self.assertIn('대조를 통과하지 못했습니다',check['reason'])
         self.assertEqual(report['unverified_count'],0)
 
+    @patch('bids.services.proposal_coverage.structured_chain')
+    def test_failed_coverage_batch_retries_individually_without_hiding_persistent_failure(self,chain):
+        from .services.llm import LocalOutputLimitError
+        calls=[]
+        quote='학생 100명에게 교육을 운영하고 결과를 확인합니다.'
+        def factory(prompt,model,schema):
+            keys=list(schema.model_fields);calls.append(keys)
+            if len(keys)>1 or keys==['R0002']:
+                return Mock(invoke=Mock(side_effect=LocalOutputLimitError('Output limit')))
+            return Mock(invoke=Mock(return_value=schema.model_validate({keys[0]:{
+                'covered':True,'slide_number':1,'quote':quote,'reason':'수행 답변 확인'}})))
+        chain.side_effect=factory
+        report=review_requirement_coverage({'requirements':[{'requirement':'학생 100명 교육'}]*3},
+            {'slide_changes':[{'slide_number':1,'action':'UPDATE','text_changes':[{'revised_text':quote}]}]},Mock())
+        self.assertEqual([r['id'] for r in report['checks']],['R0001','R0002','R0003'])
+        self.assertEqual([r['covered'] for r in report['checks']],[True,False,True])
+        self.assertEqual(report['unverified_count'],1)
+        self.assertEqual(report['checks'][1]['status'],'unverified')
+        self.assertIn('LocalOutputLimitError',report['checks'][1]['reason'])
+        self.assertEqual(calls,[['R0001','R0002','R0003']]*2+[['R0001'],['R0002'],['R0002'],['R0003']])
+
     def test_complete_long_answer_quote_keeps_its_trailing_numeric_condition(self):
         original=source_result();prs=Presentation(BytesIO(original['file_bytes']))
         quote='학생 지원 수행 계획을 수립하여 운영하고 결과를 대조합니다. '*12+'총 30회 수업을 제공합니다.'

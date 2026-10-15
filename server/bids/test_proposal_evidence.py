@@ -154,7 +154,8 @@ class ProposalEvidenceTests(SimpleTestCase):
         self.assertEqual(len(set(requested)), 9)
         self.assertEqual(result["total_count"], 9)
         self.assertEqual(len(result["checks"]), 9)
-        self.assertEqual(result["unverified_count"], 4)
+        self.assertEqual(result["unverified_count"], 1)
+        self.assertEqual([item['id'] for item in result['checks'] if item['status']=='unverified'],['R0001'])
         self.assertEqual(result["covered_count"], 0)
 
     @patch("bids.services.proposal_coverage.structured_chain")

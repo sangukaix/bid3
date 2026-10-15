@@ -51,6 +51,8 @@ class WritingPlanTests(SimpleTestCase):
             ('인력 요구사항','과업 현장 투입 가능 인력 및 조직도 제시','body'),
             ('제한 사항','본 사업은 하도급을 허용하지 않음','body'),
             ('근로 조건','낙찰자는 최저임금액 이상으로 고용계약 체결','body'),
+            ('보안 및 계약 조건','참여인원 전원에 대해 보안교육 및 보안 관리를 수행해야 함','body'),
+            ('보안 및 계약 조건','계약 체결 시 보안서약서를 제출해야 함','manual'),
         ]
         for category,text,expected in cases:
             with self.subTest(text=text):

@@ -70,6 +70,19 @@ def review_requirement_coverage(register, plan, model):
          "주제가 비슷한 것만으로는 부족합니다. 불확실하면 false. reason은 120자 이내 한국어."),
         ("human", "{review_context}"),
     ])
+    def invoke_batch(batch, payload):
+        schema = create_model("RequirementChecks", __config__=ConfigDict(extra="forbid"),
+                              **{row["id"]: (CoverageVerdict, ...) for row in batch})
+        inputs = {"review_context": json.dumps(payload, ensure_ascii=False), "_evidence_query": "coverage"}
+        try:
+            return structured_chain(prompt, model, schema).invoke(inputs).model_dump()
+        except ValueError:
+            retry_prompt = ChatPromptTemplate.from_messages([*prompt.messages,
+                ('system','형식 검증 재시도입니다. 모든 요구 ID의 필드를 작성하세요. '
+                 'quote는 실제 답변의 연속 원문 250자 이내, reason은 한국어 80자 이내입니다. '
+                 '인용을 잘라 조건을 충족한 것처럼 보이지 마세요. 불확실하면 covered=false입니다.')])
+            return structured_chain(retry_prompt, model, schema).invoke(inputs).model_dump()
+
     for offset in range(0, len(rows), 4):
         from .proposal_tasks import report_progress
         report_progress(f'공고 요구사항과 실제 출력 대조 {min(offset+4,len(rows))}/{len(rows)}')
@@ -90,22 +103,26 @@ def review_requirement_coverage(register, plan, model):
                     text, _ = select_evidence(evidence_units(pages[number], "written_page"), query, 1550)
                 excerpts.append({"slide_number": number, "text": text})
             payload.append({"id": row["id"], "requirement": query, "candidates": excerpts})
-        result_schema = create_model("RequirementChecks", __config__=ConfigDict(extra="forbid"),
-                                     **{row["id"]: (CoverageVerdict, ...) for row in batch})
         try:
-            inputs = {
-                "review_context": json.dumps(payload, ensure_ascii=False), "_evidence_query": "coverage",
-            }
+            errors = {}
             try:
-                result = structured_chain(prompt, model, result_schema).invoke(inputs)
+                values = invoke_batch(batch, payload)
             except ValueError:
-                retry_prompt = ChatPromptTemplate.from_messages([*prompt.messages,
-                    ('system','형식 검증 재시도입니다. 모든 요구 ID의 필드를 작성하세요. '
-                     'quote는 실제 답변의 연속 원문 250자 이내, reason은 한국어 80자 이내입니다. '
-                     '인용을 잘라 조건을 충족한 것처럼 보이지 마세요. 불확실하면 covered=false입니다.')])
-                result = structured_chain(retry_prompt, model, result_schema).invoke(inputs)
-            values = result.model_dump()
+                if len(batch)==1:
+                    raise
+                # A long/invalid response must not make the other conditions in
+                # the same batch unverifiable. Retry each only once (plus format retry).
+                values = {}
+                for row, item in zip(batch,payload):
+                    try:
+                        values.update(invoke_batch([row],[item]))
+                    except (ValueError, OSError, requests.RequestException) as error:
+                        errors[row['id']] = type(error).__name__
             for row in batch:
+                if row['id'] in errors:
+                    checks.append({**row,'covered':False,'slide_number':None,'quote':'',
+                                   'status':'unverified','reason':'자동 대조 실패: '+errors[row['id']]})
+                    continue
                 verdict = CoverageVerdict.model_validate(values[row["id"]])
                 # Some local responses copy our excerpt identifier into the quote.
                 # Remove only this wrapper; the remaining exact text, page, units
