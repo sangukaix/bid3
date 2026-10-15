@@ -209,6 +209,7 @@ def extract_pptx_inventory(source_path, max_slides=MAX_SOURCE_SLIDES):
                     "content_budget",
                     "핵심 메시지와 근거를 간결하게 작성",
                 ),
+                "company_material_slot": any(shape.name=='bid3-fixed-material-caption' for shape in slide.shapes),
             }
         )
 
@@ -252,6 +253,7 @@ def get_content_template_numbers(inventory):
         slide["slide_number"]
         for slide in inventory
         if slide.get("role") not in {"cover", "contents", "divider"}
+        and not slide.get("company_material_slot")
         and len(slide.get("elements", [])) >= 2
     ]
 
@@ -262,6 +264,18 @@ def _replace_text_frame(text_frame, revised_text, font_size_pt=None):
     text_frame.word_wrap = True
     paragraphs = text_frame.paragraphs
     first_paragraph = paragraphs[0]
+    if '\v' in revised_text:
+        properties = deepcopy(first_paragraph.runs[0]._r.rPr) if first_paragraph.runs else None
+        first_paragraph.text = revised_text
+        for run in first_paragraph.runs:
+            if properties is not None:
+                run._r.insert(0,deepcopy(properties))
+            if font_size_pt:
+                run.font.size = Pt(font_size_pt)
+        for paragraph in paragraphs[1:]:
+            for run in paragraph.runs:
+                run.text = ''
+        return
     if first_paragraph.runs:
         first_paragraph.runs[0].text = revised_text
         if font_size_pt:

@@ -6,7 +6,6 @@ object model can discard unsupported artwork, animation and extension data.
 from copy import deepcopy
 from io import BytesIO
 import posixpath
-from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED, BadZipFile
 
 from lxml import etree as ET

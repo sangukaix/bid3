@@ -3058,5 +3058,1277 @@
       "use_when": "제안의 핵심",
       "content_budget": "수행 범위 확인 필요, 실행 원칙 확인 필요, 협의 사항 확인 필요"
     }
+  },
+  "education_learning.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "education",
+      "kind": "cover",
+      "use_when": "교육·연수 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "education",
+      "kind": "contents",
+      "use_when": "교육 운영의 구성",
+      "content_budget": "학습 설계와 운영 관리가 하나의 교육 경험으로 이어집니다. / 학습자와 과정, 수업과 학습 지원, 관리와 평가, 실행과 보고"
+    },
+    "3": {
+      "role": "problem",
+      "theme_id": "education",
+      "kind": "compare",
+      "use_when": "학습자와 교육 목표",
+      "content_budget": "업무에 필요한 회화와 지속 가능한 학습을 함께 설계합니다. / 업무 맥락, 학습 시간, 운영 기록"
+    },
+    "4": {
+      "role": "requirements",
+      "theme_id": "education",
+      "kind": "table",
+      "use_when": "언어·수준별 과정 설계",
+      "content_budget": "착수 시 진단 결과와 개설 가능 범위를 대조해 과정 편성을 협의합니다. / 구분, 영어, 제2외국어, 시험 대비"
+    },
+    "5": {
+      "role": "strategy",
+      "theme_id": "education",
+      "kind": "flow",
+      "use_when": "예습부터 수업 후 점검까지",
+      "content_budget": "각 수업을 준비하고, 사용한 표현을 복습하며 다음 학습으로 이어갑니다. / 예습, 수업, 복습, 점검"
+    },
+    "6": {
+      "role": "domain",
+      "theme_id": "education",
+      "kind": "numbers",
+      "use_when": "수업 유형과 운영 시간",
+      "content_budget": "학습 일정과 이용 환경에 맞춰 전화·화상 수업 유형을 구성합니다. / 운영 기준, 선택 유형, 지원 범위"
+    },
+    "7": {
+      "role": "domain",
+      "theme_id": "education",
+      "kind": "compare",
+      "use_when": "목적별 교육과정과 교재",
+      "content_budget": "학습 목적과 수준에 맞는 과정과 교재를 선택합니다. / 일상 회화, 비즈니스·뉴스, 시험 대비"
+    },
+    "8": {
+      "role": "quality",
+      "theme_id": "education",
+      "kind": "flow",
+      "use_when": "강사 선발과 수업 품질",
+      "content_budget": "사전 확인과 수업 피드백을 통해 보완·교체 여부를 협의합니다. / 선발, 훈련, 평가, 개선"
+    },
+    "9": {
+      "role": "quality",
+      "theme_id": "education",
+      "kind": "numbers",
+      "use_when": "출석·수료·안내 체계",
+      "content_budget": "공고의 수료 조건을 사전에 안내하고 실제 출석 기록과 대조합니다. / 운영 기준, 선택 유형, 지원 범위"
+    },
+    "10": {
+      "role": "quality",
+      "theme_id": "education",
+      "kind": "flow",
+      "use_when": "월별 평가와 상시 학습",
+      "content_budget": "학습 기록을 읽고 다음 수업과 수업 밖의 학습을 연결합니다. / 기록, 평가, 보완, 다음 수업"
+    },
+    "11": {
+      "role": "timeline",
+      "theme_id": "education",
+      "kind": "lanes",
+      "use_when": "연차별 교육 일정",
+      "content_budget": "계약 기간과 교육 일정에 맞춰 운영 단계와 보고 시점을 작성합니다. / 운영 1단계, 운영 2단계"
+    },
+    "12": {
+      "role": "deliverables",
+      "theme_id": "education",
+      "kind": "table",
+      "use_when": "운영 보고와 실비 정산",
+      "content_budget": "수행 내역을 확인할 수 있는 기록으로 월별 운영과 정산을 관리합니다. / 산출물, 운영 계획, 월별 운영 보고, 최종 결과·인계"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "education",
+      "kind": "evidence",
+      "use_when": "회사 자료와 현행 증빙",
+      "content_budget": "회사 자료와 현행 제공 범위를 대조해 수행 근거를 작성합니다. / 현행 서비스, 투입 인력, 유사 실적",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "education",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "education_seminar.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "education",
+      "kind": "cover",
+      "use_when": "교육·연수 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "education",
+      "kind": "contents",
+      "use_when": "교육 운영의 구성",
+      "content_budget": "학습 설계와 운영 관리가 하나의 교육 경험으로 이어집니다. / 학습자와 과정, 수업과 학습 지원, 관리와 평가, 실행과 보고"
+    },
+    "3": {
+      "role": "problem",
+      "theme_id": "education",
+      "kind": "compare",
+      "use_when": "학습자와 교육 목표",
+      "content_budget": "업무에 필요한 회화와 지속 가능한 학습을 함께 설계합니다. / 업무 맥락, 학습 시간, 운영 기록"
+    },
+    "4": {
+      "role": "requirements",
+      "theme_id": "education",
+      "kind": "table",
+      "use_when": "언어·수준별 과정 설계",
+      "content_budget": "착수 시 진단 결과와 개설 가능 범위를 대조해 과정 편성을 협의합니다. / 구분, 영어, 제2외국어, 시험 대비"
+    },
+    "5": {
+      "role": "strategy",
+      "theme_id": "education",
+      "kind": "flow",
+      "use_when": "예습부터 수업 후 점검까지",
+      "content_budget": "각 수업을 준비하고, 사용한 표현을 복습하며 다음 학습으로 이어갑니다. / 예습, 수업, 복습, 점검"
+    },
+    "6": {
+      "role": "domain",
+      "theme_id": "education",
+      "kind": "numbers",
+      "use_when": "수업 유형과 운영 시간",
+      "content_budget": "학습 일정과 이용 환경에 맞춰 전화·화상 수업 유형을 구성합니다. / 운영 기준, 선택 유형, 지원 범위"
+    },
+    "7": {
+      "role": "domain",
+      "theme_id": "education",
+      "kind": "compare",
+      "use_when": "목적별 교육과정과 교재",
+      "content_budget": "학습 목적과 수준에 맞는 과정과 교재를 선택합니다. / 일상 회화, 비즈니스·뉴스, 시험 대비"
+    },
+    "8": {
+      "role": "quality",
+      "theme_id": "education",
+      "kind": "flow",
+      "use_when": "강사 선발과 수업 품질",
+      "content_budget": "사전 확인과 수업 피드백을 통해 보완·교체 여부를 협의합니다. / 선발, 훈련, 평가, 개선"
+    },
+    "9": {
+      "role": "quality",
+      "theme_id": "education",
+      "kind": "numbers",
+      "use_when": "출석·수료·안내 체계",
+      "content_budget": "공고의 수료 조건을 사전에 안내하고 실제 출석 기록과 대조합니다. / 운영 기준, 선택 유형, 지원 범위"
+    },
+    "10": {
+      "role": "quality",
+      "theme_id": "education",
+      "kind": "flow",
+      "use_when": "월별 평가와 상시 학습",
+      "content_budget": "학습 기록을 읽고 다음 수업과 수업 밖의 학습을 연결합니다. / 기록, 평가, 보완, 다음 수업"
+    },
+    "11": {
+      "role": "timeline",
+      "theme_id": "education",
+      "kind": "lanes",
+      "use_when": "연차별 교육 일정",
+      "content_budget": "계약 기간과 교육 일정에 맞춰 운영 단계와 보고 시점을 작성합니다. / 운영 1단계, 운영 2단계"
+    },
+    "12": {
+      "role": "deliverables",
+      "theme_id": "education",
+      "kind": "table",
+      "use_when": "운영 보고와 실비 정산",
+      "content_budget": "수행 내역을 확인할 수 있는 기록으로 월별 운영과 정산을 관리합니다. / 산출물, 운영 계획, 월별 운영 보고, 최종 결과·인계"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "education",
+      "kind": "evidence",
+      "use_when": "회사 자료와 현행 증빙",
+      "content_budget": "회사 자료와 현행 제공 범위를 대조해 수행 근거를 작성합니다. / 현행 서비스, 투입 인력, 유사 실적",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "education",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "construction_site.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "construction",
+      "kind": "cover",
+      "use_when": "공사·시설 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "construction",
+      "kind": "contents",
+      "use_when": "현장 실행 계획의 구성",
+      "content_budget": "작업 범위에서 준공 인계까지 승인과 점검 기준을 연결합니다. / 현장과 공종, 시공과 공정, 품질과 안전, 변경과 인계"
+    },
+    "3": {
+      "role": "problem",
+      "theme_id": "construction",
+      "kind": "compare",
+      "use_when": "현장 제약과 시공 조건",
+      "content_budget": "사용 중인 업무시설을 가정한 리모델링 수행안입니다. / 시설 이용 유지, 작업 간섭 관리, 현장 확인 우선"
+    },
+    "4": {
+      "role": "domain",
+      "theme_id": "construction",
+      "kind": "tree",
+      "use_when": "공종별 작업 분해",
+      "content_budget": "공종마다 담당 역할과 검사 기록을 연결해 누락을 줄입니다. / 리모델링 공사, 철거·보양, 건축·마감, 기계·전기"
+    },
+    "5": {
+      "role": "timeline",
+      "theme_id": "construction",
+      "kind": "gantt",
+      "use_when": "작업 구역과 시공 순서",
+      "content_budget": "구역 간 간섭을 줄이는 개념 공정표이며 실제 기간은 현장 확인 후 정합니다. / 작업, 공용 구역, 업무 구역, 전체 연동"
+    },
+    "6": {
+      "role": "timeline",
+      "theme_id": "construction",
+      "kind": "lanes",
+      "use_when": "선행 조건과 공정 관리",
+      "content_budget": "착수·중간·완료의 승인 조건을 확인한 뒤 다음 공정을 진행합니다. / 작업 준비, 중간 점검, 완료 점검"
+    },
+    "7": {
+      "role": "quality",
+      "theme_id": "construction",
+      "kind": "flow",
+      "use_when": "품질 검사와 승인 지점",
+      "content_budget": "작업 결과가 다음 공정에 가려지기 전에 검사와 승인을 기록합니다. / 반입 확인, 시공 중 검사, 시험·측정, 보완·승인"
+    },
+    "8": {
+      "role": "security",
+      "theme_id": "construction",
+      "kind": "table",
+      "use_when": "공종별 위험과 통제",
+      "content_budget": "위험 요소는 현장별 평가 후 통제 방법과 작업 책임자를 확정합니다. / 작업 위험, 고소·낙하, 화기·전기, 분진·소음"
+    },
+    "9": {
+      "role": "security",
+      "theme_id": "construction",
+      "kind": "lanes",
+      "use_when": "이용자와 작업 동선 분리",
+      "content_budget": "아래는 동선 관리의 개념이며 실제 배치는 현장 도면으로 확정합니다. / 시설 이용자, 자재·장비, 비상 이동"
+    },
+    "10": {
+      "role": "strategy",
+      "theme_id": "construction",
+      "kind": "flow",
+      "use_when": "자재·장비 반입 운영",
+      "content_budget": "승인된 반입 계획과 현장의 사용 가능 상태를 함께 확인합니다. / 계획, 입고, 적치, 투입"
+    },
+    "11": {
+      "role": "management",
+      "theme_id": "construction",
+      "kind": "table",
+      "use_when": "설계 변경과 원가 관리",
+      "content_budget": "변경의 원인·범위·공정 영향을 기록하고 승인 없이 확정하지 않습니다. / 관리 항목, 변경 요청, 영향 검토, 변경 승인"
+    },
+    "12": {
+      "role": "deliverables",
+      "theme_id": "construction",
+      "kind": "table",
+      "use_when": "준공 검사와 시설 인계",
+      "content_budget": "검사 결과와 준공 자료를 실제 설치 상태에 맞춰 전달합니다. / 인계 대상, 시설·설비, 준공 도서, 유지관리"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "construction",
+      "kind": "evidence",
+      "use_when": "현장 수행 근거와 증빙",
+      "content_budget": "시공 계획과 실제 수행 역량을 구분해 제출 자료를 준비합니다. / 유사 공사, 현장 책임, 시공·검사 기록",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "construction",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "construction_field.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "construction",
+      "kind": "cover",
+      "use_when": "공사·시설 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "construction",
+      "kind": "contents",
+      "use_when": "현장 실행 계획의 구성",
+      "content_budget": "작업 범위에서 준공 인계까지 승인과 점검 기준을 연결합니다. / 현장과 공종, 시공과 공정, 품질과 안전, 변경과 인계"
+    },
+    "3": {
+      "role": "problem",
+      "theme_id": "construction",
+      "kind": "compare",
+      "use_when": "현장 제약과 시공 조건",
+      "content_budget": "사용 중인 업무시설을 가정한 리모델링 수행안입니다. / 시설 이용 유지, 작업 간섭 관리, 현장 확인 우선"
+    },
+    "4": {
+      "role": "domain",
+      "theme_id": "construction",
+      "kind": "tree",
+      "use_when": "공종별 작업 분해",
+      "content_budget": "공종마다 담당 역할과 검사 기록을 연결해 누락을 줄입니다. / 리모델링 공사, 철거·보양, 건축·마감, 기계·전기"
+    },
+    "5": {
+      "role": "timeline",
+      "theme_id": "construction",
+      "kind": "gantt",
+      "use_when": "작업 구역과 시공 순서",
+      "content_budget": "구역 간 간섭을 줄이는 개념 공정표이며 실제 기간은 현장 확인 후 정합니다. / 작업, 공용 구역, 업무 구역, 전체 연동"
+    },
+    "6": {
+      "role": "timeline",
+      "theme_id": "construction",
+      "kind": "lanes",
+      "use_when": "선행 조건과 공정 관리",
+      "content_budget": "착수·중간·완료의 승인 조건을 확인한 뒤 다음 공정을 진행합니다. / 작업 준비, 중간 점검, 완료 점검"
+    },
+    "7": {
+      "role": "quality",
+      "theme_id": "construction",
+      "kind": "flow",
+      "use_when": "품질 검사와 승인 지점",
+      "content_budget": "작업 결과가 다음 공정에 가려지기 전에 검사와 승인을 기록합니다. / 반입 확인, 시공 중 검사, 시험·측정, 보완·승인"
+    },
+    "8": {
+      "role": "security",
+      "theme_id": "construction",
+      "kind": "table",
+      "use_when": "공종별 위험과 통제",
+      "content_budget": "위험 요소는 현장별 평가 후 통제 방법과 작업 책임자를 확정합니다. / 작업 위험, 고소·낙하, 화기·전기, 분진·소음"
+    },
+    "9": {
+      "role": "security",
+      "theme_id": "construction",
+      "kind": "lanes",
+      "use_when": "이용자와 작업 동선 분리",
+      "content_budget": "아래는 동선 관리의 개념이며 실제 배치는 현장 도면으로 확정합니다. / 시설 이용자, 자재·장비, 비상 이동"
+    },
+    "10": {
+      "role": "strategy",
+      "theme_id": "construction",
+      "kind": "flow",
+      "use_when": "자재·장비 반입 운영",
+      "content_budget": "승인된 반입 계획과 현장의 사용 가능 상태를 함께 확인합니다. / 계획, 입고, 적치, 투입"
+    },
+    "11": {
+      "role": "management",
+      "theme_id": "construction",
+      "kind": "table",
+      "use_when": "설계 변경과 원가 관리",
+      "content_budget": "변경의 원인·범위·공정 영향을 기록하고 승인 없이 확정하지 않습니다. / 관리 항목, 변경 요청, 영향 검토, 변경 승인"
+    },
+    "12": {
+      "role": "deliverables",
+      "theme_id": "construction",
+      "kind": "table",
+      "use_when": "준공 검사와 시설 인계",
+      "content_budget": "검사 결과와 준공 자료를 실제 설치 상태에 맞춰 전달합니다. / 인계 대상, 시설·설비, 준공 도서, 유지관리"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "construction",
+      "kind": "evidence",
+      "use_when": "현장 수행 근거와 증빙",
+      "content_budget": "시공 계획과 실제 수행 역량을 구분해 제출 자료를 준비합니다. / 유사 공사, 현장 책임, 시공·검사 기록",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "construction",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "it_architecture.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "it",
+      "kind": "cover",
+      "use_when": "IT·시스템 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "it",
+      "kind": "contents",
+      "use_when": "시스템 구축 제안의 구성",
+      "content_budget": "설계·구현·검증·전환을 추적 가능한 산출물로 연결합니다. / 현황과 목표, 서비스와 데이터, 시험과 보안, 오픈과 인계"
+    },
+    "3": {
+      "role": "problem",
+      "theme_id": "it",
+      "kind": "before_after",
+      "use_when": "현행 업무와 목표 서비스",
+      "content_budget": "부서별로 나뉜 업무 기록을 공통 서비스에서 이어가는 구성안입니다. / 현행, 목표"
+    },
+    "4": {
+      "role": "domain",
+      "theme_id": "it",
+      "kind": "architecture",
+      "use_when": "목표 시스템 아키텍처",
+      "content_budget": "서비스·연계·데이터 계층의 책임과 접근 경계를 분리합니다. / 이용 채널, 서비스 계층, 데이터 계층"
+    },
+    "5": {
+      "role": "requirements",
+      "theme_id": "it",
+      "kind": "table",
+      "use_when": "요구사항과 검증의 연결",
+      "content_budget": "아래 ID는 예시이며 실제 생성 시 공고의 요구사항 번호로 연결합니다. / 예시 ID, DEMO-F01, DEMO-I01, DEMO-D01"
+    },
+    "6": {
+      "role": "domain",
+      "theme_id": "it",
+      "kind": "lanes",
+      "use_when": "사용자·서비스·관리자 흐름",
+      "content_budget": "기능 목록을 실제 처리 흐름과 역할별 확인 지점으로 구체화합니다. / 사용자, 서비스, 관리자"
+    },
+    "7": {
+      "role": "strategy",
+      "theme_id": "it",
+      "kind": "flow",
+      "use_when": "데이터 전환과 복구 기준",
+      "content_budget": "전환 전 대조 기준과 되돌릴 조건을 합의합니다. / 정의, 시험 이관, 전환 승인, 운영 전환"
+    },
+    "8": {
+      "role": "requirements",
+      "theme_id": "it",
+      "kind": "table",
+      "use_when": "인터페이스와 오류 처리",
+      "content_budget": "연계 항목마다 데이터 책임과 실패 시 처리 방법을 정합니다. / 연계 구간, 사용자·업무 서비스, 업무·외부 서비스, 업무·관리 도구"
+    },
+    "9": {
+      "role": "quality",
+      "theme_id": "it",
+      "kind": "verification",
+      "use_when": "설계 단계와 시험 단계",
+      "content_budget": "설계 산출물과 시험 결과를 같은 기준으로 대조합니다. / 요구사항, 업무·서비스 설계, 컴포넌트 설계, 구현 결과"
+    },
+    "10": {
+      "role": "security",
+      "theme_id": "it",
+      "kind": "table",
+      "use_when": "정보보호와 접근권한",
+      "content_budget": "구체적인 권한과 보호 조건은 원문 및 운영 정책에 따라 확정합니다. / 역할, 일반 사용자, 업무 담당자, 운영 관리자"
+    },
+    "11": {
+      "role": "timeline",
+      "theme_id": "it",
+      "kind": "lanes",
+      "use_when": "서비스 오픈과 전환 승인",
+      "content_budget": "이행 조건을 확인한 뒤 오픈하고 복구 여부를 판단할 기록을 남깁니다. / 오픈 전, 전환 중, 안정화"
+    },
+    "12": {
+      "role": "quality",
+      "theme_id": "it",
+      "kind": "table",
+      "use_when": "운영 관측과 품질 관리",
+      "content_budget": "목표 수치를 임의로 약속하지 않고 지표의 정의와 확인 방법을 먼저 정합니다. / 지표, 기능 오류, 처리 성능, 운영 안정"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "it",
+      "kind": "evidence",
+      "use_when": "기술 산출물과 검수 근거",
+      "content_budget": "요구사항과 구현·시험 결과가 서로 추적되도록 인계합니다. / 설계·소스, 시험·전환, 운영 인계",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "it",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "it_delivery.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "it",
+      "kind": "cover",
+      "use_when": "IT·시스템 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "it",
+      "kind": "contents",
+      "use_when": "시스템 구축 제안의 구성",
+      "content_budget": "설계·구현·검증·전환을 추적 가능한 산출물로 연결합니다. / 현황과 목표, 서비스와 데이터, 시험과 보안, 오픈과 인계"
+    },
+    "3": {
+      "role": "problem",
+      "theme_id": "it",
+      "kind": "before_after",
+      "use_when": "현행 업무와 목표 서비스",
+      "content_budget": "부서별로 나뉜 업무 기록을 공통 서비스에서 이어가는 구성안입니다. / 현행, 목표"
+    },
+    "4": {
+      "role": "domain",
+      "theme_id": "it",
+      "kind": "architecture",
+      "use_when": "목표 시스템 아키텍처",
+      "content_budget": "서비스·연계·데이터 계층의 책임과 접근 경계를 분리합니다. / 이용 채널, 서비스 계층, 데이터 계층"
+    },
+    "5": {
+      "role": "requirements",
+      "theme_id": "it",
+      "kind": "table",
+      "use_when": "요구사항과 검증의 연결",
+      "content_budget": "아래 ID는 예시이며 실제 생성 시 공고의 요구사항 번호로 연결합니다. / 예시 ID, DEMO-F01, DEMO-I01, DEMO-D01"
+    },
+    "6": {
+      "role": "domain",
+      "theme_id": "it",
+      "kind": "lanes",
+      "use_when": "사용자·서비스·관리자 흐름",
+      "content_budget": "기능 목록을 실제 처리 흐름과 역할별 확인 지점으로 구체화합니다. / 사용자, 서비스, 관리자"
+    },
+    "7": {
+      "role": "strategy",
+      "theme_id": "it",
+      "kind": "flow",
+      "use_when": "데이터 전환과 복구 기준",
+      "content_budget": "전환 전 대조 기준과 되돌릴 조건을 합의합니다. / 정의, 시험 이관, 전환 승인, 운영 전환"
+    },
+    "8": {
+      "role": "requirements",
+      "theme_id": "it",
+      "kind": "table",
+      "use_when": "인터페이스와 오류 처리",
+      "content_budget": "연계 항목마다 데이터 책임과 실패 시 처리 방법을 정합니다. / 연계 구간, 사용자·업무 서비스, 업무·외부 서비스, 업무·관리 도구"
+    },
+    "9": {
+      "role": "quality",
+      "theme_id": "it",
+      "kind": "verification",
+      "use_when": "설계 단계와 시험 단계",
+      "content_budget": "설계 산출물과 시험 결과를 같은 기준으로 대조합니다. / 요구사항, 업무·서비스 설계, 컴포넌트 설계, 구현 결과"
+    },
+    "10": {
+      "role": "security",
+      "theme_id": "it",
+      "kind": "table",
+      "use_when": "정보보호와 접근권한",
+      "content_budget": "구체적인 권한과 보호 조건은 원문 및 운영 정책에 따라 확정합니다. / 역할, 일반 사용자, 업무 담당자, 운영 관리자"
+    },
+    "11": {
+      "role": "timeline",
+      "theme_id": "it",
+      "kind": "lanes",
+      "use_when": "서비스 오픈과 전환 승인",
+      "content_budget": "이행 조건을 확인한 뒤 오픈하고 복구 여부를 판단할 기록을 남깁니다. / 오픈 전, 전환 중, 안정화"
+    },
+    "12": {
+      "role": "quality",
+      "theme_id": "it",
+      "kind": "table",
+      "use_when": "운영 관측과 품질 관리",
+      "content_budget": "목표 수치를 임의로 약속하지 않고 지표의 정의와 확인 방법을 먼저 정합니다. / 지표, 기능 오류, 처리 성능, 운영 안정"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "it",
+      "kind": "evidence",
+      "use_when": "기술 산출물과 검수 근거",
+      "content_budget": "요구사항과 구현·시험 결과가 서로 추적되도록 인계합니다. / 설계·소스, 시험·전환, 운영 인계",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "it",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "research_evidence.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "research",
+      "kind": "cover",
+      "use_when": "조사·연구·컨설팅 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "research",
+      "kind": "contents",
+      "use_when": "연구 수행의 구성",
+      "content_budget": "연구 질문과 자료 수집·분석·정책 활용을 연결합니다. / 문제와 질문, 자료와 방법, 결과와 대안, 활용과 검증"
+    },
+    "3": {
+      "role": "problem",
+      "theme_id": "research",
+      "kind": "questions",
+      "use_when": "연구 질문과 확인할 근거",
+      "content_budget": "정책의 효과를 미리 단정하지 않고 확인할 질문을 구체화합니다. / 어떤 지원이 필요한가, 어디에서 접근이 막히는가, 어떤 대안이 실행 가능한가"
+    },
+    "4": {
+      "role": "strategy",
+      "theme_id": "research",
+      "kind": "flow",
+      "use_when": "자료 수집과 연구 설계",
+      "content_budget": "서로 다른 자료의 역할을 구분해 결과의 해석 범위를 정합니다. / 문헌 검토, 현황 조사, 심층 인터뷰, 종합 분석"
+    },
+    "5": {
+      "role": "requirements",
+      "theme_id": "research",
+      "kind": "table",
+      "use_when": "조사 대상과 표본 설계",
+      "content_budget": "대상·규모·추출 방식은 공고와 가용 자료를 확인한 뒤 확정합니다. / 대상군, 지원 이용 기관, 미이용 기관, 운영 담당자"
+    },
+    "6": {
+      "role": "domain",
+      "theme_id": "research",
+      "kind": "questions",
+      "use_when": "질문지와 인터뷰 구성",
+      "content_budget": "각 문항을 연구 질문과 연결하고 사전 검토로 모호함을 줄입니다. / 현황, 경험, 수요, 검토"
+    },
+    "7": {
+      "role": "quality",
+      "theme_id": "research",
+      "kind": "table",
+      "use_when": "수집 자료의 품질 점검",
+      "content_budget": "자료의 신뢰성과 적용 범위를 함께 기록합니다. / 점검 대상, 문헌·통계, 조사 응답, 인터뷰"
+    },
+    "8": {
+      "role": "requirements",
+      "theme_id": "research",
+      "kind": "table",
+      "use_when": "연구 질문별 분석 계획",
+      "content_budget": "분석 방법을 자료의 성격과 연구 질문에 맞춰 선택합니다. / 질문, 지원 수요의 차이, 이용 장벽의 원인, 대안의 실행 조건"
+    },
+    "9": {
+      "role": "strategy",
+      "theme_id": "research",
+      "kind": "flow",
+      "use_when": "근거에서 정책 제안까지",
+      "content_budget": "분석 결과와 해석·제안을 구분해 읽을 수 있도록 작성합니다. / 자료, 분석, 해석, 제안"
+    },
+    "10": {
+      "role": "requirements",
+      "theme_id": "research",
+      "kind": "table",
+      "use_when": "정책 대안의 비교",
+      "content_budget": "아래는 설명용 대안이며 효과·채택 여부를 확정한 결과가 아닙니다. / 대안, 기존 지원 개선, 시범 사업 운영, 기관 간 연계"
+    },
+    "11": {
+      "role": "timeline",
+      "theme_id": "research",
+      "kind": "lanes",
+      "use_when": "실행 로드맵과 검토 시점",
+      "content_budget": "실행 단계마다 확인할 자료와 다음 단계의 판단 조건을 정합니다. / 기반 정리, 시범 적용, 보완·확산"
+    },
+    "12": {
+      "role": "organization",
+      "theme_id": "research",
+      "kind": "table",
+      "use_when": "연구 역할과 보고 체계",
+      "content_budget": "각 역할의 산출물을 연구 질문과 품질 점검에 연결합니다. / 역할, 연구 총괄, 조사·분석, 품질 검토"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "research",
+      "kind": "evidence",
+      "use_when": "보고서와 재현 가능한 근거",
+      "content_budget": "분석에 사용한 자료와 판단 과정을 확인할 수 있도록 전달합니다. / 출처 목록, 분석 기록, 활용 자료",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "research",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "research_insight.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "research",
+      "kind": "cover",
+      "use_when": "조사·연구·컨설팅 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "research",
+      "kind": "contents",
+      "use_when": "연구 수행의 구성",
+      "content_budget": "연구 질문과 자료 수집·분석·정책 활용을 연결합니다. / 문제와 질문, 자료와 방법, 결과와 대안, 활용과 검증"
+    },
+    "3": {
+      "role": "problem",
+      "theme_id": "research",
+      "kind": "questions",
+      "use_when": "연구 질문과 확인할 근거",
+      "content_budget": "정책의 효과를 미리 단정하지 않고 확인할 질문을 구체화합니다. / 어떤 지원이 필요한가, 어디에서 접근이 막히는가, 어떤 대안이 실행 가능한가"
+    },
+    "4": {
+      "role": "strategy",
+      "theme_id": "research",
+      "kind": "flow",
+      "use_when": "자료 수집과 연구 설계",
+      "content_budget": "서로 다른 자료의 역할을 구분해 결과의 해석 범위를 정합니다. / 문헌 검토, 현황 조사, 심층 인터뷰, 종합 분석"
+    },
+    "5": {
+      "role": "requirements",
+      "theme_id": "research",
+      "kind": "table",
+      "use_when": "조사 대상과 표본 설계",
+      "content_budget": "대상·규모·추출 방식은 공고와 가용 자료를 확인한 뒤 확정합니다. / 대상군, 지원 이용 기관, 미이용 기관, 운영 담당자"
+    },
+    "6": {
+      "role": "domain",
+      "theme_id": "research",
+      "kind": "questions",
+      "use_when": "질문지와 인터뷰 구성",
+      "content_budget": "각 문항을 연구 질문과 연결하고 사전 검토로 모호함을 줄입니다. / 현황, 경험, 수요, 검토"
+    },
+    "7": {
+      "role": "quality",
+      "theme_id": "research",
+      "kind": "table",
+      "use_when": "수집 자료의 품질 점검",
+      "content_budget": "자료의 신뢰성과 적용 범위를 함께 기록합니다. / 점검 대상, 문헌·통계, 조사 응답, 인터뷰"
+    },
+    "8": {
+      "role": "requirements",
+      "theme_id": "research",
+      "kind": "table",
+      "use_when": "연구 질문별 분석 계획",
+      "content_budget": "분석 방법을 자료의 성격과 연구 질문에 맞춰 선택합니다. / 질문, 지원 수요의 차이, 이용 장벽의 원인, 대안의 실행 조건"
+    },
+    "9": {
+      "role": "strategy",
+      "theme_id": "research",
+      "kind": "flow",
+      "use_when": "근거에서 정책 제안까지",
+      "content_budget": "분석 결과와 해석·제안을 구분해 읽을 수 있도록 작성합니다. / 자료, 분석, 해석, 제안"
+    },
+    "10": {
+      "role": "requirements",
+      "theme_id": "research",
+      "kind": "table",
+      "use_when": "정책 대안의 비교",
+      "content_budget": "아래는 설명용 대안이며 효과·채택 여부를 확정한 결과가 아닙니다. / 대안, 기존 지원 개선, 시범 사업 운영, 기관 간 연계"
+    },
+    "11": {
+      "role": "timeline",
+      "theme_id": "research",
+      "kind": "lanes",
+      "use_when": "실행 로드맵과 검토 시점",
+      "content_budget": "실행 단계마다 확인할 자료와 다음 단계의 판단 조건을 정합니다. / 기반 정리, 시범 적용, 보완·확산"
+    },
+    "12": {
+      "role": "organization",
+      "theme_id": "research",
+      "kind": "table",
+      "use_when": "연구 역할과 보고 체계",
+      "content_budget": "각 역할의 산출물을 연구 질문과 품질 점검에 연결합니다. / 역할, 연구 총괄, 조사·분석, 품질 검토"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "research",
+      "kind": "evidence",
+      "use_when": "보고서와 재현 가능한 근거",
+      "content_budget": "분석에 사용한 자료와 판단 과정을 확인할 수 있도록 전달합니다. / 출처 목록, 분석 기록, 활용 자료",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "research",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "event_experience.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "event",
+      "kind": "cover",
+      "use_when": "행사·홍보 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "event",
+      "kind": "contents",
+      "use_when": "행사 운영 제안의 구성",
+      "content_budget": "행사 전 안내부터 현장 경험과 결과 보고까지 하나의 흐름으로 연결합니다. / 행사 경험, 현장 운영, 참여와 안전, 성과와 정산"
+    },
+    "3": {
+      "role": "problem",
+      "theme_id": "event",
+      "kind": "compare",
+      "use_when": "행사 콘셉트와 참여 가치",
+      "content_budget": "지역 산업의 경험과 협업 기회를 연결하는 가상 포럼입니다. / 현장 사례 공유, 참여자 간 연결, 참여 이후 활용"
+    },
+    "4": {
+      "role": "run_of_show",
+      "theme_id": "event",
+      "kind": "table",
+      "use_when": "프로그램과 운영 큐시트",
+      "content_budget": "가상 행사 운영표이며 실제 시간·규모·출연자는 공고와 협의로 확정합니다. / 순서, 입장, 본 행사, 교류, 종료"
+    },
+    "5": {
+      "role": "domain",
+      "theme_id": "event",
+      "kind": "architecture",
+      "use_when": "공간 구성과 현장 동선",
+      "content_budget": "장소 도면이 아닌 기능 구역의 개념 구성입니다. / 입장 구역, 행사 구역, 지원 구역"
+    },
+    "6": {
+      "role": "strategy",
+      "theme_id": "event",
+      "kind": "flow",
+      "use_when": "참가자 여정",
+      "content_budget": "참여자가 필요한 정보를 각 시점에 받을 수 있도록 운영합니다. / 행사 전, 도착, 참여, 행사 후"
+    },
+    "7": {
+      "role": "domain",
+      "theme_id": "event",
+      "kind": "compare",
+      "use_when": "홍보 채널과 콘텐츠 구성",
+      "content_budget": "대상과 채널의 특성에 맞춰 메시지와 참여 경로를 연결합니다. / 기관 채널, 참여 커뮤니티, 현장·후속 콘텐츠"
+    },
+    "8": {
+      "role": "organization",
+      "theme_id": "event",
+      "kind": "table",
+      "use_when": "현장 인력과 책임 분담",
+      "content_budget": "실명·인원은 배치 자료를 확인한 뒤 반영합니다. / 역할, 운영 총괄, 무대·기술, 접수·안내, 기록·정산"
+    },
+    "9": {
+      "role": "timeline",
+      "theme_id": "event",
+      "kind": "lanes",
+      "use_when": "제작·리허설·현장 운영",
+      "content_budget": "일정은 가상 운영 단계이며 실제 마감과 승인 시점을 먼저 확인합니다. / 사전 제작, 리허설, 현장 운영"
+    },
+    "10": {
+      "role": "security",
+      "theme_id": "event",
+      "kind": "table",
+      "use_when": "혼잡·시설·비상 상황 대응",
+      "content_budget": "현장 조건과 원문 기준에 맞춰 안전 계획을 확정합니다. / 상황, 입장 혼잡, 시설·기상, 응급 상황"
+    },
+    "11": {
+      "role": "strategy",
+      "theme_id": "event",
+      "kind": "flow",
+      "use_when": "프로그램 변경과 대체 운영",
+      "content_budget": "중요한 변경은 운영 총괄과 발주처의 판단·기록을 거칩니다. / 상황 확인, 영향 검토, 대체안 협의, 안내·실행"
+    },
+    "12": {
+      "role": "metrics",
+      "theme_id": "event",
+      "kind": "table",
+      "use_when": "성과 측정과 결과 보고",
+      "content_budget": "결과 수치를 미리 만들지 않고 수집 방식과 검토 기준을 정합니다. / 관측 항목, 참여 흐름, 프로그램 반응, 운영 결과"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "event",
+      "kind": "evidence",
+      "use_when": "행사 산출물과 사용 범위",
+      "content_budget": "제작물·현장 기록·비용 근거를 제출 조건에 맞춰 인계합니다. / 기획·제작물, 현장 기록, 결과·정산",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "event",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "event_show.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "event",
+      "kind": "cover",
+      "use_when": "행사·홍보 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "event",
+      "kind": "contents",
+      "use_when": "행사 운영 제안의 구성",
+      "content_budget": "행사 전 안내부터 현장 경험과 결과 보고까지 하나의 흐름으로 연결합니다. / 행사 경험, 현장 운영, 참여와 안전, 성과와 정산"
+    },
+    "3": {
+      "role": "problem",
+      "theme_id": "event",
+      "kind": "compare",
+      "use_when": "행사 콘셉트와 참여 가치",
+      "content_budget": "지역 산업의 경험과 협업 기회를 연결하는 가상 포럼입니다. / 현장 사례 공유, 참여자 간 연결, 참여 이후 활용"
+    },
+    "4": {
+      "role": "run_of_show",
+      "theme_id": "event",
+      "kind": "table",
+      "use_when": "프로그램과 운영 큐시트",
+      "content_budget": "가상 행사 운영표이며 실제 시간·규모·출연자는 공고와 협의로 확정합니다. / 순서, 입장, 본 행사, 교류, 종료"
+    },
+    "5": {
+      "role": "domain",
+      "theme_id": "event",
+      "kind": "architecture",
+      "use_when": "공간 구성과 현장 동선",
+      "content_budget": "장소 도면이 아닌 기능 구역의 개념 구성입니다. / 입장 구역, 행사 구역, 지원 구역"
+    },
+    "6": {
+      "role": "strategy",
+      "theme_id": "event",
+      "kind": "flow",
+      "use_when": "참가자 여정",
+      "content_budget": "참여자가 필요한 정보를 각 시점에 받을 수 있도록 운영합니다. / 행사 전, 도착, 참여, 행사 후"
+    },
+    "7": {
+      "role": "domain",
+      "theme_id": "event",
+      "kind": "compare",
+      "use_when": "홍보 채널과 콘텐츠 구성",
+      "content_budget": "대상과 채널의 특성에 맞춰 메시지와 참여 경로를 연결합니다. / 기관 채널, 참여 커뮤니티, 현장·후속 콘텐츠"
+    },
+    "8": {
+      "role": "organization",
+      "theme_id": "event",
+      "kind": "table",
+      "use_when": "현장 인력과 책임 분담",
+      "content_budget": "실명·인원은 배치 자료를 확인한 뒤 반영합니다. / 역할, 운영 총괄, 무대·기술, 접수·안내, 기록·정산"
+    },
+    "9": {
+      "role": "timeline",
+      "theme_id": "event",
+      "kind": "lanes",
+      "use_when": "제작·리허설·현장 운영",
+      "content_budget": "일정은 가상 운영 단계이며 실제 마감과 승인 시점을 먼저 확인합니다. / 사전 제작, 리허설, 현장 운영"
+    },
+    "10": {
+      "role": "security",
+      "theme_id": "event",
+      "kind": "table",
+      "use_when": "혼잡·시설·비상 상황 대응",
+      "content_budget": "현장 조건과 원문 기준에 맞춰 안전 계획을 확정합니다. / 상황, 입장 혼잡, 시설·기상, 응급 상황"
+    },
+    "11": {
+      "role": "strategy",
+      "theme_id": "event",
+      "kind": "flow",
+      "use_when": "프로그램 변경과 대체 운영",
+      "content_budget": "중요한 변경은 운영 총괄과 발주처의 판단·기록을 거칩니다. / 상황 확인, 영향 검토, 대체안 협의, 안내·실행"
+    },
+    "12": {
+      "role": "metrics",
+      "theme_id": "event",
+      "kind": "table",
+      "use_when": "성과 측정과 결과 보고",
+      "content_budget": "결과 수치를 미리 만들지 않고 수집 방식과 검토 기준을 정합니다. / 관측 항목, 참여 흐름, 프로그램 반응, 운영 결과"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "event",
+      "kind": "evidence",
+      "use_when": "행사 산출물과 사용 범위",
+      "content_budget": "제작물·현장 기록·비용 근거를 제출 조건에 맞춰 인계합니다. / 기획·제작물, 현장 기록, 결과·정산",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "event",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "supply_spec.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "supply",
+      "kind": "cover",
+      "use_when": "물품·설비 납품 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "supply",
+      "kind": "contents",
+      "use_when": "공급·설치 제안의 구성",
+      "content_budget": "요청 규격과 실제 반입·설치·검수 자료를 연결합니다. / 규격과 구성, 공급과 설치, 검수와 교육, 보증과 지원"
+    },
+    "3": {
+      "role": "domain",
+      "theme_id": "supply",
+      "kind": "tree",
+      "use_when": "납품 구성과 품목 체계",
+      "content_budget": "아래는 품목 구성의 개념이며 실제 모델과 수량은 원문과 제조사 자료로 확정합니다. / 업무용 장비 구성, 주 장비, 연결·부속품, 운영 자료"
+    },
+    "4": {
+      "role": "requirements",
+      "theme_id": "supply",
+      "kind": "table",
+      "use_when": "요청 규격과 제안 사양 비교",
+      "content_budget": "실제 성능·규격 충족 여부는 제조사 원문과 시험 자료로 확인합니다. / 대조 항목, 주요 성능, 호환성, 구성품"
+    },
+    "5": {
+      "role": "domain",
+      "theme_id": "supply",
+      "kind": "compare",
+      "use_when": "설치 환경과 호환 조건",
+      "content_budget": "물품 사양뿐 아니라 현장에서 사용할 수 있는 조건을 확인합니다. / 공간·반입, 전원·연결, 운영 환경"
+    },
+    "6": {
+      "role": "quality",
+      "theme_id": "supply",
+      "kind": "table",
+      "use_when": "제조사와 공급 이력 관리",
+      "content_budget": "발주·입고·설치·검수까지 제품의 이력을 연결합니다. / 확인 자료, 공급 자료, 제품 정보, 보증·검사"
+    },
+    "7": {
+      "role": "strategy",
+      "theme_id": "supply",
+      "kind": "flow",
+      "use_when": "납품과 반입 절차",
+      "content_budget": "현장 여건과 승인된 납품 계획에 맞춰 반입·상태 확인을 진행합니다. / 출고 확인, 운송·반입, 현장 입고, 설치 인계"
+    },
+    "8": {
+      "role": "domain",
+      "theme_id": "supply",
+      "kind": "lanes",
+      "use_when": "설치와 시운전 순서",
+      "content_budget": "설치 결과와 기능 시험 기록을 검수에 연결합니다. / 설치 준비, 설치·구성, 시운전"
+    },
+    "9": {
+      "role": "quality",
+      "theme_id": "supply",
+      "kind": "table",
+      "use_when": "검수 기준과 확인 기록",
+      "content_budget": "판정 기준은 공고·계약·승인 자료를 대조해 확정합니다. / 검수 항목, 규격·수량, 기능·연계, 문서·인계"
+    },
+    "10": {
+      "role": "strategy",
+      "theme_id": "supply",
+      "kind": "flow",
+      "use_when": "관리자 교육과 운영 인계",
+      "content_budget": "장비를 사용할 수 있는 설명과 자료를 함께 전달합니다. / 기본 사용, 일상 점검, 오류 대응, 자료 인계"
+    },
+    "11": {
+      "role": "management",
+      "theme_id": "supply",
+      "kind": "lanes",
+      "use_when": "보증과 사후지원 체계",
+      "content_budget": "보증 기간과 처리 조건은 원문·계약·제조사 자료를 확인해 반영합니다. / 접수, 진단·조치, 완료 확인"
+    },
+    "12": {
+      "role": "requirements",
+      "theme_id": "supply",
+      "kind": "table",
+      "use_when": "예비품과 소모품 운영",
+      "content_budget": "필요 품목·공급 조건·교체 주기는 실제 제품 기준으로 검토합니다. / 품목 구분, 예비 부품, 소모품, 단종·대체품"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "supply",
+      "kind": "evidence",
+      "use_when": "납품 대장과 인계 근거",
+      "content_budget": "제품 정보와 설치·검사·지원 자료를 한 묶음으로 인계합니다. / 품목·제조번호, 설치·검수, 운영·보증",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "supply",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
+  },
+  "supply_install.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "supply",
+      "kind": "cover",
+      "use_when": "물품·설비 납품 사업명",
+      "content_budget": "사업명·발주기관·제안사·제출일"
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "supply",
+      "kind": "contents",
+      "use_when": "공급·설치 제안의 구성",
+      "content_budget": "요청 규격과 실제 반입·설치·검수 자료를 연결합니다. / 규격과 구성, 공급과 설치, 검수와 교육, 보증과 지원"
+    },
+    "3": {
+      "role": "domain",
+      "theme_id": "supply",
+      "kind": "tree",
+      "use_when": "납품 구성과 품목 체계",
+      "content_budget": "아래는 품목 구성의 개념이며 실제 모델과 수량은 원문과 제조사 자료로 확정합니다. / 업무용 장비 구성, 주 장비, 연결·부속품, 운영 자료"
+    },
+    "4": {
+      "role": "requirements",
+      "theme_id": "supply",
+      "kind": "table",
+      "use_when": "요청 규격과 제안 사양 비교",
+      "content_budget": "실제 성능·규격 충족 여부는 제조사 원문과 시험 자료로 확인합니다. / 대조 항목, 주요 성능, 호환성, 구성품"
+    },
+    "5": {
+      "role": "domain",
+      "theme_id": "supply",
+      "kind": "compare",
+      "use_when": "설치 환경과 호환 조건",
+      "content_budget": "물품 사양뿐 아니라 현장에서 사용할 수 있는 조건을 확인합니다. / 공간·반입, 전원·연결, 운영 환경"
+    },
+    "6": {
+      "role": "quality",
+      "theme_id": "supply",
+      "kind": "table",
+      "use_when": "제조사와 공급 이력 관리",
+      "content_budget": "발주·입고·설치·검수까지 제품의 이력을 연결합니다. / 확인 자료, 공급 자료, 제품 정보, 보증·검사"
+    },
+    "7": {
+      "role": "strategy",
+      "theme_id": "supply",
+      "kind": "flow",
+      "use_when": "납품과 반입 절차",
+      "content_budget": "현장 여건과 승인된 납품 계획에 맞춰 반입·상태 확인을 진행합니다. / 출고 확인, 운송·반입, 현장 입고, 설치 인계"
+    },
+    "8": {
+      "role": "domain",
+      "theme_id": "supply",
+      "kind": "lanes",
+      "use_when": "설치와 시운전 순서",
+      "content_budget": "설치 결과와 기능 시험 기록을 검수에 연결합니다. / 설치 준비, 설치·구성, 시운전"
+    },
+    "9": {
+      "role": "quality",
+      "theme_id": "supply",
+      "kind": "table",
+      "use_when": "검수 기준과 확인 기록",
+      "content_budget": "판정 기준은 공고·계약·승인 자료를 대조해 확정합니다. / 검수 항목, 규격·수량, 기능·연계, 문서·인계"
+    },
+    "10": {
+      "role": "strategy",
+      "theme_id": "supply",
+      "kind": "flow",
+      "use_when": "관리자 교육과 운영 인계",
+      "content_budget": "장비를 사용할 수 있는 설명과 자료를 함께 전달합니다. / 기본 사용, 일상 점검, 오류 대응, 자료 인계"
+    },
+    "11": {
+      "role": "management",
+      "theme_id": "supply",
+      "kind": "lanes",
+      "use_when": "보증과 사후지원 체계",
+      "content_budget": "보증 기간과 처리 조건은 원문·계약·제조사 자료를 확인해 반영합니다. / 접수, 진단·조치, 완료 확인"
+    },
+    "12": {
+      "role": "requirements",
+      "theme_id": "supply",
+      "kind": "table",
+      "use_when": "예비품과 소모품 운영",
+      "content_budget": "필요 품목·공급 조건·교체 주기는 실제 제품 기준으로 검토합니다. / 품목 구분, 예비 부품, 소모품, 단종·대체품"
+    },
+    "13": {
+      "role": "evidence",
+      "theme_id": "supply",
+      "kind": "evidence",
+      "use_when": "납품 대장과 인계 근거",
+      "content_budget": "제품 정보와 설치·검사·지원 자료를 한 묶음으로 인계합니다. / 품목·제조번호, 설치·검수, 운영·보증",
+      "material_slot": [
+        0.54,
+        0.39,
+        0.41,
+        0.44
+      ]
+    },
+    "14": {
+      "role": "closing",
+      "theme_id": "supply",
+      "kind": "closing",
+      "use_when": "제안 마무리",
+      "content_budget": "제안 요약·연락처"
+    }
   }
 }

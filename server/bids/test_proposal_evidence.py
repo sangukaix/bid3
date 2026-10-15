@@ -18,6 +18,32 @@ class Answer(BaseModel):
 
 
 class ProposalEvidenceTests(SimpleTestCase):
+    def test_source_limit_does_not_depend_on_the_model_guess_or_other_files(self):
+        from bids.services.proposal_text_fit import source_page_limit
+        self.assertEqual(source_page_limit('정성제안서 | 최대 40쪽; 표지 포함. 발표자료 15쪽 이내.'), 40)
+        self.assertEqual(source_page_limit('정량제안서 10쪽 이내. 제안서 본문은 30페이지 이내 작성.'), 30)
+        self.assertEqual(source_page_limit('요약제안서 10쪽 이내. 정성제안서 최대 40쪽.'), 40)
+        self.assertEqual(source_page_limit('제안서 본문은 30매 미만.'), 29)
+        self.assertIsNone(source_page_limit('제안서 10부 제출, 제안 설명 10분. 발표자료 최대 15쪽.'))
+
+    def test_optional_company_material_override_receives_context_budget(self):
+        prompt = ChatPromptTemplate.from_template(
+            '{instruction}\n{bid_context}\n{company_material_context}'
+        ).partial(company_material_context='')
+        reports = []
+        material = '\n\n'.join(f'[회사 원문 {number}] 교육 운영 방법 참고 자료 ' + '학습 지원 ' * 35
+                               for number in range(100))
+        fitted = fit_inputs(prompt, {
+            'instruction':'공고에 맞는 전략 작성', 'bid_context':'교육 운영 기간 30일',
+            'company_material_context':material, '_evidence_query':'교육 운영 방법',
+            '_evidence_reports':reports,
+        }, OllamaChatModel(model='gemma4:26b', num_ctx=8192, num_predict=1000), Answer)
+        self.assertIn('30일', fitted['bid_context'])
+        self.assertTrue(fitted['company_material_context'])
+        self.assertLess(len(fitted['company_material_context']), len(material))
+        self.assertTrue(reports[0]['fields']['company_material_context']['omitted_ids'])
+        self.assertLessEqual(reports[0]['input_bytes'], reports[0]['budget_bytes'])
+
     def test_short_requirement_packets_keep_all_evidence_when_context_is_available(self):
         prompt = ChatPromptTemplate.from_template("{instruction}\n{requirement_context}\n{company_knowledge_context}")
         fact = "교육 10회, 계약기간 3개월. 강사 자격의 구체적 기준은 미제공."

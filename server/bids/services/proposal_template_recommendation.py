@@ -38,6 +38,40 @@ def _contains_keyword(text, keywords):
 def recommend_proposal_template(bid_notice, profile=None):
     """프로젝트 성격을 점수화해 가장 잘 맞는 템플릿과 이유를 반환합니다."""
 
+    # 발주기관 이름의 '공사'나 '교육원'보다 실제 과업을 우선합니다.
+    title = str(bid_notice.title or "").lower()
+    business_type = str(bid_notice.business_type or "").lower()
+    domain = None
+    if "물품" in business_type:
+        domain = "supply_spec"
+    elif "공사" in business_type:
+        domain = "construction_site"
+    elif (_contains_keyword(title, ("시스템", "플랫폼", "정보화", "포털", "소프트웨어"))
+          and _contains_keyword(title, ("구축", "개발", "고도화", "전환", "개선"))):
+        domain = "it_architecture"
+    elif _contains_keyword(title, ("연구", "실태조사", "설문조사", "정책", "컨설팅", "타당성", "수요조사")):
+        domain = "research_evidence"
+    elif _contains_keyword(title, ("행사", "축제", "박람회", "전시", "홍보", "컨퍼런스", "포럼")):
+        domain = "event_experience"
+    elif _contains_keyword(title, TEMPLATE_KEYWORDS["modern"]):
+        domain = "it_architecture"
+    elif _contains_keyword(title, ("시공", "건축공사", "토목", "리모델링", "시설개선", "시설 개선", "보수공사")):
+        domain = "construction_site"
+    elif _contains_keyword(title, ("교육", "연수", "외국어", "직무훈련", "역량강화", "워크숍")):
+        domain = "education_learning"
+    elif _contains_keyword(title, TEMPLATE_KEYWORDS["corporate"]):
+        domain = "supply_spec"
+    domain_reasons = {
+        "education_learning": "교육 과정표, 학습 흐름, 출석·평가와 교육 운영 일정 중심의 구조입니다.",
+        "construction_site": "공종 WBS, 개념 공정표, 품질 승인점, 안전·준공 인계 중심의 구조입니다.",
+        "it_architecture": "IT 시스템 구성, 요구사항 추적, 데이터 전환과 시험·개통 중심의 구조입니다.",
+        "research_evidence": "연구 질문, 조사 설계, 분석·검증과 정책 대안 중심의 구조입니다.",
+        "event_experience": "행사 콘셉트, 진행표, 참가자 동선과 현장·안전 운영 중심의 구조입니다.",
+        "supply_spec": "물품 구성, 규격 대응표, 납품·설치와 검수·보증 중심의 구조입니다.",
+    }
+    if domain:
+        return {"id": domain, "reason": domain_reasons[domain], "signals": ["공고 분야별 구조"]}
+
     project_text = " ".join(
         str(value or "").lower()
         for value in (

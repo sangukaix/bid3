@@ -1415,8 +1415,11 @@ def serialize_proposal_templates():
             "collection": template.get("collection", "기존 템플릿"),
             "license_note": template.get("license_note", ""),
             "palette": template.get("palette", {}),
+            "theme_id": template.get("theme_id", ""),
+            "structure_summary": template.get("structure_summary", ""),
+            "outline": template.get("outline", []),
         })
-    return templates
+    return sorted(templates, key=lambda item: not bool(item["theme_id"]))
 
 
 def serialize_quantitative_proposal(quantitative_proposal):
@@ -2147,6 +2150,11 @@ def bid_proposal_output_review(request, bid_ntce_no):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def bid_proposal_download(request, bid_ntce_no):
+    # DRF reserves the `format` query parameter for response negotiation.
+    output_format = request.query_params.get('file_format', 'pptx')
+    orientation = request.query_params.get('orientation', 'landscape')
+    if output_format not in {'pptx', 'pdf'} or orientation not in {'portrait', 'landscape'}:
+        return Response({'error':'다운로드 형식 또는 PDF 방향을 확인하세요.'}, status=400)
     proposal = (
         BidProposal.objects.filter(
             saved_bid__user=request.user,
@@ -2165,6 +2173,20 @@ def bid_proposal_download(request, bid_ntce_no):
             {"error": "미리보기 확인 후 제안서 만들기를 눌러 최종본을 확정해 주세요."},
             status=status.HTTP_409_CONFLICT,
         )
+
+    if output_format == 'pdf':
+        from .services.proposal_pdf import a4_pdf
+        from .services.proposal_preview import create_proposal_preview
+        from django.http import HttpResponse
+        from pypdf.errors import PdfReadError
+        try:
+            preview = create_proposal_preview(proposal)
+            content = a4_pdf(preview.read_bytes(), orientation)
+        except (OSError, ValueError, PdfReadError):
+            return Response({'error':'PDF를 변환하지 못했습니다. 미리보기와 변환 프로그램을 확인한 뒤 다시 시도하세요.'}, status=422)
+        response = HttpResponse(content, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="bid3-proposal-{bid_ntce_no}-A4-{orientation}.pdf"'
+        return response
 
     return FileResponse(
         proposal.generated_file.open("rb"),

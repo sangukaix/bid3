@@ -17,7 +17,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Project, PersonalTemplate, Reference, Message, Job
+from .models import Project, PersonalTemplate, Reference, Message
 from .decks import Deck, MAX_BYTES
 from . import sources
 from .ai import model_name

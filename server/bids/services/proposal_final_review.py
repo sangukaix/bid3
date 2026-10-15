@@ -245,22 +245,25 @@ def review_final_document(content, knowledge, model, register=None):
     generic = {'총','일정','사업','사업을','사업의','기간','운영','교육','수행','확인','여부','필요','이상','이내',
                '이내에','착수','착수일로부터','전까지','일까지','까지','완료','충족','상시','예정','담당자','가능','따라',
                '운영함','제공함','수행함','검증','검토','결과','계획','관리','체계','수립','진행','실시','구성','구축'}
+    quantities = re.compile(r'\d+(?:[.,/-]\d+)*\s*(?:시간|개월|만원|천원|억원|명|회|분|일|주|년|월|원|%)?')
+    # Each passage participates in many page pairs; parse its stable features once.
+    features = {line:(normalize(line),
+        set(re.findall(r'[가-힣A-Za-z]{2,}',re.sub(r'\d+(?:[.,/-]\d+)*','',field_label.sub('',line)))) - generic,
+        quantities.findall(line)) for lines in anchors.values() for line in lines}
     for first, lines in anchors.items():
         for second, other in anchors.items():
             if second < first:
                 continue
             candidates = []
             for a_index,a in enumerate(lines):
-                label = re.sub(r'\d+(?:[.,/-]\d+)*','',field_label.sub('',a))
-                words = set(re.findall(r'[가-힣A-Za-z]{2,}',label)) - generic
+                normalized, words, values = features[a]
                 for b_index,b in enumerate(other):
                     if first==second and b_index<=a_index:
                         continue
-                    other_words = set(re.findall(r'[가-힣A-Za-z]{2,}',re.sub(r'\d+(?:[.,/-]\d+)*','',field_label.sub('',b)))) - generic
-                    if normalize(a)==normalize(b) or not words & other_words or not comparable_quantities(a,b):
+                    other_normalized, other_words, other_values = features[b]
+                    if normalized==other_normalized or not words & other_words or not comparable_quantities(a,b):
                         continue
-                    quantities = r'\d+(?:[.,/-]\d+)*\s*(?:시간|개월|만원|천원|억원|명|회|분|일|주|년|월|원|%)?'
-                    if re.findall(quantities,a)==re.findall(quantities,b):
+                    if values==other_values:
                         continue
                     candidates.append({'first_page':first,'first_quote':a,'second_page':second,'second_quote':b})
             pairs.extend(candidates)

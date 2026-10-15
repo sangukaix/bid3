@@ -1,4 +1,6 @@
 import json  # Chroma 인덱스 버전과 파일 처리 결과 저장
+from hashlib import sha256
+from django.utils import timezone
 from uuid import uuid4
 from django.conf import settings
 from pathlib import Path
@@ -16,50 +18,51 @@ from .vector_store import create_or_load_vector_store, get_bid_db_path
 INDEX_VERSION = 3  # HWP 표 안의 텍스트까지 보존하는 인덱스 버전
 
 
-def prepare_docs_for_ai(bid_ntce_no):
+def prepare_docs_for_ai(bid_ntce_no, *, refresh=False, expected_ord=None):
     """특정 공고의 모든 지원 문서를 AI가 검색할 수 있도록 준비합니다."""
 
     db_path = get_bid_db_path(bid_ntce_no)
     mode = search_mode()
     index_info_path = db_path / ("keyword_info.json" if mode == "keyword" else "index_info.json")
-    if mode == "keyword":
-        documents = load_keyword_documents(bid_ntce_no)
-        try:
-            index_info = json.loads(index_info_path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            index_info = {}
-        hwp_changed = any((d.metadata.get("file_name") or d.metadata.get("source", "")).lower().endswith(".hwp")
-                          for d in documents) and index_info.get("version") != INDEX_VERSION
-        if documents and not hwp_changed:
-            files = sorted({d.metadata.get("file_name") or Path(d.metadata.get("source", "")).name for d in documents})
-            return {
-                "created": False, "message": "로컬 키워드 검색 문서를 재사용합니다.",
-                "search_mode": "keyword", "processed_files": files,
-                "failed_files": [], "chunk_count": len(documents),
-            }
-
-    if mode == "vector" and (db_path / "chroma.sqlite3").exists() and index_info_path.exists():
-        try:
-            index_info = json.loads(index_info_path.read_text(encoding="utf-8"))
-            if index_info.get("version") == INDEX_VERSION:  # 현재 방식으로 처리한 공고만 재사용
-                return {
-                    "created": False,
-                    "message": "기존 Chroma DB를 재사용합니다.",
-                    **index_info,
-                }
-        except json.JSONDecodeError:
-            pass  # 손상된 버전 파일은 아래에서 Chroma와 함께 다시 생성
-
     bid_notice = (
         BidNotice.objects.filter(bid_ntce_no=bid_ntce_no)
         .order_by("-bid_ntce_ord")
         .first()
-    )  # DB에서 해당 공고의 최신 차수 가져오기
-
+    )
     if bid_notice is None:
         raise ValueError("DB에서 해당 입찰공고를 찾을 수 없습니다.")
+    if expected_ord is not None and bid_notice.bid_ntce_ord != expected_ord:
+        raise ValueError("저장한 공고보다 새 차수가 있습니다. 입찰공고 목록에서 최신 공고를 다시 저장한 뒤 생성하세요.")
+    try:
+        index_info = json.loads(index_info_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        index_info = {}
+    reusable = (index_info.get("version") == INDEX_VERSION
+                and index_info.get("bid_ntce_ord") == bid_notice.bid_ntce_ord)
+    attachments = None
+    if refresh:
+        # New outputs must check the live attachment list, even with a warm cache.
+        # A failed live request must not certify an old list as current.
+        attachments = fetch_bid_attachments(bid_ntce_no, bid_notice.business_type,
+                                            bid_notice.bid_ntce_ord)
+        signature = sha256(json.dumps(attachments, sort_keys=True).encode()).hexdigest()
+        reusable = (reusable and index_info.get("attachment_signature") == signature
+                    and not index_info.get("failed_files"))
+        if reusable:
+            index_info["attachment_checked_at"] = timezone.now().isoformat()
+            index_info_path.write_text(json.dumps(index_info, ensure_ascii=False, indent=2), encoding="utf-8")
+    if mode == "keyword":
+        documents = load_keyword_documents(bid_ntce_no)
+        if documents and reusable:
+            return {
+                "created": False, "message": "로컬 키워드 검색 문서를 재사용합니다.",
+                **index_info,
+            }
 
-    attachments = fetch_bid_attachments(
+    if mode == "vector" and (db_path / "chroma.sqlite3").exists() and reusable:
+        return {"created": False, "message": "기존 Chroma DB를 재사용합니다.", **index_info}
+
+    attachments = attachments if attachments is not None else fetch_bid_attachments(
         bid_ntce_no=bid_notice.bid_ntce_no,
         business_type=bid_notice.business_type,
         bid_ntce_ord=bid_notice.bid_ntce_ord,
@@ -103,6 +106,9 @@ def prepare_docs_for_ai(bid_ntce_no):
         chunk_count = vector_store._collection.count()
     index_info = {
         "version": INDEX_VERSION,
+        "bid_ntce_ord": bid_notice.bid_ntce_ord,
+        "attachment_signature": sha256(json.dumps(attachments, sort_keys=True).encode()).hexdigest(),
+        "attachment_checked_at": timezone.now().isoformat(),
         "attachment_count": len(attachments),
         "processed_files": extraction.processed_files,
         "failed_files": failed_files,

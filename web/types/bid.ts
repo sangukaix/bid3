@@ -106,6 +106,7 @@ export type BidProposalData = {
     output_review?: ProposalOutputReview;
     company_claim_review?: CompanyClaimReview;
     writing_plan?: ProposalWritingPlan;
+    company_material_usage?: CompanyMaterialUsage;
     final_document_review?: ProposalFinalReview;
     bounded_repair?: {attempt_count:number; accepted:boolean; pages:number[]; reason:string};
     quality_review?: {
@@ -164,12 +165,23 @@ export type BidProposalData = {
   download_url: string;
 };
 
+export type CompanyMaterialUsage = {
+  version: string;
+  documents: Array<{document_id:number; file_name:string; source_sha256:string; pages:number}>;
+  used_assets: Array<{asset_id:string; document_id:number; file_name:string; source_page:number;
+    output_slide_number:number; kind:"image"|"source_panel"; layout:string; review_required:boolean;
+    review_note:string; image_matches_source?:boolean}>;
+  failed_files: Array<{file_name:string; reason:string}>;
+  warnings: string[];
+};
+
 export type ProposalOutputReview = {
   version: string; file_sha256: string; actual_slide_count: number;
   source_register_available: boolean; matched_count: number; total_count: number;
+  body_total_count?: number; body_matched_count?: number; body_review_required_count?: number; separate_count?: number;
   review_required_count: number; page_limit_exceeded: boolean; review_notes: string[]; limitation: string;
   checks: Array<{ id: string; requirement: string; category?: string; priority?: string;
-    evaluation_points?: string; form_name?: string; sources?: string[];
+    evaluation_points?: string; form_name?: string; sources?: string[]; channel?: string; channel_label?: string;
     covered: boolean; slide_number: number | null; quote: string; reason: string; status: string }>;
   open_text_items: Array<{ slide_number: number; text: string }>;
 };
@@ -186,6 +198,9 @@ export type ProposalTemplateOption = {
   category?: string;
   tags?: string[];
   collection?: string;
+  theme_id?: string;
+  structure_summary?: string;
+  outline?: string[];
   license_note?: string;
   palette?: { bg?: string; ink?: string; accent?: string; soft?: string };
 };

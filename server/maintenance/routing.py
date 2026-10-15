@@ -45,7 +45,7 @@ def validate(data):
 def defaults():
     return {"mode":"local","routes":{role:{"provider":"ollama","model":
         os.getenv("LOCAL_VISION_MODEL","gemma4:26b") if role=="VISION" else
-        os.getenv(f"{role}_LOCAL_MODEL",os.getenv("LOCAL_LLM_MODEL","qwen3:14b"))}
+        os.getenv(f"{role}_LOCAL_MODEL",os.getenv("LOCAL_LLM_MODEL","gemma4:26b"))}
         for role in ROLES}}
 def save_config(data, username):
     clean=validate(data)

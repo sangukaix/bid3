@@ -1,5 +1,3 @@
-from chromadb.config import Settings
-from langchain_chroma import Chroma  # 저장된 벡터 DB 불러오기
 from langchain_openai import OpenAIEmbeddings  # 질문을 벡터로 변환
 from ..llm import cloud_options
 from .keyword_store import load_keyword_documents, search_keyword_documents, search_mode
@@ -18,6 +16,8 @@ MIN_SEARCH_RESULTS = 5  # 점수 기준이 너무 엄격해도 최소한 확보�
 
 
 def get_bid_vector_store(bid_ntce_no):  # 공고번호 전용 Chroma DB를 불러오는 함수
+    from chromadb.config import Settings
+    from langchain_chroma import Chroma
     db_path = get_bid_db_path(bid_ntce_no)  # 공고별 DB 경로
 
     if not db_path.exists():  # 아직 처리하지 않은 공고인지 확인

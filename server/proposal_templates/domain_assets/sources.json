@@ -1,0 +1,72 @@
+[
+  {
+    "id": "construction",
+    "url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1800&q=85",
+    "bytes": 585546,
+    "use": "분야 설명용 스톡 이미지. 실제 제안사 수행·설치·행사 사진 아님."
+  },
+  {
+    "id": "it",
+    "url": "https://images.pexels.com/photos/325229/pexels-photo-325229.jpeg?auto=compress&cs=tinysrgb&w=1800",
+    "bytes": 78780,
+    "use": "분야 설명용 스톡 이미지. 실제 제안사 수행·설치·행사 사진 아님."
+  },
+  {
+    "id": "research",
+    "url": "https://images.pexels.com/photos/1181396/pexels-photo-1181396.jpeg?auto=compress&cs=tinysrgb&w=1800",
+    "bytes": 253121,
+    "use": "분야 설명용 스톡 이미지. 실제 제안사 수행·설치·행사 사진 아님."
+  },
+  {
+    "id": "event",
+    "url": "https://images.pexels.com/photos/2774556/pexels-photo-2774556.jpeg?auto=compress&cs=tinysrgb&w=1800",
+    "bytes": 213442,
+    "use": "분야 설명용 스톡 이미지. 실제 제안사 수행·설치·행사 사진 아님."
+  },
+  {
+    "id": "supply",
+    "url": "https://images.pexels.com/photos/4481259/pexels-photo-4481259.jpeg?auto=compress&cs=tinysrgb&w=1800",
+    "bytes": 305421,
+    "use": "분야 설명용 스톡 이미지. 실제 제안사 수행·설치·행사 사진 아님."
+  },
+  {
+    "id": "construction-detail",
+    "url": "https://images.pexels.com/photos/8961065/pexels-photo-8961065.jpeg?auto=compress&cs=tinysrgb&w=1500",
+    "bytes": 213045,
+    "use": "분야 설명용 스톡 이미지. 실제 수행 사진 아님."
+  },
+  {
+    "id": "it-detail",
+    "url": "https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=1500",
+    "bytes": 118495,
+    "use": "분야 설명용 스톡 이미지. 실제 수행 사진 아님."
+  },
+  {
+    "id": "research-detail",
+    "url": "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1500",
+    "bytes": 170455,
+    "use": "분야 설명용 스톡 이미지. 실제 수행 사진 아님."
+  },
+  {
+    "id": "event-detail",
+    "url": "https://images.pexels.com/photos/2608517/pexels-photo-2608517.jpeg?auto=compress&cs=tinysrgb&w=1500",
+    "bytes": 198347,
+    "use": "분야 설명용 스톡 이미지. 실제 수행 사진 아님."
+  },
+  {
+    "id": "supply-detail",
+    "url": "https://images.pexels.com/photos/4481532/pexels-photo-4481532.jpeg?auto=compress&cs=tinysrgb&w=1500",
+    "bytes": 545284,
+    "use": "분야 설명용 스톡 이미지. 실제 수행 사진 아님."
+  },
+  {
+    "id": "education",
+    "url": "BID3 기존 Codex 생성 이미지",
+    "use": "AI 생성 가상 교육 장면. 실제 회사 직원·강사·수행 사진 아님."
+  },
+  {
+    "id": "education-detail",
+    "url": "BID3 기존 Codex 생성 이미지",
+    "use": "AI 생성 가상 교육 장면. 실제 회사 직원·강사·수행 사진 아님."
+  }
+]

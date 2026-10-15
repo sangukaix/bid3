@@ -2,7 +2,7 @@
 
 집 컴퓨터에서 작업을 다시 시작할 때 이 문서부터 읽습니다.
 
-2026-10-10 현재 MVP 구현·검증 상태는 [제안서 검증 기록](PROPOSAL_QUALITY_VALIDATION.md), 일반 발표자료 기능은 [발표자료 작업실](PRESENTATION_STUDIO.md), 로컬 Gemma 설정은 [LLM 설정](LLM_SETUP.md)을 먼저 확인합니다. 아래 8월 인계 문서는 과거 구조·계획 설명이며 최신 동작의 기준이 아닙니다.
+2026-10-15 현재 MVP 구현·검증 상태는 [제안서 검증 기록](PROPOSAL_QUALITY_VALIDATION.md#2026-10-15-전체-mvp-최종-감사), 일반 발표자료 기능은 [발표자료 작업실](PRESENTATION_STUDIO.md), 로컬 Gemma 설정은 [LLM 설정](LLM_SETUP.md)을 먼저 확인합니다. 아래 8월 인계 문서는 과거 구조·계획 설명이며 최신 동작의 기준이 아닙니다.
 
 ## 읽는 순서
 

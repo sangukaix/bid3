@@ -6,6 +6,7 @@ import re
 from pptx import Presentation
 from .proposal_coverage import CoverageVerdict, confirmed_quote, normalize
 from .proposal_evidence import requirement_rows
+from .proposal_planning import channel_for, CHANNELS
 
 VERSION = 'proposal-output-evidence-v1'
 UNFILLED = re.compile(r'확인\s*필요|자료\s*미제공|자료\s*미확인|증빙\s*미제공|작성\s*예정|미정')
@@ -61,7 +62,9 @@ def audit_output(content, plan):
         verdict = CoverageVerdict(covered=old.get('covered') is True and same_requirement,
                                  slide_number=page or 0, quote=old.get('quote', '')[:600])
         matched = confirmed_quote(verdict, row.get('requirement',''), pages)
-        checks.append({**row, 'covered':bool(matched), 'slide_number':page if matched else None,
+        channel = channel_for(row)
+        checks.append({**row, 'channel':channel, 'channel_label':CHANNELS[channel],
+            'covered':bool(matched), 'slide_number':page if matched else None,
             'quote':old.get('quote','') if matched else '',
             'status':'passage_matched' if matched else 'unverified' if old.get('status')=='unverified' else 'review_required',
             'reason':old.get('reason','') if matched else (
@@ -69,10 +72,11 @@ def audit_output(content, plan):
                 else old.get('reason') or '현재 파일에서 해당 요구사항의 답변을 검수해야 합니다.')})
     open_text = [{'slide_number':number, 'text':line.strip()} for number,text in written_pages(content).items()
                  for line in text.splitlines() if UNFILLED.search(line)]
+    body = [item for item in checks if item['channel']=='body']
     notes = []
     if not rows:
         notes.append('공고 요구사항 목록이 저장되지 않아 전체 반영 여부는 미검수입니다. 원문을 확인하고 새 생성 시 목록을 함께 저장하세요.')
-    if checks and any(not item['covered'] for item in checks):
+    if any(not item['covered'] for item in body):
         notes.append('본문 답변을 확인하지 못한 요구사항이 있습니다. 별도 제출서류·자격 요건도 원문과 증빙으로 확인하세요.')
     failure_count=sum(item['status']=='unverified' for item in checks)
     if failure_count:
@@ -88,6 +92,9 @@ def audit_output(content, plan):
     if limit_exceeded:
         notes.append(f'저장된 공고 분량 제한 {limit}쪽보다 출력 {len(pages)}쪽이 많습니다.')
     return {'version':VERSION, 'file_sha256':sha256(content).hexdigest(),
+        'body_total_count':len(body), 'body_matched_count':sum(item['covered'] for item in body),
+        'body_review_required_count':sum(not item['covered'] for item in body),
+        'separate_count':len(checks)-len(body),
         'scope':'최종 PPTX 본문의 요구사항 인용 대조', 'source_register_available':bool(rows),
         'actual_slide_count':len(pages), 'matched_count':sum(item['covered'] for item in checks),
         'total_count':len(rows), 'review_required_count':sum(not item['covered'] for item in checks),
@@ -100,6 +107,8 @@ def audit_output(content, plan):
 def refresh_output_review(content, plan):
     """Invalidate stale coverage counters together with their old passages."""
     from .proposal_final_review import invalidate_final_review
+    from .company_materials import refresh_material_usage
+    refresh_material_usage(content, plan)
     invalidate_final_review(content, plan)
     report = audit_output(content, plan)
     plan['output_review'] = report

@@ -23,7 +23,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Start-Bid3.ps1 -Service web
 처음 공유할 때만 별도 터미널에서 실행합니다. 기존 Serve 구성이 있다면 먼저 확인합니다.
 ```powershell
 & 'C:\Program Files\Tailscale\tailscale.exe' serve status
-& 'C:\Program Files\Tailscale\tailscale.exe' serve --bg http://127.0.0.1:3000
+& 'C:\Program Files\Tailscale\tailscale.exe' serve --bg http://127.0.0.1:3001
 ```
 
 출력되는 `https://기기이름.tail....ts.net/` 주소가 접속 주소입니다.
@@ -45,7 +45,7 @@ HTTPS를 처음 활성화할 때 Tailscale이 안내하는 계정 설정이 필�
 
 ## 연결 구조와 종료
 
-브라우저 → Tailscale HTTPS → 개인 노트북 Next.js 127.0.0.1:3000 → Django 127.0.0.1:8000.
+브라우저 → Tailscale HTTPS → 개인 노트북 Next.js 127.0.0.1:3001 → Django 127.0.0.1:8000.
 웹의 `/api/` 요청을 Next.js가 전달하므로 원격 브라우저가 자신의 localhost를 호출하지 않습니다.
 Ollama/API 포트를 추가로 공유하거나 공유기 포트포워딩을 설정할 필요가 없습니다.
 Serve는 tailnet 접근 정책을 따릅니다. 공개 인터넷에 노출하는 Funnel은 사용하지 않습니다.
@@ -55,7 +55,7 @@ Serve는 tailnet 접근 정책을 따릅니다. 공개 인터넷에 노출하는
 & 'C:\Program Files\Tailscale\tailscale.exe' serve --https=443 off
 ```
 
-개발은 `web` 폴더의 `npm run dev`로도 가능합니다. Django는 별도 실행합니다.
+개발은 `web` 폴더의 `npm run dev -- --port 3001`로도 가능합니다. Django는 별도 실행합니다.
 기본 API 모드는 동일 출처 프록시입니다. API를 다른 서버에 따로 배포할 때만
 `NEXT_PUBLIC_API_MODE=direct`와 `NEXT_PUBLIC_API_BASE_URL`을 지정하고 다시 빌드합니다.
 프록시 서버 주소는 `BID_API_BASE_URL`입니다.
@@ -69,3 +69,7 @@ Serve는 tailnet 접근 정책을 따릅니다. 공개 인터넷에 노출하는
 - 이 검증은 개인 노트북에서 공유 주소를 호출한 결과이며, 학원 브라우저 접속은 별도 확인 필요.
 
 공식 안내: https://tailscale.com/docs/features/tailscale-serve
+
+## 최종 재검증 (2026-10-15)
+
+다른 서비스가 사용하는 3000번과 충돌하지 않도록 BID3 웹 포트를 3001번으로 옮겼습니다. 기존 Tailscale HTTPS 주소는 그대로이며 Serve 대상만 `http://127.0.0.1:3001`로 갱신했습니다. 최신 production의 메인과 소유자 API 200, 비인증 API 401을 개인 노트북에서 확인했습니다. API는 8000번, Ollama는 기존 로컬 주소를 유지합니다. 다른 서비스 프로세스를 종료하지 않습니다. 학원 노트북은 같은 tailnet 접속 후 기존 HTTPS 주소를 사용합니다.

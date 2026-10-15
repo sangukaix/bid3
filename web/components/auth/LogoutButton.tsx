@@ -20,6 +20,8 @@ export default function LogoutButton() {
           headers: { Authorization: `Token ${token}` }, // Django에 로그인 사용자 전달
         });
       }
+    } catch {
+      // Local logout remains usable when the server cannot be reached.
     } finally {
       localStorage.removeItem("auth_token"); // 브라우저의 로그인 인증표 삭제
       localStorage.removeItem("auth_user"); // 브라우저의 사용자 정보 삭제

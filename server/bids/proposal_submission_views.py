@@ -23,7 +23,8 @@ def submission_check(request,bid_ntce_no):
         return Response({'error':'진행 중인 생성·검수가 끝난 뒤 점검해 주세요.'},status=409)
     try:
         knowledge,_=build_company_knowledge_context(request.user,prepare=False)
-        report=submission_report(Path(proposal.generated_file.path).read_bytes(),proposal.revision_plan,knowledge)
+        report=submission_report(Path(proposal.generated_file.path).read_bytes(),proposal.revision_plan,knowledge,
+                                 current_ord=proposal.saved_bid.bid_notice.bid_ntce_ord)
     except (OSError,ValueError,KeyError,BadZipFile,XMLSyntaxError,PackageNotFoundError):
         return Response({'error':'PPTX를 읽지 못했습니다. 파일을 확인해 주세요.'},status=422)
     report.update(checked_at=timezone.now().isoformat(),bid_number=bid_ntce_no,

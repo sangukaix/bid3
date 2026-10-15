@@ -18,6 +18,7 @@ from .services.proposal_preview import create_template_slide_previews
 class TemplateLibraryTests(SimpleTestCase):
     def test_all_30_templates_have_editable_content_and_exact_previews(self):
         studio = load_studio_templates(settings.BASE_DIR / "proposal_templates/library")
+        studio = {key: value for key, value in studio.items() if not value.get("theme_id")}
         self.assertEqual(len(studio), 30)
         self.assertEqual(len({t["category"] for t in studio.values()}), 6)
         for template_id, template in studio.items():
@@ -30,6 +31,45 @@ class TemplateLibraryTests(SimpleTestCase):
                 self.assertEqual(inventory[16]["role"], "metrics")
                 self.assertTrue(any(e["kind"] == "table_cell" for e in inventory[5]["elements"]))
                 self.assertTrue(any(e["kind"] == "title" for e in inventory[0]["elements"]))
+
+    def test_domain_frameworks_have_distinct_outlines_and_native_compositions(self):
+        from collections import Counter
+        from .services.proposal_layouts import get_proposal_slide_layout
+
+        studio = load_studio_templates(settings.BASE_DIR / "proposal_templates/library")
+        themed = {key: value for key, value in studio.items() if value.get("theme_id")}
+        self.assertEqual(len(themed), 12)
+        self.assertEqual(set(Counter(t["theme_id"] for t in themed.values()).values()), {2})
+        signatures = {}
+        for key, template in themed.items():
+            with self.subTest(template=key):
+                self.assertEqual(template_slide_count(template["path"]), 14)
+                self.assertEqual(len(bundled_previews(template)), 14)
+                deck = Presentation(template["path"])
+                self.assertGreaterEqual(sum(s.has_table for page in deck.slides for s in page.shapes), 2)
+                self.assertEqual(sum(s.shape_type == 13 for page in deck.slides for s in page.shapes), 2)
+                kinds = tuple(get_proposal_slide_layout(template["path"], n)["kind"] for n in range(1, 15))
+                domain = template["theme_id"]
+                if domain in signatures:
+                    self.assertEqual(signatures[domain], kinds)
+                signatures[domain] = kinds
+                self.assertEqual(len(template["outline"]), 12)
+        self.assertEqual(len(set(signatures.values())), 6)
+
+    def test_domain_generation_edits_cells_without_flattening_diagrams(self):
+        for key in ("construction_site", "it_architecture", "supply_spec"):
+            with self.subTest(template=key):
+                source = settings.PROPOSAL_TEMPLATES[key]["path"]
+                before = Presentation(source)
+                inventory = extract_pptx_inventory(source)
+                page = next(p for p in inventory if any(e["kind"] == "table_cell" and "작성" in e["text"] for e in p["elements"]))
+                cell = next(e for e in page["elements"] if e["kind"] == "table_cell" and "작성" in e["text"])
+                result = build_proposal_pptx(source, SimpleNamespace(bid_ntce_no="DOMAIN-TEST"), {
+                    "slide_changes": [{"slide_number": page["slide_number"], "action": "UPDATE",
+                        "text_changes": [{"target": cell["target"], "original_text": cell["text"], "revised_text": "원문 대조한 수행 범위"}]}]})
+                after = Presentation(BytesIO(result["file_bytes"]))
+                self.assertEqual([len(s.shapes) for s in before.slides], [len(s.shapes) for s in after.slides])
+                self.assertIn("원문 대조한 수행 범위", [c.text for s in after.slides for shape in s.shapes if shape.has_table for row in shape.table.rows for c in row.cells])
 
     def test_registered_previews_need_no_office_conversion(self):
         with patch("bids.services.proposal_preview._convert_with_powerpoint", side_effect=AssertionError("unexpected conversion")):
@@ -88,7 +128,9 @@ class TemplateCatalogApiTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.get("/api/proposal-templates/")
         self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.json()["templates"]),35)
+        self.assertEqual(len(response.json()["templates"]),47)
+        self.assertTrue(all(t["theme_id"] for t in response.json()["templates"][:12]))
+        self.assertEqual(len(response.json()["templates"][0]["outline"]),12)
         self.assertNotIn("path",response.json()["templates"][5])
         response = self.client.get("/api/proposal-templates/civic_navy/download/")
         self.assertEqual(response.status_code,200)

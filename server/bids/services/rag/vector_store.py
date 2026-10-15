@@ -2,8 +2,6 @@ from math import sqrt
 from pathlib import Path  # 파일과 폴더 경로를 다루는 Python 도구
 
 from django.conf import settings  # Django의 BASE_DIR 설정 가져오기
-from chromadb.config import Settings
-from langchain_chroma import Chroma  # Embedding과 Chunk를 저장하는 벡터 DB
 from langchain_openai import OpenAIEmbeddings  # 텍스트를 숫자 벡터로 변환
 from ..llm import cloud_options
 
@@ -35,6 +33,9 @@ def get_collection_name(bid_ntce_no):  # 저장과 검색에서 같은 컬렉션
 def create_or_load_vector_store(bid_ntce_no, chunks):  # 공고번호와 Chunk 목록을 받는 함수
     if not chunks:  # Chunk가 비어 있으면 실행 중단
         raise ValueError("저장할 Chunk가 없습니다.")
+
+    from chromadb.config import Settings
+    from langchain_chroma import Chroma
 
     db_path = get_bid_db_path(bid_ntce_no)  # 공고별 저장 폴더
     collection_name = get_collection_name(bid_ntce_no)  # 공고별 컬렉션 이름

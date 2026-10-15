@@ -46,13 +46,12 @@ def fetch_bid_attachments(bid_ntce_no, business_type, bid_ntce_ord=None):
         raise RuntimeError(header.get("resultMsg") or "나라장터 API 요청에 실패했습니다.")
 
     items = data.get("response", {}).get("body", {}).get("items") or []
-    if bid_ntce_ord is not None:
-        items = [item for item in items if item.get("bidNtceOrd") == bid_ntce_ord]
-
     if not items:
         return []
 
     notice = max(items, key=lambda item: int(item.get("bidNtceOrd") or 0))
+    if bid_ntce_ord is not None and int(notice.get("bidNtceOrd") or 0) != int(bid_ntce_ord or 0):
+        raise ValueError("나라장터에 다른 차수의 공고가 있습니다. 공고를 새로 수집하고 정정 내용을 확인하세요.")
     attachments = []
 
     for number in range(1, 11):  # 나라장터가 제공하는 첨부파일 1번부터 10번까지 확인

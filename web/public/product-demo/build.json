@@ -1,14 +1,14 @@
 {
-  "version": "20261012-1",
+  "version": "20261015-1",
   "duration": 90,
   "resolution": [
     1920,
     1080
   ],
   "fps": 24,
-  "storyboard_sha256": "6c29eb4e0b12e90edd8fcbf5cb0733e32e577bd3f1ed65790e3c5c7ae370b5c8",
+  "storyboard_sha256": "100155035217d9c4ef8562e87693569a9e294ce6e946b890cbc2d701c1b0900d",
   "narration": true,
-  "sha256": "eb298df6082261854be429cd026a8e87e640b546ccc14053858e46b634a98ca9",
+  "sha256": "459d43d0d5b524f9aac66b81d1dc009bb7da923186de98382de6eff4c3a0945f",
   "sources": {
     "chat.jpg": "c99a3dba4be73055d93d7280511c6e45cc097672ecbdc9cb147116edbd94231d",
     "history.jpg": "883c54feffd5f2d85be727d4950734084742815fde8d61ee745a39c70cb65f98",
@@ -17,6 +17,6 @@
     "review.jpg": "63dd04cfe2f44cc0716f54181cfe5097037ef9f8d0b402764689d037776b2a3a",
     "search.jpg": "94c339d96c5703407746d7d460efbe253bc952bd2588a8a560b880f520ffadab",
     "studio.jpg": "2c43446b2878413a16122e8a6220c72b9350802495c337929fbeaa4dffe9f30a",
-    "templates.jpg": "2130367488b1b8468f73141411552ab4315946819a73764b6527a5c80ea8bba3"
+    "templates.jpg": "9c575889e4dbfbd037aee0e1caee6345c60e760b36a56de630e6beb4f244fa81"
   }
 }

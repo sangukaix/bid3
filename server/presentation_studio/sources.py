@@ -22,6 +22,8 @@ MAX_SOURCE = 16*1024*1024
 
 def safe_name(path):
     name = Path(path).name.lower()
+    if name in {'agents.md','skill.md'} or name.startswith('mustrule') and name.endswith('.md'):
+        return False  # Repository development rules are not presentation references.
     return not (name.startswith('.') or any(s in name for s in ('credential','secret','password','token','private_key','id_rsa')) or name.endswith(('.key','.pem')))
 
 

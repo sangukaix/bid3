@@ -1,4 +1,5 @@
 from pathlib import Path
+from uuid import uuid4
 
 import requests
 
@@ -16,30 +17,29 @@ def download_bid_attachment(bid_ntce_no, attachment):
     if not filename or not download_url:
         raise ValueError("첨부파일 이름과 다운로드 주소가 필요합니다.")
 
-    response = requests.get(download_url, timeout=60, stream=True)
-    response.raise_for_status()
-
-    folder = Path(settings.MEDIA_ROOT) / "bid_documents" / bid_ntce_no
+    root = (Path(settings.MEDIA_ROOT) / "bid_documents").resolve()
+    folder = (root / bid_ntce_no).resolve()
+    if root not in folder.parents:
+        raise ValueError("올바르지 않은 공고번호입니다.")
     folder.mkdir(parents=True, exist_ok=True)  # 공고번호별 저장 폴더가 없으면 생성
-
     file_path = folder / filename
+    temporary = file_path.with_name(f".download-{uuid4().hex}.tmp")
     downloaded_bytes = 0
-
-    with file_path.open("wb") as saved_file:
-        for chunk in response.iter_content(chunk_size=1024 * 1024):
-            if not chunk:
-                continue
-
-            downloaded_bytes += len(chunk)
-            if downloaded_bytes > MAX_ATTACHMENT_BYTES:
-                saved_file.close()
-                file_path.unlink(missing_ok=True)
-                raise ValueError("첨부파일 크기가 100MB를 초과했습니다.")
-
-            saved_file.write(chunk)
-
-    if downloaded_bytes == 0:
-        file_path.unlink(missing_ok=True)
-        raise ValueError("다운로드한 첨부파일이 비어 있습니다.")
-
+    response = requests.get(download_url, timeout=60, stream=True)
+    try:
+        response.raise_for_status()
+        with temporary.open("wb") as saved_file:
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                if not chunk:
+                    continue
+                downloaded_bytes += len(chunk)
+                if downloaded_bytes > MAX_ATTACHMENT_BYTES:
+                    raise ValueError("첨부파일 크기가 100MB를 초과했습니다.")
+                saved_file.write(chunk)
+        if downloaded_bytes == 0:
+            raise ValueError("다운로드한 첨부파일이 비어 있습니다.")
+        temporary.replace(file_path)
+    finally:
+        response.close()
+        temporary.unlink(missing_ok=True)
     return file_path

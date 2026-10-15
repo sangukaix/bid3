@@ -8,11 +8,17 @@ from .proposal_final_review import invalidate_final_review
 from .proposal_pptx_renderer import inspect_proposal_quality
 
 
-def submission_report(content, saved_plan, knowledge):
+def submission_report(content, saved_plan, knowledge, *, current_ord=None):
     plan=deepcopy(saved_plan or {})
     output=refresh_output_review(content,plan)
     invalidate_final_review(content,plan,knowledge)
     final=plan.get('final_document_review')
+    processing=plan.get('document_processing')
+    changed_source=bool(current_ord is not None and processing and
+                        processing.get('bid_ntce_ord') is not None and
+                        processing['bid_ntce_ord'] != current_ord)
+    if changed_source and final:
+        final['stale']=True
     quality=inspect_proposal_quality(content)
     rows=requirement_rows(plan.get('requirement_register',{}))
     separate=[{**row,'channel':channel_for(row),'channel_label':CHANNELS[channel_for(row)]}
@@ -21,8 +27,8 @@ def submission_report(content, saved_plan, knowledge):
     def add(key,title,status,detail):
         checks.append({'id':key,'title':title,'status':status,'detail':detail})
     add('requirements','본문 요구사항 인용',
-        'unchecked' if not rows else 'attention' if output['review_required_count'] else 'checked',
-        f"등록된 요구사항 {output['total_count']}개 중 현재 본문 인용 {output['matched_count']}개, 자동 대조 실패 {output['verification_failure_count']}개. 별도 서류의 제출 완료 판정은 아닙니다."
+        'unchecked' if not rows or not output['body_total_count'] else 'attention' if output['body_review_required_count'] else 'checked',
+        f"본문 조건 {output['body_total_count']}개 중 현재 답변 인용 {output['body_matched_count']}개. 본문 외 서식·증빙·가격·절차 {output['separate_count']}개는 별도 확인 대상입니다. 인용은 별도 서류의 제출 완료 판정이 아닙니다."
         if rows else '공고 요구사항 목록이 없습니다. 공고 원문 확인 후 생성·검수가 필요합니다.')
     add('claims','회사 주장·문서 내 모순',
         'unchecked' if not final or final.get('stale') else 'attention' if final['review_required_count'] else 'checked',
@@ -35,10 +41,17 @@ def submission_report(content, saved_plan, knowledge):
         'attention' if quality['review_items'] or output['page_limit_exceeded'] else 'checked',
         ' / '.join([*quality['review_items'],*(['저장된 분량 제한 초과'] if output['page_limit_exceeded'] else [])])
         or '코드 검사에서 출력 이상을 찾지 못했습니다. PPTX와 PDF의 글자·표·이미지는 직접 확인하세요.')
-    processing=plan.get('document_processing')
+    materials=plan.get('company_material_usage')
+    if materials is not None:
+        used=materials.get('used_assets',[])
+        add('company_materials','회사 원문 이미지·도식',
+            'attention' if used or materials.get('failed_files') or materials.get('warnings') else 'unchecked',
+            f"회사 원문 시각 자료 {len(used)}개를 사용했습니다. 이미지 안의 수치·대상·현행 적용 범위는 직접 확인해야 하며 텍스트 AI 검수에 포함되지 않습니다. "
+            f"회사 자료 읽기 실패 {len(materials.get('failed_files',[]))}개.")
     add('sources','등록된 공고 첨부 읽기',
-        'unchecked' if not processing else 'attention' if processing.get('failed_files') else 'checked',
-        f"읽기 실패 {len(processing.get('failed_files',[]))}개. 등록되지 않은 새 첨부·정정공고는 별도 확인해야 합니다."
+        'unchecked' if not processing or not processing.get('processed_files') else 'attention' if changed_source or processing.get('failed_files') or not processing.get('attachment_checked_at') else 'checked',
+        ('생성에 사용한 공고 차수와 현재 공고 차수가 다릅니다. 최신 공고로 다시 생성·검수하세요. ' if changed_source else '') +
+        f"읽기 실패 {len(processing.get('failed_files',[]))}개. 첨부 목록 대조: {processing.get('attachment_checked_at') or '기록 없음'}. 새 첨부·정정공고와 원문 전체는 제출 직전에 별도 확인해야 합니다."
         if processing else '첨부 처리 기록이 없습니다. 공고 원문과 요구사항 목록의 범위를 직접 확인하세요.')
     return {'version':'submission-preflight-v1','file_sha256':sha256(content).hexdigest(),
         'automatic_checks':checks,'separate_requirements':separate,

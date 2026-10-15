@@ -1,0 +1,89 @@
+[
+  {
+    "id": "event",
+    "kind": "발주처 제안요청서",
+    "title": "붙임2. 제안요청서_2025년 글로벌지식협력단지 지식교류의 날(KED) 행사 운영 대행 용역.pdf",
+    "url": "https://www.kdi.re.kr/board/file/download?atch_no=W7NcCq48KygPu652rpK8vg%3D%3D",
+    "file": "event.pdf",
+    "bytes": 4358505,
+    "pages": 39,
+    "sha256": "7170aab5f0bf67b3a718638d3fa6babd6926f4576050f9de3952e817cd7989fc",
+    "download_date": "2026-10-14"
+  },
+  {
+    "id": "research",
+    "kind": "발주처 제안요청서",
+    "title": "제안요청서(기존_건축물_구조안전확인_제도_합리화_정책연구).pdf",
+    "url": "https://www.molit.go.kr/LCMS/DWN.jsp?fold=standard&fileName=%EC%A0%9C%EC%95%88%EC%9A%94%EC%B2%AD%EC%84%9C%28%EA%B8%B0%EC%A1%B4_%EA%B1%B4%EC%B6%95%EB%AC%BC_%EA%B5%AC%EC%A1%B0%EC%95%88%EC%A0%84%ED%99%95%EC%9D%B8_%EC%A0%9C%EB%8F%84_%ED%95%A9%EB%A6%AC%ED%99%94_%EC%A0%95%EC%B1%85%EC%97%B0%EA%B5%AC%29.pdf",
+    "file": "research.pdf",
+    "bytes": 508977,
+    "pages": 36,
+    "sha256": "169ab4fec595a4ef99d4c579bd0f0ddfd5227f9e8e6d3ef28677f527052ea4ab",
+    "download_date": "2026-10-14"
+  },
+  {
+    "id": "education",
+    "kind": "공개 교육 제안서",
+    "title": "로앤비 기업 맞춤형 교육 프로그램 제안서",
+    "url": "https://www.lawnbedu.com/File/UploadImg/2018-05-03/tr_lawnbedu_company_lecture_20180503.pdf",
+    "file": "education.pdf",
+    "bytes": 870682,
+    "pages": 12,
+    "sha256": "ed0f30591202abbf4d383acefa039f82c685800cbcc4f9b5afe74f9394380474",
+    "download_date": "2026-10-14"
+  },
+  {
+    "id": "construction",
+    "kind": "기술제안 입찰지침서",
+    "title": "KOTITI 과천 신사옥 기술제안 입찰지침서",
+    "url": "https://www.kotiti-global.com/ko/newninfo/announce.do?articleNo=356633&attachNo=25491&mode=download",
+    "file": "construction.pdf",
+    "bytes": 1423691,
+    "pages": 103,
+    "sha256": "5bf16b56314d663d1761b6b900fe631d9bf24b1d78dc4cf3a805d521e2d353f7",
+    "download_date": "2026-10-14"
+  },
+  {
+    "id": "supply",
+    "kind": "발주처 제안요청서",
+    "title": "삼육대학교 PBL 강의실 시스템 구축 제안요청서",
+    "url": "https://www.syu.ac.kr/wp-content/uploads/2019/01/01.-삼육대학교-ACE사업_RFPPBL강의실_에스라관209호406호.pdf",
+    "file": "supply.pdf",
+    "bytes": 252516,
+    "pages": 14,
+    "sha256": "e2f726f5d6b87e32aa2f7fc5e34b5e460ad33fbec6e60141c2173b1c86278d33",
+    "download_date": "2026-10-14"
+  },
+  {
+    "id": "it",
+    "kind": "발주처 제안요청서",
+    "title": "붙임2. 제안요청서_글로벌 성과확산을 위한 AI 기반 연구탐색 서비스 도입.hwp",
+    "url": "https://www.kdi.re.kr/board/file/download?atch_no=PQJS4HtktprkhEH6J%2FKSfw%3D%3D",
+    "file": "it.hwp",
+    "bytes": 4309504,
+    "sha256": "57bd0110aa3676cbb2984ab1591920a8c2caf0de40300a5564b59399ae510e62",
+    "download_date": "2026-10-14"
+  },
+  {
+    "id": "cmc",
+    "kind": "공개 솔루션 제안서",
+    "title": "CMC TECH 생산계획 MPS·MRP·APS 제안서",
+    "url": "https://cmctech.co.kr/downloads/CMC-MPS-MRP-APS-proposal.pdf?v=20260929-c1",
+    "file": "cmc.pdf",
+    "bytes": 2445034,
+    "pages": 18,
+    "sha256": "d60146ebc7e1bce6897fb09bd09da6e83c8246db1514f5a54ad241c447e3dcc1",
+    "download_date": "2026-10-14"
+  },
+  {
+    "id": "hasom",
+    "kind": "공개 솔루션 제안서",
+    "title": "하솜 전산실 운영 시설 관리 제안서",
+    "url": "https://www.hasom.com/sub2/temper/t_prod/t_data/t8.pdf",
+    "file": "hasom.pdf",
+    "bytes": 978629,
+    "pages": 6,
+    "sha256": "91e369e9ebf4b970c62401250f3878a9f31a662deb32d9604fa1307affeded06",
+    "download_date": "2026-10-14"
+  }
+]

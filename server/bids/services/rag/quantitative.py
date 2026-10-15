@@ -197,7 +197,8 @@ def add_completion_summary(report):
 def generate_quantitative_proposal(saved_bid, profile):
     """공고와 회사 자료를 대조해 정량평가 작성안 dict를 만듭니다."""
 
-    processing = prepare_docs_for_ai(saved_bid.bid_notice.bid_ntce_no)
+    processing = prepare_docs_for_ai(saved_bid.bid_notice.bid_ntce_no, refresh=True,
+                                     expected_ord=saved_bid.bid_notice.bid_ntce_ord)
     all_documents = collect_proposal_documents(saved_bid.bid_notice.bid_ntce_no)
     requirement_register, requirement_processing = (
         build_document_requirement_register(

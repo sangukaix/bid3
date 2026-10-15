@@ -12,6 +12,7 @@ FIELDS = {
     "company_context": 2, "bid_notice_context": 2, "bid_context": 3,
     "requirement_context": 5, "company_knowledge_context": 3,
     "project_reference_context": 1, "proposal_rules_context": 1,
+    "company_material_context": 3,
     "web_context": 1, "strategy_context": 1, "writing_plan_context": 4,
 }
 
@@ -110,7 +111,10 @@ def select_evidence(units, query, budget):
 def fit_evidence_inputs(prompt, inputs, model, schema):
     """Budget the actual prompt and schema; keep instructions and targets intact."""
     values = dict(inputs)
-    keys = [key for key in FIELDS if key in prompt.input_variables and values.get(key)]
+    # A provided value overrides a prompt's optional partial default. It still
+    # consumes context and must receive the same evidence budget as required fields.
+    variables = set(prompt.input_variables) | set(prompt.partial_variables)
+    keys = [key for key in FIELDS if key in variables and values.get(key)]
     schema_bytes = byte_size(json.dumps(schema.model_json_schema(), ensure_ascii=False))
     budget = model.num_ctx - model.num_predict - schema_bytes - 1024
 

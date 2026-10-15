@@ -24,7 +24,7 @@ cd D:\pp2026\bid3
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-Bid3.ps1 -Service web -Address 192.168.50.92
 ```
 
-웹 빌드가 끝나 Ready가 표시되면 본인과 팀원 모두 `http://192.168.50.92:3000`으로 접속한다.
+웹 빌드가 끝나 Ready가 표시되면 본인과 팀원 모두 `http://192.168.50.92:3001`으로 접속한다.
 팀원은 localhost가 아닌 이 노트북의 주소를 사용한다.
 두 터미널을 열어 둔다. 종료는 각 창에서 Ctrl+C.
 노트북이 꺼지거나 절전 상태로 들어가면 접속할 수 없다.
@@ -36,17 +36,17 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-Bid3.ps1
 ## 개인 노트북에서만 실행
 
 위 두 명령의 `-Address 192.168.50.92`를 빼면 루프백으로만 실행한다.
-접속 주소는 `http://127.0.0.1:3000`이다. 공유 모드에서 개인 모드로 바꿀 때도 웹을 다시 빌드한다.
+접속 주소는 `http://127.0.0.1:3001`이다. 공유 모드에서 개인 모드로 바꿀 때도 웹을 다시 빌드한다.
 
 ## 팀원 PC에서 연결되지 않을 때
 
 1. 같은 공유기/내부망에 연결돼 있는지 확인한다. 게스트 Wi-Fi는 기기 간 통신을 차단할 수 있다.
 2. 두 서버가 실행 중인지, 노트북 IPv4 주소가 바뀌지 않았는지 확인한다.
 3. Windows 방화벽이 차단한다면 관리자 PowerShell에서 아래 규칙을 한 번 추가한다.
-   이 규칙은 Private 네트워크의 같은 서브넷에서만 3000/8000 포트를 허용한다.
+   이 규칙은 Private 네트워크의 같은 서브넷에서만 3001/8000 포트를 허용한다.
 
 ```powershell
-New-NetFirewallRule -DisplayName "BID3 Team LAN" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 3000,8000 -Profile Private -RemoteAddress LocalSubnet
+New-NetFirewallRule -DisplayName "BID3 Team LAN" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 3001,8000 -Profile Private -RemoteAddress LocalSubnet
 ```
 
 규칙 제거:

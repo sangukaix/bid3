@@ -13,10 +13,10 @@ if (-not [System.Net.IPAddress]::TryParse($Address, [ref]$parsedAddress) -or
     throw "Use the laptop's IPv4 address, for example 192.168.50.92, or 127.0.0.1."
 }
 $bindAddress = if ([System.Net.IPAddress]::IsLoopback($parsedAddress)) { "127.0.0.1" } else { "0.0.0.0" }
-$port = if ($Service -eq "api") { 8000 } else { 3000 }
+$port = if ($Service -eq "api") { 8000 } else { 3001 }
 $listening = @(Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue)
 if ($listening.Count -gt 0) {
-    throw "Port $port is already in use. Stop the existing BID3 service first."
+    throw "Port $port is already in use. Check which service owns it before stopping anything."
 }
 $names = @("DJANGO_ALLOWED_HOSTS", "DJANGO_CORS_ALLOWED_ORIGINS", "NEXT_PUBLIC_API_MODE", "BID_API_BASE_URL")
 $previous = @{}
@@ -27,7 +27,7 @@ try {
         $python = Join-Path $projectRoot "server\venv\Scripts\python.exe"
         if (-not (Test-Path -LiteralPath $python)) { throw "Python environment missing. Follow README setup first." }
         $env:DJANGO_ALLOWED_HOSTS = "localhost,127.0.0.1,$Address"
-        $env:DJANGO_CORS_ALLOWED_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000,http://${Address}:3000"
+        $env:DJANGO_CORS_ALLOWED_ORIGINS = "http://localhost:3001,http://127.0.0.1:3001,http://${Address}:3001"
         Write-Host "BID3 API: http://${Address}:8000  (Ctrl+C to stop)"
         & $python "server\manage.py" runserver "${bindAddress}:8000" --noreload
         if ($LASTEXITCODE -ne 0) { throw "API process exited with code $LASTEXITCODE." }
@@ -39,8 +39,8 @@ try {
         Write-Host "Building BID3 with same-origin API proxy ..."
         & npm.cmd run build
         if ($LASTEXITCODE -ne 0) { throw "Web build failed. Server was not started." }
-        Write-Host "BID3 web: http://${Address}:3000  (Ctrl+C to stop)"
-        & npm.cmd run start -- --hostname $bindAddress --port 3000
+        Write-Host "BID3 web: http://${Address}:3001  (Ctrl+C to stop)"
+        & npm.cmd run start -- --hostname $bindAddress --port 3001
         if ($LASTEXITCODE -ne 0) { throw "Web process exited with code $LASTEXITCODE." }
     }
 } finally {

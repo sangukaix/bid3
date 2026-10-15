@@ -7,8 +7,8 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.util import Pt
 
-from .proposal_pptx_renderer import MAX_OUTPUT_SLIDES, inspect_proposal_quality, _replace_text_frame
-from .text_geometry import measure_text
+from .proposal_pptx_renderer import MAX_OUTPUT_SLIDES, inspect_proposal_quality, _replace_text_frame, _set_slide_order, _slide_elements
+from .text_geometry import measure_text, fitting_size
 from .proposal_evidence import requirement_rows
 
 FONT = '맑은 고딕'
@@ -56,12 +56,37 @@ def _card(row, width, wide=False):
     return (condition,answer,question), heights, content_height + 28
 
 
-def prepare_default_template_output(file_result, register):
+def prepare_default_template_output(file_result, register, bid_notice=None):
     """Clean known illustrative copy and schedules only in fresh built-in-template output."""
     prs = Presentation(BytesIO(file_result['file_bytes']))
     rows = [row for row in requirement_rows(register)
             if re.search(r'^(?:교육|사업|용역|과업|수행|계약|운영)\s*기간\s*(?:[:：]|은)',row.get('requirement',''))]
     changed = []
+    if bid_notice is not None:
+        # The official title is a source fact, not copy for the model to abbreviate.
+        cover = prs.slides[0]
+        title = next((shape for shape in cover.shapes if shape.name in {'bid3-title','cover-title'}
+                      and getattr(shape,'has_text_frame',False)),None)
+        if title is not None and title.text != bid_notice.title:
+            title.text_frame.word_wrap = True
+            element = next(item for item in _slide_elements(cover) if item.get('name') == title.name)
+            element = {**element,'width':element['width']*.96}
+            size, _ = fitting_size(bid_notice.title, element, minimum=18)
+            if size is None:
+                raise ValueError('정식 공고명이 표지 제목 상자에 들어가지 않습니다. 더 넓은 표지 양식을 선택하세요.')
+            lines = measure_text(bid_notice.title,element,size,include_lines=True)['lines']
+            _replace_text_frame(title.text_frame,'\v'.join(lines),size)
+            changed.append(1)
+        for shape in cover.shapes:
+            if shape.name not in {'domain-copy','cover-subtitle'} or not getattr(shape,'has_text_frame',False) or not shape.text.strip():
+                continue
+            element = next(item for item in _slide_elements(cover) if item.get('name')==shape.name)
+            text = re.sub(r'(?<!\d)(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})(?!\d)',r'\1.\2.\3',shape.text)
+            element = {**element,'width':element['width']*.96,'wrap':True}
+            size,_ = fitting_size(text,element)
+            if size is not None:
+                lines = measure_text(text,element,size,include_lines=True)['lines']
+                _replace_text_frame(shape.text_frame,'\v'.join(lines),size)
     neutral_copy = {
         '모든 제안 내용은 실제 보유한 실적, 인력, 인증 및 정량적 수치에 근거합니다.':'회사 실적·인력·인증을 검토 완료된 자료와 대조합니다.',
         '실제 수행 경험과 검증된 전문 인력이 사업의 성공을 보장합니다.':'회사 근거 확인 필요\n실적·인력·인증 자료를\n검토 후 반영합니다.',
@@ -69,6 +94,11 @@ def prepare_default_template_output(file_result, register):
     }
     for number,slide in enumerate(prs.slides,1):
         for shape in slide.shapes:
+            if bid_notice is not None and getattr(shape,'has_text_frame',False):
+                if shape.name=='bid3-fixed-design-name':
+                    _replace_text_frame(shape.text_frame,'공고 '+getattr(bid_notice,'bid_ntce_no',''))
+                elif shape.name=='bid3-fixed-status' and shape.text.strip()=='분야별 작성 양식':
+                    _replace_text_frame(shape.text_frame,getattr(bid_notice,'notice_organization','') or '사업 수행 제안')
             if getattr(shape,'has_text_frame',False) and ' '.join(shape.text.split()) in neutral_copy:
                 _replace_text_frame(shape.text_frame,neutral_copy[' '.join(shape.text.split())])
             if shape.name=='closing-title' and getattr(shape,'has_text_frame',False) and shape.text.strip()=='확인 필요':
@@ -113,7 +143,7 @@ def prepare_default_template_output(file_result, register):
         result['revision_log'] = [*file_result['revision_log'], *[
             {'source_slide_number':next((source for source,output in file_result.get('source_page_map',{}).items() if output==number),None),
              'output_slide_number':number,'action':'UPDATE',
-             'title':'공고 일정 안내','reason':'고정 예시 주차·막대를 공고 원문 일정으로 교체',
+             'title':'공고 원문 반영','reason':'정식 공고명·일정과 기본 안내를 공고 원문 기준으로 보완',
              'changes':[],'warnings':[]} for number in changed]]
     result['quality_review'] = inspect_proposal_quality(result['file_bytes'],result['revision_log'])
     return result
@@ -148,7 +178,7 @@ def bind_existing_details(content, writing_plan):
     writing_plan.setdefault('notes',[]).append(f'현재 파일에서 본문 {len(rows)}개 중 {len(placements)}개의 상세 답변 위치를 다시 연결했습니다. 위치 연결은 조건 충족 판정이 아닙니다.')
 
 
-def append_detail_pages(file_result, writing_plan, page_limit=None):
+def append_detail_pages(file_result, writing_plan, page_limit=None, closing_source_number=None):
     """Never shorten a condition, shrink below 12pt, or silently omit an unplaced row.
 
     Template target counts are approximate; only verified RFP limits and the global
@@ -234,6 +264,23 @@ def append_detail_pages(file_result, writing_plan, page_limit=None):
         slide.notes_slide.notes_text_frame.text += '\n' + row['id'] + ' 원문 위치: ' + ' · '.join(row.get('sources',[]))
         y += card_height + gap
     added = len(prs.slides)-original_count
+    page_map = dict(file_result.get('source_page_map',{}))
+    remap = {number:number for number in range(1,len(prs.slides)+1)}
+    if added and page_map.get(closing_source_number) == original_count:
+        slides = list(prs.slides)
+        _set_slide_order(prs,slides[:original_count-1]+slides[original_count:]+[slides[original_count-1]])
+        remap[original_count] = len(prs.slides)
+        remap.update({number:number-1 for number in range(original_count+1,len(prs.slides)+1)})
+        placements = {key:remap[number] for key,number in placements.items()}
+        page_map = {source:remap.get(output,output) for source,output in page_map.items()}
+        for row in writing_plan.get('items',[]):
+            for key in ('output_slide_numbers','detail_slide_numbers'):
+                if key in row:
+                    row[key] = [remap.get(number,number) for number in row[key]]
+        for number,slide in enumerate(prs.slides,1):
+            for shape in slide.shapes:
+                if shape.name in {'footer-page-detail','bid3-fixed-page'} and getattr(shape,'has_text_frame',False):
+                    _replace_text_frame(shape.text_frame,f'{number:02d}')
     summary = {'added_slide_count':added,'placed_count':len(placements),'body_count':len(rows),
                'placements':placements,'omitted':omitted,'page_cap':cap}
     writing_plan['detail_pages'] = summary
@@ -246,9 +293,11 @@ def append_detail_pages(file_result, writing_plan, page_limit=None):
         return file_result
     buffer = BytesIO();prs.save(buffer)
     result = {**file_result, 'file_bytes':buffer.getvalue(), 'output_slide_count':len(prs.slides),
-        'revision_log':[*file_result['revision_log'], *[
-            {'source_slide_number':None,'output_slide_number':number,'action':'ADD',
+        'source_page_map':page_map,
+        'revision_log':[{**entry,'output_slide_number':remap.get(entry.get('output_slide_number'),entry.get('output_slide_number'))}
+                        for entry in file_result['revision_log']] + [
+            {'source_slide_number':None,'output_slide_number':remap[number],'action':'ADD',
              'title':f'조건별 상세 수행안 {number-original_count}', 'reason':'공고 원문·작성 계획 기반 상세 답변',
-             'changes':[],'warnings':[]} for number in range(original_count+1,len(prs.slides)+1)]]}
+             'changes':[],'warnings':[]} for number in range(original_count+1,len(prs.slides)+1)]}
     result['quality_review'] = inspect_proposal_quality(result['file_bytes'],result['revision_log'])
     return result

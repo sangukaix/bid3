@@ -140,7 +140,7 @@ def model_selection(role, default_model):
     if provider not in {"openai", "ollama"}:
         raise ValueError(f"{role}_PROVIDER는 openai 또는 ollama여야 합니다.")
     if provider == "ollama":
-        model = os.getenv(f"{role}_LOCAL_MODEL") or os.getenv("LOCAL_LLM_MODEL", "qwen3:14b")
+        model = os.getenv(f"{role}_LOCAL_MODEL") or os.getenv("LOCAL_LLM_MODEL", "gemma4:26b")
     else:
         model = os.getenv(f"{role}_MODEL") or default_model
     return provider, model

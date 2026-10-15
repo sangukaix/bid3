@@ -20,6 +20,14 @@ class Result(BaseModel):
 
 @patch.dict(os.environ, {"AI_MODE": "local"})
 class LocalModeTests(SimpleTestCase):
+    def test_missing_local_model_setting_defaults_to_gemma_and_keeps_explicit_override(self):
+        from maintenance.routing import defaults
+        with patch.dict(os.environ, {'AI_MODE':'local'}, clear=True), patch('maintenance.routing.read_config', return_value=None):
+            self.assertEqual(model_selection('PROPOSAL','cloud-default'), ('ollama','gemma4:26b'))
+            self.assertEqual(defaults()['routes']['PROPOSAL']['model'], 'gemma4:26b')
+            with patch.dict(os.environ, {'PROPOSAL_LOCAL_MODEL':'qwen3:14b'}):
+                self.assertEqual(model_selection('PROPOSAL','cloud-default'), ('ollama','qwen3:14b'))
+
     @patch('bids.services.llm.requests.post')
     def test_gemma_context_initialization_failure_retries_same_local_request_once(self,post):
         import requests

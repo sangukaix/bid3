@@ -33,6 +33,48 @@ def brief(number=1, **values):
 
 
 class DetailPageTests(SimpleTestCase):
+    def test_official_cover_title_is_complete_and_fits_without_model_abbreviation(self):
+        from types import SimpleNamespace
+        result = source_result()
+        prs = Presentation(BytesIO(result['file_bytes']))
+        title = prs.slides[0].shapes[0]
+        title.name = 'bid3-title'; title.width = Pt(368); title.height = Pt(158)
+        title.text_frame.paragraphs[0].font.size = Pt(42)
+        label = prs.slides[0].shapes.add_textbox(Pt(50),Pt(350),Pt(350),Pt(25))
+        label.name = 'bid3-fixed-design-name'; label.text = '러닝 플로우'
+        status = prs.slides[0].shapes.add_textbox(Pt(50),Pt(400),Pt(350),Pt(25))
+        status.name = 'bid3-fixed-status'; status.text = '분야별 작성 양식'
+        buffer = BytesIO(); prs.save(buffer); result['file_bytes'] = buffer.getvalue()
+        official = '2027-2028년 KOTRA 전화외국어 교육과정 운영 위탁'
+        output = prepare_default_template_output(result, {'requirements':[]},
+            SimpleNamespace(title=official,bid_ntce_no='COVER-001',notice_organization='검증 발주기관'))
+        slide = Presentation(BytesIO(output['file_bytes'])).slides[0]
+        self.assertEqual(' '.join(slide.shapes[0].text.split()), official)
+        self.assertTrue(any('KOTRA' in line for line in slide.shapes[0].text.split('\v')))
+        self.assertIn('<a:br',slide.shapes[0]._element.xml)
+        self.assertFalse(output['quality_review']['severe_overflow_items'])
+        texts='\n'.join(shape.text for shape in slide.shapes if shape.has_text_frame)
+        self.assertNotIn('분야별 작성 양식',texts)
+        self.assertNotIn('러닝 플로우',texts)
+        self.assertIn('COVER-001',texts)
+
+    def test_detail_pages_precede_closing_and_every_page_reference_is_remapped(self):
+        result = source_result()
+        prs = Presentation(BytesIO(result['file_bytes']))
+        closing = prs.slides.add_slide(prs.slide_layouts[6])
+        closing.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = '맺음말'
+        buffer = BytesIO(); prs.save(buffer)
+        result.update(file_bytes=buffer.getvalue(), source_slide_count=2, output_slide_count=2,
+                      source_page_map={1:1, 2:2})
+        plan = {'items':[brief()]}
+        output = append_detail_pages(result, plan, closing_source_number=2)
+        pages = written_pages(output['file_bytes'])
+        self.assertIn('맺음말', pages[len(pages)])
+        self.assertEqual(output['source_page_map'][2], len(pages))
+        self.assertEqual(plan['items'][0]['detail_slide_numbers'], [2])
+        self.assertEqual(plan['detail_pages']['placements']['R0001'], 2)
+        self.assertTrue(any(item['output_slide_number']==2 and item['action']=='ADD' for item in output['revision_log']))
+
     @patch('bids.services.proposal_coverage.structured_chain')
     def test_optimistic_model_reason_does_not_hide_failed_numeric_quote_check(self,chain):
         row=brief();quote='학생 100명 대상 주 3회 20분의 교육을 운영합니다.'

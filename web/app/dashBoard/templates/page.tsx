@@ -27,7 +27,7 @@ export default function TemplatesPage() {
     void load(); return ()=>controller.abort();
   },[]);
   return <>
-    <PageHeader title="PPT 양식 라이브러리" description="공공 제안부터 교육, 기술, 문화 사업까지 용도에 맞는 디자인을 살펴보세요." />
+    <PageHeader title="PPT 양식 라이브러리" description="교육·공사·IT·연구·행사·납품에 맞는 목차와 도표를 갖춘 양식을 살펴보세요." />
     <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
       <p className="mb-5 text-sm leading-6 text-slate-600">{templates.length ? `${templates.length}종의 양식을 준비했습니다. `:""}미리보기에서 페이지를 넘겨 보거나 편집 가능한 PPTX를 다운로드할 수 있습니다.</p>
       {error ? <p role="alert" className="text-sm text-red-600">{error} <Link href="/login" className="underline">로그인</Link></p>

@@ -66,17 +66,20 @@ export default function TemplateGallery({ templates, selectedTemplateId, recomme
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("전체");
+  const [scope, setScope] = useState("domain");
   const [downloadError, setDownloadError] = useState("");
   const [downloading, setDownloading] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const selected = templates.find((t) => t.id === selectedTemplateId);
   const active = templates.find((t) => t.id === activeId);
-  const categories = useMemo(() => ["전체", ...new Set(templates.map((t) => t.category || "기본 양식"))], [templates]);
+  const hasDomains = templates.some((t) => t.theme_id);
+  const scopedTemplates = useMemo(() => !hasDomains ? templates : templates.filter((t) => scope === "domain" ? t.theme_id : !t.theme_id), [templates, scope, hasDomains]);
+  const categories = useMemo(() => ["전체", ...new Set(scopedTemplates.map((t) => t.category || "기본 양식"))], [scopedTemplates]);
   const filtered = useMemo(() => {
     const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    return templates.filter((t) => (category === "전체" || (t.category || "기본 양식") === category)
+    return scopedTemplates.filter((t) => (category === "전체" || (t.category || "기본 양식") === category)
       && words.every((word) => `${t.name} ${t.description} ${t.category} ${(t.tags || []).join(" ")}`.toLowerCase().includes(word)));
-  }, [templates, query, category]);
+  }, [scopedTemplates, query, category]);
   useEffect(() => {
     const element = dialog.current;
     if (!open || !element) return;
@@ -102,9 +105,9 @@ export default function TemplateGallery({ templates, selectedTemplateId, recomme
   }
 
   return <section className="min-w-0">
-    <p className="mb-2 text-xs font-semibold text-slate-500">디자인 템플릿</p>
+    <p className="mb-2 text-xs font-semibold text-slate-500">분야별 제안서 양식</p>
     <button type="button" onClick={() => { setActiveId(null); setOpen(true); }} className="flex w-full max-w-xl cursor-pointer items-center justify-between gap-4 rounded-lg border border-slate-300 bg-white px-4 py-3 text-left hover:border-blue-400 hover:bg-blue-50">
-      <span><span className="block text-sm font-semibold text-slate-900">디자인 템플릿 선택하기</span><span className="mt-1 block text-xs text-slate-500">{templates.length}종 · 현재 선택: {selected?.name || "선택 전"}</span></span><span aria-hidden="true" className="text-xl text-slate-400">›</span>
+      <span><span className="block text-sm font-semibold text-slate-900">분야·디자인 템플릿 선택하기</span><span className="mt-1 block text-xs text-slate-500">{templates.length}종 · 현재 선택: {selected?.name || "선택 전"}</span></span><span aria-hidden="true" className="text-xl text-slate-400">›</span>
     </button>
     {open && <dialog ref={dialog} aria-labelledby="template-dialog-title" onCancel={() => setOpen(false)} onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }} className="fixed inset-0 m-auto h-[92dvh] max-h-[1000px] w-[96vw] max-w-7xl rounded-xl bg-slate-50 p-0 text-slate-900 shadow-2xl backdrop:bg-slate-950/60">
       <div className="flex h-full flex-col">
@@ -117,6 +120,7 @@ export default function TemplateGallery({ templates, selectedTemplateId, recomme
         </header>
         {!active ? <>
           <div className="shrink-0 border-b border-slate-200 bg-white p-4 sm:px-6">
+            {hasDomains && <div className="mb-3 flex gap-2" aria-label="양식 분류">{[{ id: "domain", label: "분야별 구조 양식" }, { id: "legacy", label: "기존 디자인 양식" }].map((item) => <button type="button" key={item.id} aria-pressed={scope === item.id} onClick={() => { setScope(item.id); setCategory("전체"); }} className={`rounded-md px-3 py-2 text-xs font-semibold ${scope === item.id ? "bg-blue-50 text-blue-700" : "text-slate-500 hover:bg-slate-100"}`}>{item.label}</button>)}</div>}
             <label className="block"><span className="sr-only">템플릿 검색</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="이름, 용도, 분위기로 검색" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 sm:max-w-md" /></label>
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1" aria-label="템플릿 용도">{categories.map((item) => <button type="button" key={item} aria-pressed={category === item} onClick={() => setCategory(item)} className={`shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-xs font-medium ${category === item ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{item}</button>)}</div>
           </div>
@@ -136,6 +140,7 @@ export default function TemplateGallery({ templates, selectedTemplateId, recomme
           <aside className="flex flex-col border-t border-slate-200 bg-white p-5 lg:border-l lg:border-t-0">
             <p className="text-xs font-semibold text-blue-700">{active.collection || "제안서 템플릿"}</p><h3 className="mt-2 text-xl font-bold">{active.name}</h3><p className="mt-3 text-sm leading-6 text-slate-600">{active.description}</p>
             <div className="mt-4 flex flex-wrap gap-2">{active.tags?.map((tag) => <span key={tag} className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">{tag}</span>)}</div>
+            {!!active.outline?.length && <div className="mt-5 border-t border-slate-200 pt-4"><h4 className="text-sm font-semibold">이 분야의 제안서 구성</h4><ol className="mt-2 list-decimal space-y-1 pl-5 text-xs leading-5 text-slate-600">{active.outline.map((title) => <li key={title}>{title}</li>)}</ol></div>}
             {active.id === recommendedTemplateId && <p className="mt-5 rounded-lg bg-emerald-50 p-3 text-xs leading-5 text-emerald-800">추천: {recommendationReason}</p>}
             <p className="mt-5 text-xs leading-5 text-slate-500">본문과 표를 PowerPoint에서 수정할 수 있습니다. 선택한 양식으로 제안서를 생성하면 공고와 회사 자료를 반영합니다.</p>
             {active.license_note && <p className="mt-3 text-[11px] leading-5 text-slate-400">{active.license_note}</p>}

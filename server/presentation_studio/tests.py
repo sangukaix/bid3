@@ -100,8 +100,11 @@ class SourceTests(SimpleTestCase):
             root=Path(directory); (root/'app.py').write_text('print("test")')
             (root/'.env').write_text('PASSWORD=do-not-read')
             (root/'secret.json').write_text('private')
+            for name in ('AGENTS.md','SKILL.md','mustrule260910.md'):
+                (root/name).write_text('DEVELOPMENT_RULE_MUST_NOT_BECOME_SLIDE_CONTENT')
             (root/'node_modules').mkdir(); (root/'node_modules'/'index.js').write_text('unwanted')
             text,meta=sources.local_path(str(root))
+            self.assertNotIn('DEVELOPMENT_RULE_MUST_NOT_BECOME_SLIDE_CONTENT',text)
             self.assertEqual(meta['files'],['app.py']); self.assertIn('print',text)
             self.assertNotIn('do-not-read',text)
             with self.assertRaises(ValueError): sources.local_path(str(root/'.env'))

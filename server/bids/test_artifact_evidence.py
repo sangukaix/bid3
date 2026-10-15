@@ -17,6 +17,20 @@ def deck(*texts):
 
 
 class ArtifactEvidenceTests(SimpleTestCase):
+    def test_body_counts_do_not_treat_separate_document_as_missing_narrative(self):
+        quote='250명에게 30분 수업을 운영합니다.'
+        plan=self.plan(quote)
+        plan['requirement_register']['requirements'].append({
+            'requirement':'사업자등록증을 별도로 제출', 'category':'참가 자격', 'priority':'필수',
+            'form_name':'사업자등록증', 'sources':['공고서 2쪽']})
+        report=audit_output(deck(quote),plan)
+        self.assertEqual(report['total_count'],2)
+        self.assertEqual(report['body_total_count'],1)
+        self.assertEqual(report['body_matched_count'],1)
+        self.assertEqual(report['body_review_required_count'],0)
+        self.assertEqual(report['separate_count'],1)
+        self.assertFalse(report['checks'][1]['covered'])
+
     def plan(self,quote,requirement='250명에게 30분 수업',page=1):
         return {'requirement_register':{'requirements':[{'requirement':requirement,'priority':'필수',
             'evaluation_points':'10점','sources':['요청서 4쪽']}]},

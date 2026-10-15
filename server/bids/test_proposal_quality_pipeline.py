@@ -31,6 +31,31 @@ def deck(*texts):
 
 
 class WritingPlanTests(SimpleTestCase):
+    def test_procurement_procedures_and_company_proofs_are_not_delivery_work(self):
+        cases = [
+            ('사업개요','계약방법: 일반경쟁, 협상에 의한 계약','manual'),
+            ('선정 방법','종합점수 동점 시 기술평가 점수가 높은 자 우선','manual'),
+            ('투입 인력(PM)','공고 전날 이전부터 제안사 소속, 재직증명서 제출','eligibility'),
+            ('투입 인력(PM)','PM 불참 시 발표자격 상실','manual'),
+            ('투입 인력(PM)','평가 당일 신분증과 증빙서류 원본 지참','manual'),
+            ('평가기준','합병기업의 등급 중 가장 낮은 등급으로 평가','eligibility'),
+            ('제안서 내용','정성제안서 필수 포함: 교육과정/강사/운영/시스템','manual'),
+            ('실적 증빙','최근 3년 실적 증빙 첨부','eligibility'),
+            ('입찰 방식','제한경쟁(총액), 협상에 의한 계약','manual'),
+            ('입찰 일정','접수기간: 2026. 11. 12. ~ 11. 18.','manual'),
+            ('제한 사항','안전보건수준평가 대상 사업이 아님','manual'),
+            ('제출 및 심사','세부 평가 내용 비공개, 제출 서류 반환하지 않음','form'),
+            ('준수 사항','청렴계약 이행각서 숙지','form'),
+            ('문서 우선순위','입찰공고서 내용을 우선 적용','manual'),
+            ('교육과정 운영','강사 선정 기준 및 평가체계 제시','body'),
+            ('인력 요구사항','과업 현장 투입 가능 인력 및 조직도 제시','body'),
+            ('제한 사항','본 사업은 하도급을 허용하지 않음','body'),
+            ('근로 조건','낙찰자는 최저임금액 이상으로 고용계약 체결','body'),
+        ]
+        for category,text,expected in cases:
+            with self.subTest(text=text):
+                self.assertEqual(channel_for({'category':category,'requirement':text}),expected)
+
     def test_submission_and_evaluation_rules_are_separate_from_delivery_answers(self):
         for category in ('제안서작성','제안서 제출','제안서 목차','정성적 평가','평가 및 낙찰','탈락/감점 조건'):
             self.assertEqual(channel_for({'category':category,'requirement':'원문 조건'}),'manual')

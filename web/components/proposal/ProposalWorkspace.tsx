@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import LoginRequiredNotice from "@/components/auth/LoginRequiredNotice";
 import CompanyClaimReviewPanel from "@/components/proposal/CompanyClaimReviewPanel";
+import CompanyMaterialUsagePanel from "@/components/proposal/CompanyMaterialUsagePanel";
 import ProposalOutputReviewPanel from "@/components/proposal/ProposalOutputReviewPanel";
 import ProposalPlanningPanel from "@/components/proposal/ProposalPlanningPanel";
 import ProposalFinalReviewPanel from "@/components/proposal/ProposalFinalReviewPanel";
@@ -37,6 +38,8 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
   const [isLoading, setIsLoading] = useState(true);
   const [generationRequested, setIsGenerating] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [downloadFormat, setDownloadFormat] = useState("pptx");
+  const [isDownloading, setIsDownloading] = useState(false);
   const [reviewRequested, setIsReviewingOutput] = useState(false);
   const [proposalTask,setProposalTask] = useState<ProposalTaskData | null>(null);
   const taskActive = proposalTask?.status==="queued" || proposalTask?.status==="running";
@@ -292,20 +295,29 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
     if (!token || !proposal) return;
 
     setError("");
-    const response = await fetch(`${API_BASE_URL}${proposal.download_url}`, {
-      headers: { Authorization: `Token ${token}` },
-    });
-    if (!response.ok) {
-      setError("완성된 제안서를 내려받지 못했습니다.");
-      return;
-    }
+    setIsDownloading(true);
+    try {
+      const pdf = downloadFormat !== "pptx";
+      const query = pdf ? `?file_format=pdf&orientation=${downloadFormat}` : "";
+      const response = await fetch(`${API_BASE_URL}${proposal.download_url}${query}`, {
+        headers: { Authorization: `Token ${token}` },
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error ?? "완성된 제안서를 내려받지 못했습니다.");
+      }
 
-    const url = URL.createObjectURL(await response.blob());
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `bid2-proposal-${bidNtceNo}.pptx`;
-    link.click();
-    URL.revokeObjectURL(url);
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `bid3-proposal-${bidNtceNo}${pdf ? `-A4-${downloadFormat}.pdf` : ".pptx"}`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "제안서 다운로드 중 연결이 끊겼습니다.");
+    } finally {
+      setIsDownloading(false);
+    }
   }
 
   async function deleteProject() {
@@ -520,6 +532,8 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                   busy={isGenerating || isReviewingOutput || isFinalizing} />
                 <ProposalPlanningPanel plan={proposal.revision_plan.writing_plan}
                   onPage={page => { setSelectedPreviewPage(page); setReviewPage(page); }} />
+                <CompanyMaterialUsagePanel usage={proposal.revision_plan.company_material_usage}
+                  onPage={page => { setSelectedPreviewPage(page); setReviewPage(page); }} />
                 <ProposalFinalReviewPanel plan={proposal.revision_plan} busy={isReviewingOutput}
                   disabled={isGenerating || isFinalizing} onReview={()=>void refreshOutputReview(true)}
                   onPage={page => { setSelectedPreviewPage(page); setReviewPage(page); }} />
@@ -557,7 +571,8 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                     )}
                   </div>
                 )}
-                <div className="mt-4 flex justify-end gap-2">
+                {proposal.status === "final" && <p className="mt-4 text-xs leading-5 text-slate-500">PDF는 전체 슬라이드를 A4에 맞춥니다. 공고의 가로·세로 지정과 변환 후 글자 크기를 확인하세요.</p>}
+                <div className="mt-4 flex flex-wrap justify-end gap-2">
                   {proposal.status === "draft" ? (
                     <button
                       className="cursor-pointer rounded-md bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
@@ -568,13 +583,20 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                       {isFinalizing ? "최종본 확정 중..." : "최종본으로 확정"}
                     </button>
                   ) : (
+                    <>
+                    <select aria-label="제안서 다운로드 형식" value={downloadFormat} disabled={isDownloading}
+                      onChange={event => setDownloadFormat(event.target.value)} className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm">
+                      <option value="pptx">PPTX 편집본</option><option value="landscape">PDF · A4 가로</option><option value="portrait">PDF · A4 세로</option>
+                    </select>
                     <button
                       className="cursor-pointer rounded-md bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+                      disabled={isDownloading}
                       onClick={() => void downloadProposal()}
                       type="button"
                     >
-                      최종 제안서 내려받기
+                      {isDownloading ? "다운로드 준비 중…" : "최종 제안서 내려받기"}
                     </button>
+                    </>
                   )}
                 </div>
               </div>

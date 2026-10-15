@@ -53,7 +53,7 @@ def load_font(path, size):
     return ImageFont.truetype(path, max(1, round(size * 4))) if path else ImageFont.load_default(size=max(1, round(size * 4)))
 
 
-def measure_text(text, element, size=None):
+def measure_text(text, element, size=None, *, include_lines=False):
     size = float(size or element.get('font_size') or element.get('font_size_pt') or 18)
     width = max(1, float(element.get('width', 0)) - element.get('margin_left', 3) - element.get('margin_right', 3))
     height = max(1, float(element.get('height', 0)) - element.get('margin_top', 2) - element.get('margin_bottom', 2))
@@ -80,7 +80,8 @@ def measure_text(text, element, size=None):
     required = len(lines) * (element.get('line_height_pt') or size * element.get('line_height_ratio', 1.2))
     required += (max(0, str(text).count('\n')) * element.get('paragraph_gap', 0)) if lines else 0
     widest = max((length(line) for line in lines), default=0)
-    return {'fits': required <= height + 1 and widest <= width + 1,
+    return {**({'lines':lines} if include_lines else {}),
+            'fits': required <= height + 1 and widest <= width + 1,
             'font_size': size, 'line_count': len(lines), 'required_height': round(required, 1),
             'available_height': round(height, 1), 'available_width': round(width, 1),
             'measured_width': round(widest, 1), 'font_resolved': exact, 'estimated': True}

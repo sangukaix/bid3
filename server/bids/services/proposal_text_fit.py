@@ -94,3 +94,22 @@ def verified_page_limit(candidate, original_text):
     if not match:
         return None
     return max(1, candidate - 1) if match.group(1) == "미만" else candidate
+
+
+def source_page_limit(original_text):
+    """Read explicit proposal limits even when the model misses or invents one."""
+    import re
+    text = " ".join(original_text.split())
+    # A presentation/summary/quantitative appendix limit must not become the
+    # qualitative proposal's total limit. Prefer an explicitly named main file.
+    for noun in (r'(?:정성|기술)\s*제안서', r'(?<![가-힣])제안서'):
+        limits = []
+        for match in re.finditer(noun + r'[^.;。]{0,50}', text):
+            span = match.group()
+            for value in re.findall(r'(?<!\d)(\d+)\s*(?:페이지|쪽|매|장)', span):
+                limit = verified_page_limit(int(value), span)
+                if limit:
+                    limits.append(limit)
+        if limits:
+            return min(limits)
+    return None

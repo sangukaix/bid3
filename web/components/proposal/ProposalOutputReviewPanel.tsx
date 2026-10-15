@@ -7,8 +7,10 @@ type Props = { review?: ProposalOutputReview; disabled: boolean; refreshing: boo
 
 export default function ProposalOutputReviewPanel({ review, disabled, refreshing, onRefresh, onPage }: Props) {
   const [onlyProblems, setOnlyProblems] = useState(true);
+  const [includeSeparate, setIncludeSeparate] = useState(false);
   const [visibleCount, setVisibleCount] = useState(30);
-  const checks = (review?.checks ?? []).filter(item => !onlyProblems || !item.covered);
+  const checks = (review?.checks ?? []).filter(item => (!onlyProblems || !item.covered)
+    && (includeSeparate || !item.channel || item.channel === "body"));
   return <section className="mt-4 rounded-md border border-slate-200 bg-white p-4">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h3 className="font-semibold text-slate-900">공고 요구사항 · 최종 파일 대조</h3>
@@ -20,16 +22,26 @@ export default function ProposalOutputReviewPanel({ review, disabled, refreshing
     <p className="mt-2 text-xs leading-5 text-slate-500">저장된 검수 인용을 현재 PPTX에서 확인합니다. 답변을 바꾸면 기존 확인 결과가 해제될 수 있습니다.</p>
     {!review ? <p className="mt-3 text-sm text-slate-600">이 파일에 저장된 대조 결과가 없습니다. 최신 파일 대조를 눌러 확인하세요.</p> : <>
       {review.source_register_available && <p className="mt-3 text-sm text-slate-700">
-        출력 {review.actual_slide_count}쪽 · 요구사항 {review.total_count}개 · 본문 인용 확인 {review.matched_count}개 · 재검토 {review.review_required_count}개
+        {review.body_total_count !== undefined
+          ? `출력 ${review.actual_slide_count}쪽 · 본문 조건 ${review.body_total_count}개 · 답변 인용 ${review.body_matched_count}개 · 재검토 ${review.body_review_required_count}개`
+          : `출력 ${review.actual_slide_count}쪽 · 요구사항 ${review.total_count}개 · 본문 인용 확인 ${review.matched_count}개 · 재검토 ${review.review_required_count}개`}
       </p>}
+      {!!review.separate_count && <p className="mt-2 text-xs leading-5 text-slate-500">본문 외 서식·증빙·가격·절차 {review.separate_count}개는 제출 전 점검에서 별도로 확인하세요.</p>}
       {review.review_notes.length > 0 && <ul className="mt-3 list-disc space-y-1 rounded bg-amber-50 p-3 pl-7 text-xs leading-5 text-amber-900">
         {review.review_notes.map((note, i) => <li key={i}>{note}</li>)}
       </ul>}
-      {review.checks.length > 0 && <>
+      {review.checks.length > 0 && <details className="mt-4">
+        <summary className="cursor-pointer text-sm font-semibold text-slate-800">
+          본문 상세 대조 · 재검토 {review.body_review_required_count ?? review.review_required_count}개
+        </summary>
         <label className="my-3 flex items-center gap-2 text-xs text-slate-700">
           <input type="checkbox" checked={onlyProblems} onChange={event => { setOnlyProblems(event.target.checked); setVisibleCount(30); }} />
           재검토 항목만 보기
         </label>
+        {review.body_total_count !== undefined && <label className="my-3 flex items-center gap-2 text-xs text-slate-700">
+          <input type="checkbox" checked={includeSeparate} onChange={event => { setIncludeSeparate(event.target.checked); setVisibleCount(30); }} />
+          본문 외 확인사항의 인용 대조도 보기
+        </label>}
         {checks.length === 0 && <p className="py-3 text-sm text-slate-600">재검토로 표시된 본문 항목이 없습니다. 별도 서식·증빙과 자격 요건은 직접 확인하세요.</p>}
         {checks.length > 0 && <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-left text-xs leading-5">
@@ -53,7 +65,7 @@ export default function ProposalOutputReviewPanel({ review, disabled, refreshing
         </div>}
         {checks.length > visibleCount && <button type="button" onClick={() => setVisibleCount(count => count + 30)}
           className="mt-3 cursor-pointer text-sm font-medium text-blue-700">다음 항목 더 보기 ({checks.length - visibleCount}개 남음)</button>}
-      </>}
+      </details>}
       {review.open_text_items.length > 0 && <details className="mt-4 text-xs">
         <summary className="cursor-pointer font-semibold text-amber-800">확인 필요·미작성 문구 {review.open_text_items.length}개</summary>
         {review.open_text_items.map((item, i) => <div key={i} className="mt-2 flex items-start gap-3 rounded bg-slate-50 p-2">
