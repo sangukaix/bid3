@@ -144,6 +144,15 @@ class CompanyMaterialTests(TestCase):
             self.assertNotIn('회사 원문 시각 자료를 배치하는 영역',text)
             self.assertIn('현행 적용 범위 확인 필요',text)
 
+    def test_visual_selection_sees_the_actual_adjacent_copy(self):
+        materials=collect_company_materials(self.user)
+        template=Path(settings.PROPOSAL_TEMPLATES['education_photo']['path'])
+        sections=[]
+        prepare_material_template(template,materials,self.directory/'sections',
+            bid_title='교육 품질 평가 서비스 운영',
+            select_asset=lambda section,candidates,title:sections.append(section))
+        self.assertTrue(any('멀티미디어 학습' in section for section in sections))
+
     def test_diagram_is_kept_whole_and_source_pages_are_not_repeated(self):
         materials=collect_company_materials(self.user)
         _,items=prepare_material_template(self.template,materials,self.directory/'whole',

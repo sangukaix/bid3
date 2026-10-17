@@ -29,6 +29,10 @@ previews=library/'previews/education_photo';previews.mkdir(parents=True,exist_ok
 for number in range(1,22):shutil.copy2(work/f'render-template/{number:02d}.png',previews/f'slide_{number:03d}.png')
 (previews/'manifest.json').write_text(json.dumps({'source_sha256':hashlib.sha256(target.read_bytes()).hexdigest(),'slide_count':21},indent=2)+'\n',encoding='utf-8')
 catalog_path.write_text(json.dumps(catalog,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-layout_path=library/'layouts.json';all_layouts=json.loads(layout_path.read_text('utf-8'));all_layouts['education_photo.pptx']=layouts
+layout_path=library/'layouts.json';all_layouts=json.loads(layout_path.read_text('utf-8'))
+for number,meta in all_layouts.get('education_photo.pptx',{}).items():
+    if number in layouts and meta.get('element_briefs'):
+        layouts[number]['element_briefs']=meta['element_briefs']
+all_layouts['education_photo.pptx']=layouts
 layout_path.write_text(json.dumps(all_layouts,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 print('Installed shared photo template: 21 slides, 21 matching previews, no company example.')

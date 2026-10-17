@@ -504,13 +504,15 @@ def build_local_slide_plan(slide, inputs, feedback=False):
     """Use a small exact-target schema; construct renderer metadata in Python."""
     from pydantic import create_model
     elements = {element["target"]: element for element in slide["elements"]}
+    explicit_targets = set(re.findall(r'(?<![A-Za-z0-9_-])shape-\d+(?:-cell-\d+-\d+)?(?![A-Za-z0-9_-])',
+        inputs.get('instruction',''))) & set(elements) if feedback else set()
     result_type = ProposalFeedbackPlanSchema if feedback else LocalProposalRevisionPlanSchema
     if not elements:
         return result_type(summary="텍스트 없는 페이지: 직접 확인", slide_changes=[], final_review_items=["텍스트 없는 페이지 직접 확인"])
     from pydantic import ConfigDict
     Edits = create_model("LocalSlideEdits", __config__=ConfigDict(extra="forbid"),
-        **{target: (str | None if feedback or element.get('label') else str,
-                   Field(description=f"실제 작성 문구. 새 작성의 본문은 null 금지. 최대 {element.get('max_chars', 200)}자."))
+        **{target: (str | None if (feedback and target not in explicit_targets) or (not feedback and element.get('label')) else str,
+                   Field(description=f"{element.get('content_hint', element['text'])} 실제 작성 문구. 새 작성의 본문은 null 금지. 최대 {element.get('max_chars', 200)}자."))
            for target, element in elements.items()})
     Output = create_model("LocalSlideOutput",
         edits=(Edits, ...),
@@ -532,6 +534,13 @@ def build_local_slide_plan(slide, inputs, feedback=False):
          "자료 출처의 번호나 새 수치를 만들어내지 마세요. "
          "수정 요청 모드에서는 요청과 무관한 target 값을 null로 두고, 해당 텍스트만 바꾸세요. "
          "새 제안서 작성 모드에서는 라벨을 제외한 모든 칸에 현재 공고의 실제 내용을 작성하세요. "
+         "copy_role은 각 칸의 역할입니다. sequence는 기존 번호를 유지하고, value는 수치·기간·기준만, "
+         "heading은 짧은 항목명, description은 해당 항목의 수행 설명으로 작성하세요. "
+         "value와 heading에 옆 칸의 설명을 반복하지 마세요. 기존 문구의 주제와 항목 순서를 유지하세요. "
+         "예를 들어 수업시간 칸에 교육대상이나 사업기간을 넣지 마세요. max_lines와 원래 큰 글씨를 유지할 분량으로 쓰세요. "
+         "대괄호 안내문은 실제 값으로 교체하며 새 대괄호 항목명을 만들지 마세요. "
+         "실제 값이 원문에 없으면 짧게 확인 필요라고 쓰세요. 같은 수치·설명은 이 페이지에서 한 번만 쓰세요. "
+         "content_hint는 이 칸의 구체적인 작성 목적입니다. 다른 칸과 바꾸지 마세요. "
          "새 작성의 본문에는 null을 반환하지 마세요. 기존 양식의 예시 수치·사업명·회사 주장은 근거가 아니며 재사용하지 마세요. "
          "공고나 회사 자료로 확인할 수 없는 값은 확인 필요라고 쓰세요."),
         ("human", "[작업] {instruction}\n[회사] {company_context}\n[공고 기본정보] {bid_notice_context}\n[공고] {bid_context}\n"
@@ -548,19 +557,27 @@ def build_local_slide_plan(slide, inputs, feedback=False):
     evidence_reports = []
     values["_evidence_query"] = " ".join(str(slide.get(key, "")) for key in
                                          ("title", "role", "use_when", "content_budget"))
+    values["_evidence_query"] += ' ' + ' '.join(element.get('evidence_query','') for element in elements.values())
     if feedback:
         values["_evidence_query"] += " " + inputs.get("instruction", "")
     values["_evidence_reports"] = evidence_reports
     values["instruction"] = (
         "수정 요청 모드: " + inputs["instruction"] if feedback else "새 제안서 작성 모드"
     )
+    if not feedback:
+        from ..proposal_evidence import slot_evidence
+        pinned = slot_evidence(list(elements.values()), values['requirement_context'])
+        if pinned:
+            values['instruction'] += '\n[현재 칸의 직접 관련 원문: 사실을 추가하지 말고 해당 칸의 값을 확인하세요]\n' + pinned
     if not feedback and slide.get("role") in {"summary", "objective", "timeline", "metrics", "outcomes"}:
         from ..proposal_evidence import core_project_requirements
         core = core_project_requirements(values["requirement_context"])
         if core:
             values["instruction"] += (
                 "\n현재 사업의 기본조건을 아래에 별도로 제공합니다. 이 페이지의 요약·목표·일정에 해당하는 "
-                "대상 인원, 기간, 횟수·시간, 예산을 구체적으로 명시하세요. 원문의 변동 가능 조건도 유지하세요. "
+                "원래 칸의 주제에 해당하는 대상 인원, 기간, 횟수·시간, 예산만 명시하세요. "
+                "원래 수업시간 칸을 대상 인원이나 사업기간 칸으로 바꾸지 마세요. 다른 페이지에서 다룰 기본조건을 억지로 넣지 마세요. "
+                "원문의 변동 가능 조건도 유지하세요. "
                 "공고에 없는 달성률·만족도 같은 KPI 수치는 지어내지 말고 협의 후 확정이라고 쓰세요.\n" + core)
     if not feedback and slide.get("role") in {"problem", "evaluation"}:
         values["instruction"] += "\n평가 최고점 기준과 필수 참가자격을 구분하세요. 최고점 조건을 최소 참가자격으로 단정하지 마세요."
@@ -584,6 +601,8 @@ def build_local_slide_plan(slide, inputs, feedback=False):
         raise ValueError('슬라이드 대상 ID가 작성 문구로 반환되었습니다. 수정 요청을 다시 실행해 주세요.')
     if not feedback:
         for target, element in elements.items():
+            if element.get('copy_role') == 'sequence':
+                candidate_edits[target] = None
             if element.get('label') and element['text'].strip() == '사업명 제안서':
                 candidate_edits[target] = '입찰 제안서'
     review_notes = list(output.review_notes)
@@ -594,7 +613,11 @@ def build_local_slide_plan(slide, inputs, feedback=False):
             for a,b in (('(',')'),('[',']'),('{','}')))
         copied_marker = value is not None and any(''.join(marker.split()) in ''.join(value.split()) for marker in markers)
         renamed_marker = value is not None and re.fullmatch(r'\s*\[[^\[\]\n]+\]\s*',value)
-        return broken_delimiters or copied_template or bool(markers) and (value is None or copied_marker or renamed_marker)
+        invalid_number = (value is not None and elements[target].get('value_type') == 'number'
+                          and not re.search(r'\d|확인\s*필요|협의\s*후|미제공|미확인', value))
+        missing_currency = (value is not None and elements[target].get('value_type') == 'money'
+                            and not re.search(r'\d[\d,.]*\s*(?:억\s*원|만\s*원|천\s*원|원)|확인\s*필요|미제공|미확인', value))
+        return missing_currency or invalid_number or broken_delimiters or copied_template or bool(markers) and (value is None or copied_marker or renamed_marker)
     pending = [target for target, text in candidate_edits.items() if unfilled(target, text)]
     if pending and not feedback:
         RequiredEdits = create_model("RequiredSlideEdits", __config__=ConfigDict(extra="forbid"),
@@ -609,12 +632,18 @@ def build_local_slide_plan(slide, inputs, feedback=False):
              "근거 없이 회사가 이미 보유·완료했다고 하지 마세요. 자료가 없으면 '확인 필요'라고 쓰세요.")
         ])
         required_values = {**values, "slide_inventory": json.dumps({
-            **slide, "elements": [elements[target] for target in pending]}, ensure_ascii=False)}
+            **slide, "elements": [elements[target] for target in pending],
+            "accepted_edits": {k:v for k,v in candidate_edits.items() if k not in pending}}, ensure_ascii=False)}
         required = structured_chain(required_prompt, model, RequiredOutput).invoke(required_values)
         candidate_edits.update(required.edits.model_dump())
         review_notes.extend(required.review_notes)
     from ..proposal_text_fit import fit_slide_edits
-    fitted_edits = fit_slide_edits(candidate_edits, elements, model)
+    if feedback and re.search(r'확인\s*필요.{0,35}(?:유지|보존)',inputs['instruction']) and not re.search(
+            r'확인\s*필요.{0,15}(?:삭제|제거|빼|없애)',inputs['instruction']):
+        for target in explicit_targets:
+            if '확인 필요' in elements[target]['text']:
+                elements[target]['required_phrases'] = ['확인 필요']
+    fitted_edits = fit_slide_edits(candidate_edits, elements, model, instruction=values['instruction'])
     edits = []
     missing_targets = []
     for target, revised_text in fitted_edits.items():

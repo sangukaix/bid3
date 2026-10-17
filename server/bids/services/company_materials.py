@@ -204,7 +204,11 @@ def prepare_material_template(source_path, materials, directory, bid_title='', s
         # visual slots can receive source-company material in these frameworks.
         if meta.get('theme_id') and not meta.get('material_slot'):
             continue
-        query = meta.get('use_when','')+' '+meta.get('content_budget','')
+        # Metadata can be broad ('company service'). The actual adjacent copy
+        # distinguishes a learning-content screen from an instructor profile.
+        section_text = ' '.join(_shape_text(s) for s in slide.shapes
+                                if not s.name.startswith('bid3-fixed-'))
+        query = meta.get('use_when','')+' '+meta.get('content_budget','')+' '+section_text
         # Historical employee bios are not automatically transplanted into a new
         # proposal. The same person's present availability cannot be inferred.
         role_terms={'security':r'보안|개인정보|정보보호|접근권한|접근통제|암호화|security|privacy',

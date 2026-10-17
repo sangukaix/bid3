@@ -33,6 +33,29 @@ def relevance(text, query):
     return len(terms(text) & terms(query))
 
 
+def slot_evidence(elements, context, budget=5500):
+    """Pin each named visual slot's source before broad page-level retrieval.
+
+    A generic summary query can omit a short but essential time/quantity row.
+    Keep exact source units, round-robin across slots, within the local budget.
+    """
+    units = evidence_units(context, 'requirement_context')
+    queries = list(dict.fromkeys(e['evidence_query'] for e in elements if e.get('evidence_query')))
+    ranked = {query:sorted((u for u in units if relevance(u.text,query)>0),
+                          key=lambda u:-relevance(u.text,query))[:2] for query in queries}
+    selected, used, seen = [], 0, set()
+    for rank in range(2):
+        for query, candidates in ranked.items():
+            if rank >= len(candidates):
+                continue
+            unit = candidates[rank]
+            if unit.id in seen or used + byte_size(unit.text) > budget:
+                continue
+            selected.append(f'[{unit.id}]\n{unit.text}')
+            seen.add(unit.id);used += byte_size(unit.text)
+    return '\n\n'.join(selected)
+
+
 def requirement_rows(context):
     try:
         data = json.loads(context) if isinstance(context, str) else context

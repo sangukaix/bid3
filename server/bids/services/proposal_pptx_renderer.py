@@ -134,6 +134,40 @@ def _slide_elements(slide):
                     'contents-number-','week-','schedule-header-label','strategy-no-','phase-label-'))
                 elements[-1]['name'] = shape.name
 
+    # Photo layouts rely on a few large text groups. Do not let a short label
+    # become a paragraph by reducing it to the legacy 11pt body minimum.
+    if any(shape.name in {'visual-body', 'photo-edit-text'} for shape in slide.shapes):
+        for element in elements:
+            shape = slide.shapes[int(element['target'].split('-')[1])]
+            if element['kind'] != 'table_cell':
+                for other in slide.shapes:
+                    if other is shape or other.left <= shape.left:
+                        continue
+                    if other.shape_type != 13 and not (getattr(other, 'has_text_frame', False) and other.text.strip()):
+                        continue
+                    if min(shape.top + shape.height, other.top + other.height) <= max(shape.top, other.top):
+                        continue
+                    available = (other.left - shape.left) / EMU_PER_POINT - 4
+                    if available > element['font_size'] * 2:
+                        element['width'] = min(element['width'], available)
+            size = element['font_size']
+            element['layout_min_font_size'] = min(size, max(11, round(size * .92, 1)))
+            height = element['height'] - element['margin_top'] - element['margin_bottom']
+            leading = element.get('line_height_pt') or size * element['line_height_ratio']
+            element['max_lines'] = max(1, min(3, int((height + 1) / leading)))
+            if re.fullmatch(r'\d{1,2}', element['text'].strip()) and element['width'] < size * 3:
+                element['label'] = True
+                element['copy_role'] = 'sequence'
+            elif element['kind'] == 'title':
+                element['copy_role'] = 'title'
+            elif re.fullmatch(r'\[[^\[\]\n]+\]', element['text'].strip()):
+                element['copy_role'] = 'value'
+            elif re.fullmatch(r'\d+(?::\d+|%)', element['text'].strip()):
+                element['copy_role'] = 'value'
+            elif size >= 21:
+                element['copy_role'] = 'heading'
+            else:
+                element['copy_role'] = 'description'
     return elements
 
 
@@ -197,6 +231,9 @@ def extract_pptx_inventory(source_path, max_slides=MAX_SOURCE_SLIDES):
         title = _slide_title(elements)
 
         layout_metadata = get_proposal_slide_layout(source_path, slide_number)
+        for element in elements:
+            brief = layout_metadata.get('element_briefs', {}).get(element['target'], {})
+            element.update(brief)
         inventory.append(
             {
                 "slide_number": slide_number,
@@ -355,7 +392,7 @@ def _apply_text_changes(slide, text_changes):
         revised_length = len(_clean_text(revised_text))
         adjusted_font_size = font_size_pt
 
-        if revised_length > max_chars:
+        if revised_length > max_chars and not element.get('layout_min_font_size'):
             adjusted_font_size = font_size_pt * sqrt(max_chars / revised_length)
             minimum_size = (
                 MIN_TITLE_FONT_PT
@@ -369,11 +406,14 @@ def _apply_text_changes(slide, text_changes):
                 continue
             adjusted_font_size = max(minimum_size, adjusted_font_size)
 
-        measured_size, measured = fitting_size(revised_text, {**element, 'font_size': adjusted_font_size},
-                                               MIN_TITLE_FONT_PT if element.get('kind') == 'title' else MIN_BODY_FONT_PT)
+        minimum = element.get('layout_min_font_size',
+                              MIN_TITLE_FONT_PT if element.get('kind') == 'title' else MIN_BODY_FONT_PT)
+        if element.get('layout_min_font_size'):
+            adjusted_font_size = max(adjusted_font_size, minimum)
+        measured_size, measured = fitting_size(revised_text, {**element, 'font_size': adjusted_font_size}, minimum)
         if measured_size is None and _tight_label_fits(element, measured):
             measured_size = measured['font_size']
-        if measured_size is None:
+        if measured_size is None or measured['line_count'] > element.get('max_lines', 10000):
             warnings.append(f"{target}: 폰트 폭 기준으로 표시 공간을 초과해 자동 수정을 건너뛰었습니다.")
             continue
         adjusted_font_size = measured_size

@@ -4351,6 +4351,32 @@
       "theme_id": "education",
       "kind": "photo",
       "use_when": "교육 운영의 핵심 제안",
+      "element_briefs": {
+        "shape-5": {
+          "content_hint": "학습 방식의 큰 값: 공고의 1:1 여부. 대상 인원이나 항목명을 넣지 않습니다.",
+          "value_type": "number",
+          "evidence_query": "학습형태 원어민 회화 전화 화상"
+        },
+        "shape-6": {
+          "content_hint": "위 학습 방식의 설명: 원어민 전화·화상 회화. 인원이나 사업기간을 쓰지 않습니다."
+        },
+        "shape-7": {
+          "content_hint": "주당 수업시간의 값: 공고의 분·시간 수치를 짧게 표시. 사업기간이나 대상 인원 금지.",
+          "value_type": "number",
+          "evidence_query": "수업유형 주당 수업시간 분 시간"
+        },
+        "shape-8": {
+          "content_hint": "위 수업시간을 주 단위로 편성하고 기록을 대조하는 수행 설명"
+        },
+        "shape-9": {
+          "content_hint": "사업기간의 값: 시작·종료 연도를 짧게 표시. 항목명만 쓰지 않습니다.",
+          "value_type": "number",
+          "evidence_query": "용역기간 사업기간 착수 종료"
+        },
+        "shape-10": {
+          "content_hint": "연차별 운영과 공고의 기간 조정 가능 조건. 위 연도를 반복하지 않습니다."
+        }
+      },
       "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
     },
     "4": {
@@ -4398,6 +4424,31 @@
       "theme_id": "education",
       "kind": "photo",
       "use_when": "수업 시간과 이용 환경",
+      "element_briefs": {
+        "shape-4": {
+          "content_hint": "첫 번째 주당 수업시간 수치와 단위만 표시",
+          "value_type": "number",
+          "evidence_query": "수업유형 주당 수업시간"
+        },
+        "shape-5": {
+          "content_hint": "첫 번째 시간 유형의 주간 수업 편성·기록 방법"
+        },
+        "shape-6": {
+          "content_hint": "두 번째 주당 수업시간 수치와 단위만 표시. 첫 번째와 중복 금지",
+          "value_type": "number",
+          "evidence_query": "수업유형 주당 수업시간"
+        },
+        "shape-7": {
+          "content_hint": "두 번째 시간 유형의 주간 수업 편성·기록 방법"
+        },
+        "shape-8": {
+          "content_hint": "이용 기기: 모바일·PC"
+        },
+        "shape-9": {
+          "content_hint": "공고에 명시된 원어민·1:1 학습 여부, 전화·화상과 모바일·PC 접속 지원을 함께 보존하는 짧은 문장",
+          "evidence_query": "학습형태 원어민 1:1 전화 화상 모바일 PC"
+        }
+      },
       "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다.",
       "material_slot": [
         0.65,
@@ -4418,6 +4469,30 @@
       "theme_id": "education",
       "kind": "diagram",
       "use_when": "출석·수료 기준",
+      "element_briefs": {
+        "shape-3": {
+          "content_hint": "공고의 출석·수료 기준 수치만 크게 표시. 항목명이나 인원·기간 금지",
+          "value_type": "number",
+          "evidence_query": "수료기준 출석률 미수료"
+        },
+        "shape-4": {
+          "content_hint": "출석률 기준 항목명"
+        },
+        "shape-5": {
+          "content_hint": "기준 미달 판정과 학습자 안내 방법. 위 수치를 반복하지 않습니다."
+        },
+        "shape-6": {
+          "content_hint": "공고의 미수료 교육비 공제율 수치만 크게 표시",
+          "value_type": "number",
+          "evidence_query": "미수료 교육비 급여 공제 SMS 이메일 카카오톡"
+        },
+        "shape-7": {
+          "content_hint": "미수료 교육비 공제 안내 항목명"
+        },
+        "shape-8": {
+          "content_hint": "급여 공제와 SMS·이메일·카카오톡 사전 안내 등 공고가 요구하는 전달 방법"
+        }
+      },
       "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
     },
     "11": {
@@ -4425,6 +4500,12 @@
       "theme_id": "education",
       "kind": "photo",
       "use_when": "강사 선발·훈련·평가",
+      "element_briefs": {
+        "shape-3": {
+          "content_hint": "공고의 시차 고려·현지 및 국내 강사 운영·제2외국어 고급 강사 풀 조건을 짧게 보존합니다. 현행 인력 보유 주장으로 바꾸지 않습니다.",
+          "evidence_query": "강사운영 시차 현지 국내 제2외국어 고급 강사 Pool"
+        }
+      },
       "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
     },
     "12": {
@@ -4445,6 +4526,42 @@
       "theme_id": "education",
       "kind": "diagram",
       "use_when": "연차별 예산·실비 정산",
+      "element_briefs": {
+        "shape-4": {
+          "content_hint": "총사업예산 금액과 원 단위를 함께 표시. 연차별 금액은 오른쪽에 따로 있습니다.",
+          "value_type": "money",
+          "evidence_query": "사업예산 총사업비 부가세"
+        },
+        "shape-5": {
+          "content_hint": "원문의 부가세 조건과 예산 산출 근거·금액 미보장 등 예외 조건을 짧게 보존합니다. 증액 보장 여부를 지어내지 않습니다.",
+          "evidence_query": "예산 부가세 이행예정량 산출 보장하지 않음"
+        },
+        "shape-6": {
+          "content_hint": "월별 실비 청구 절차. 연도·연차별 예산은 오른쪽과 중복되므로 쓰지 않습니다."
+        },
+        "shape-7": {
+          "content_hint": "실제 교육 이행·출석·실비를 대조하는 검증 방법. 금액 나열 금지"
+        },
+        "shape-8": {
+          "content_hint": "월별 정산과 운영 결과 보고 방법"
+        },
+        "shape-10": {
+          "content_hint": "첫 연차·연도 표제. 아래 금액을 반복하지 않습니다."
+        },
+        "shape-11": {
+          "content_hint": "첫 연차 예산 금액과 원 단위를 함께 표시",
+          "value_type": "money",
+          "evidence_query": "연차 1차 2차 사업예산"
+        },
+        "shape-12": {
+          "content_hint": "둘째 연차·연도 표제. 아래 금액을 반복하지 않습니다."
+        },
+        "shape-13": {
+          "content_hint": "둘째 연차 예산 금액과 원 단위를 함께 표시",
+          "value_type": "money",
+          "evidence_query": "연차 1차 2차 사업예산"
+        }
+      },
       "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
     },
     "14": {
@@ -4452,6 +4569,32 @@
       "theme_id": "education",
       "kind": "photo",
       "use_when": "연차별 운영 일정",
+      "element_briefs": {
+        "shape-3": {
+          "content_hint": "원문의 착수일·기간 조정 가능 예외를 연차별 운영 흐름과 함께 한 줄로 보존합니다. 원문에 없는 조정 권한을 만들지 않습니다.",
+          "evidence_query": "과업기간 착수일 입찰 일정 조정 가능"
+        },
+        "shape-5": {
+          "content_hint": "첫 연차·연도만 표시",
+          "value_type": "number",
+          "evidence_query": "용역기간 사업기간"
+        },
+        "shape-6": {
+          "content_hint": "첫 연차의 시작·종료 날짜. 다른 연차나 전체 사업기간 금지",
+          "value_type": "number",
+          "evidence_query": "용역기간 사업기간"
+        },
+        "shape-7": {
+          "content_hint": "둘째 연차·연도만 표시",
+          "value_type": "number",
+          "evidence_query": "용역기간 사업기간"
+        },
+        "shape-8": {
+          "content_hint": "둘째 연차의 시작·종료 날짜. 다른 연차나 전체 사업기간 금지",
+          "value_type": "number",
+          "evidence_query": "용역기간 사업기간"
+        }
+      },
       "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
     },
     "15": {
@@ -4500,6 +4643,20 @@
       "theme_id": "education",
       "kind": "diagram",
       "use_when": "직접 수행·계약 준수",
+      "element_briefs": {
+        "shape-4": {
+          "content_hint": "공고의 직접 수행·하도급 제한 조건을 짧게 명시합니다. 자사 역량을 이미 보유했다는 주장으로 바꾸지 않습니다.",
+          "evidence_query": "직접 수행 하도급 금지 계약상대자"
+        },
+        "shape-16": {
+          "content_hint": "원문에 명시된 최저임금 법조항과 고시액 이상의 근로계약 조건을 짧게 보존합니다. 없는 조항은 만들지 않습니다.",
+          "evidence_query": "최저임금 근로계약 법조항 고용노동부 고시"
+        },
+        "shape-19": {
+          "content_hint": "공고의 대금 지급 시스템·은행과 협력사 범위를 짧게 보존합니다. 대금 지급과 시스템 활용의 협력 의무를 구분하여 함께 작성합니다. 원문에 없는 의무를 만들지 않습니다.",
+          "evidence_query": "대금 지급 상생결제시스템 협력사 우리은행 하도급지킴이"
+        }
+      },
       "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
     },
     "21": {
