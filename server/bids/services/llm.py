@@ -91,6 +91,10 @@ class OllamaChatModel(BaseChatModel):
                 "num_predict": self.num_predict,
             },
         }
+        if self.model.split(':')[0].lower() == 'gemma4':
+            # Ollama 0.40.3's bundled Gemma4 draft runner fails to load on this
+            # machine. Keep the same base model/context; disable MTP acceleration.
+            payload['options']['draft_num_predict'] = 0
         if stop:
             payload["options"]["stop"] = stop
         if "format" in kwargs:

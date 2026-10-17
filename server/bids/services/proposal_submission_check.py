@@ -57,7 +57,7 @@ def submission_report(content, saved_plan, knowledge, *, current_ord=None):
         'automatic_checks':checks,'separate_requirements':separate,
         'manual_checks':[
             {'title':'최신 공고·정정공고','detail':'나라장터 원문에서 마감·변경·추가 첨부와 전체 요구사항을 확인하세요.'},
-            {'title':'참가 자격·회사 증빙','detail':'실적·인력·인증의 진위와 유효기간, 필수 자격 충족을 확인하세요.'},
+            {'title':'참가 자격·회사 증빙','detail':'실적·인력·인증의 진위와 유효기간, 필수 자격 충족을 확인하세요. 사진·회사 화면·도식의 출처와 과거 수치·현행 적용 범위도 직접 대조하세요.'},
             {'title':'별도 서식·가격·제출 방법','detail':'지정 서식·서명·날인·가격·부가세·제출 파일 형식과 제출 방법을 확인하세요.'},
         ],'output_review':output,'final_document_review':final,'quality_review':quality,
         'limitation':'자동 점검은 제출 가능성 인증이나 담당자의 최종 검토 완료가 아닙니다. 본문 인용만으로 별도 서식·증빙·가격을 완료 처리하지 않습니다.'}

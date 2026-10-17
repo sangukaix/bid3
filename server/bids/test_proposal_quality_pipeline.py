@@ -17,7 +17,7 @@ from .models import BidNotice, SavedBid, BidProposal, ProposalTask
 from .services.proposal_tasks import enqueue, run_task, recover_dead_task, process_alive
 from pptx import Presentation
 from pptx.util import Inches
-from .services.proposal_planning import channel_for, explicit_points, build_writing_plan, bind_output_pages
+from .services.proposal_planning import channel_for, explicit_points, build_writing_plan, bind_output_pages, page_brief
 from .services.proposal_final_review import review_final_document, invalidate_final_review, repair_once, digest, confirm_conflicts, comparable_quantities, unequal_values
 from .services.proposal_evidence import evidence_units
 
@@ -31,6 +31,25 @@ def deck(*texts):
 
 
 class WritingPlanTests(SimpleTestCase):
+    @patch('bids.services.proposal_planning.structured_chain')
+    def test_security_conditions_stay_with_security_visual_and_procedures_stay_separate(self,chain):
+        def factory(prompt,model,schema):
+            return Mock(invoke=Mock(return_value=schema.model_validate({key:{
+                'method':'전원 보안교육과 보안 관리를 수행합니다.','responsible':'보안 담당',
+                'schedule':'참여 전','deliverable':'교육 기록','verification':'참여 인력 대조',
+                'question':'','evidence_ids':[]} for key in schema.model_fields})))
+        chain.side_effect=factory
+        register={'requirements':[{'category':'보안 관리','requirement':'참여 인력 전원 보안교육'},
+            {'category':'보안 관리','requirement':'참여 인력 전원 보안 관리'},
+            {'requirement':'제출 방법 방문접수'}]}
+        inventory=[{'slide_number':n,'role':role,'title':title,'elements':[{}]}
+            for n,role,title in [(2,'security','참여 인력 보안 관리·보안교육'),
+                (3,'domain','수준별 교육과정'),(4,'closing','참여 인력 보안 관리·보안교육')]]
+        plan=build_writing_plan(register,inventory,'',Mock())
+        self.assertTrue(all(2 in r['source_slide_numbers'] and 4 not in r['source_slide_numbers'] for r in plan['items'][:2]))
+        self.assertNotIn('방문접수',page_brief(plan,[2,3,4]))
+        self.assertEqual(plan['items'][2]['source_slide_numbers'],[])
+
     def test_procurement_procedures_and_company_proofs_are_not_delivery_work(self):
         cases = [
             ('사업개요','계약방법: 일반경쟁, 협상에 의한 계약','manual'),
@@ -521,6 +540,52 @@ class FeedbackPipelineTests(SimpleTestCase):
                              {'수정된 첫 페이지','수정하지 않은 회사 실적'})
 
 
+class PhotoGenerationPolicyTests(SimpleTestCase):
+    def test_generation_keeps_real_photo_layout_and_separates_long_review_conditions(self):
+        from pathlib import Path
+        from .services.rag.proposal import _generate_proposal_from_template
+        source=Path(__file__).resolve().parents[1]/'proposal_templates/library/education_photo.pptx'
+        original=source.read_bytes();before=Presentation(BytesIO(original))
+        condition='원문 조건과 상세 검수 기준을 본문에 길게 붙이지 않습니다. '*8
+        row={'id':'R0001','requirement':condition,'sources':['제안요청서 7쪽']}
+        register={'requirements':[row]}
+        plan={'slide_changes':[{'slide_number':n,'action':'KEEP','reason':'사진과 도식 유지','text_changes':[]}
+            for n in range(1,22)],'added_slides':[],'final_review_items':[]}
+        saved=SimpleNamespace(user_id=5,user=Mock(),bid_notice=SimpleNamespace(
+            bid_ntce_no='PHOTO-REGRESSION',bid_ntce_ord='000',title='사진형 교육 운영',notice_organization='발주기관'))
+        empty_info={'item_count':0,'processed_files':[],'reused_files':[],'failed_files':[]}
+        prefix='bids.services.rag.proposal.'
+        with ExitStack() as stack:
+            for name,value in {'prepare_docs_for_ai':{'bid_ntce_ord':'000'},'collect_proposal_documents':[],
+                'build_document_requirement_register':(register,{'batch_count':1,'source_location_count':1,'requirement_count':1}),
+                'build_full_page_context':('공고 원문',[{'source':'제안요청서 7쪽'}]),'company_context':'',
+                'material_context':'','build_bid_notice_context':'공고',
+                'build_company_knowledge_context':('',empty_info),'build_project_reference_context':('',empty_info),
+                'build_strategy_chain':Mock(invoke=Mock(return_value=SimpleNamespace(model_dump=lambda:{'proposal_page_limit':None,'gaps_and_mitigations':[]}))),
+                'build_writing_plan':{'items':[{**row,'channel':'body','source_slide_numbers':[17]}],'notes':[]},
+                'build_revision_plan_in_batches':plan,'build_proposal_model':Mock(),'build_text_model':Mock(),
+                'model_selection':('ollama','gemma4:26b')}.items():
+                stack.enter_context(patch(prefix+name,return_value=value))
+            def verify(content,revision,*models):
+                revision['requirement_coverage']={'missing_requirements':[condition]}
+            verified=stack.enter_context(patch('bids.services.proposal_final_review.verify_artifact',side_effect=verify))
+            stack.enter_context(patch('bids.services.proposal_final_review.repair_once',side_effect=lambda file,*a,**k:file))
+            result=_generate_proposal_from_template(saved,Mock(),source,'default_template',21)
+        after=Presentation(BytesIO(result['file_bytes']))
+        self.assertEqual(len(after.slides),len(before.slides))
+        self.assertEqual([[sha256(s.image.blob).hexdigest() for s in p.shapes if s.shape_type==13] for p in after.slides],
+                         [[sha256(s.image.blob).hexdigest() for s in p.shapes if s.shape_type==13] for p in before.slides])
+        self.assertEqual([sum(s.has_table for s in p.shapes) for p in after.slides],
+                         [sum(s.has_table for s in p.shapes) for p in before.slides])
+        self.assertFalse(any(s.name.startswith('bid3-answer-') for p in after.slides for s in p.shapes))
+        self.assertNotIn(condition,'\n'.join(s.text for p in after.slides for s in p.shapes if s.has_text_frame))
+        self.assertEqual(result['revision_plan']['writing_plan']['items'][0]['requirement'],condition)
+        self.assertIn('요구사항 반영 확인 필요: '+condition,result['revision_plan']['final_review_items'])
+        self.assertEqual(result['revision_plan']['presentation_policy'],'template_visual_v1')
+        verified.assert_called_once()
+        self.assertEqual(source.read_bytes(),original)
+
+
 class FullReviewApiTests(TestCase):
     def setUp(self):
         directory=TemporaryDirectory();self.addCleanup(directory.cleanup)
@@ -535,6 +600,26 @@ class FullReviewApiTests(TestCase):
 
     def post(self):
         return self.client.post('/api/bids/FULL-REVIEW/proposal/full-review/',{},format='json')
+
+    @patch('bids.services.llm.build_text_model',side_effect=AssertionError('PDF review must not call LLM'))
+    def test_separate_review_pdf_preserves_source_and_owner_guards(self,model):
+        from pathlib import Path
+        from pypdf import PdfReader
+        self.proposal.revision_plan={'status':'draft','requirement_register':{'requirements':[
+            {'requirement':'학생 250명에게 주 30분 교육 제공','category':'교육 운영','sources':['요청서 3쪽']},
+            {'requirement':'사업자등록증 제출','category':'참가 자격'}]}}
+        self.proposal.save();before=deepcopy(self.proposal.revision_plan)
+        endpoint='/api/bids/FULL-REVIEW/proposal/submission-check/?file_format=pdf'
+        response=self.client.get(endpoint);self.assertEqual(response.status_code,200)
+        self.assertEqual(response['Content-Type'],'application/pdf')
+        text='\n'.join(page.extract_text() for page in PdfReader(BytesIO(response.content)).pages)
+        for phrase in ['내부 검수표','R0001','R0002','학생 250명','사업자등록증','재검토 필요']:
+            self.assertIn(phrase,text)
+        self.proposal.refresh_from_db();self.assertEqual(self.proposal.revision_plan,before)
+        self.assertEqual(Path(self.proposal.generated_file.path).read_bytes(),self.content)
+        self.client.force_authenticate(get_user_model().objects.create_user(username='foreign-review-pdf'))
+        self.assertEqual(self.client.get(endpoint).status_code,404)
+        self.client.force_authenticate(None);self.assertEqual(self.client.get(endpoint).status_code,401)
 
     @patch('bids.services.llm.build_text_model',side_effect=AssertionError('No LLM in preflight'))
     def test_submission_check_is_read_only_owner_scoped_and_never_clears_manual_tasks(self,model):

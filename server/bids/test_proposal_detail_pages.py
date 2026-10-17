@@ -8,7 +8,7 @@ from pptx import Presentation
 from pptx.util import Inches,Pt
 
 from .services.proposal_coverage import review_requirement_coverage, confirmed_quote, CoverageVerdict
-from .services.proposal_detail_pages import append_detail_pages, bind_existing_details, prepare_default_template_output
+from .services.proposal_detail_pages import bind_existing_details, prepare_default_template_output
 from .services.proposal_output_review import output_plan, written_pages, audit_output, refresh_output_review
 from .services.proposal_final_review import review_final_document
 
@@ -30,6 +30,23 @@ def brief(number=1, **values):
             'deliverable':'출석부와 교육 결과보고서','verification':'출석과 수업시간을 대조하겠습니다.',
             'question':'','evidence_ids':[],'channel':'body','points':None,
             'sources':['제안요청서 3쪽'],'source_slide_numbers':[1],'output_slide_numbers':[1],**values}
+
+
+def legacy_details(result, writing_plan):
+    """Old named answer boxes remain readable; new production output never creates them."""
+    prs=Presentation(BytesIO(result['file_bytes']))
+    for row in writing_plan['items']:
+        if row['channel']!='body':continue
+        slide=prs.slides.add_slide(prs.slide_layouts[6])
+        for index,(kind,text) in enumerate((('requirement',row['requirement']),
+                ('answer','\n'.join(row[k] for k in ('method','responsible','schedule','deliverable','verification'))),
+                ('question',row.get('question','')))):
+            shape=slide.shapes.add_textbox(Inches(1),Inches(index*2),Inches(10),Inches(2))
+            shape.name=f'bid3-{kind}-{row["id"]}';shape.text=text
+        number=len(prs.slides);row['detail_slide_numbers']=[number]
+        row['output_slide_numbers']=[number,*row.get('output_slide_numbers',[])]
+    buffer=BytesIO();prs.save(buffer)
+    return {**result,'file_bytes':buffer.getvalue()}
 
 
 class DetailPageTests(SimpleTestCase):
@@ -58,22 +75,6 @@ class DetailPageTests(SimpleTestCase):
         self.assertNotIn('러닝 플로우',texts)
         self.assertIn('COVER-001',texts)
 
-    def test_detail_pages_precede_closing_and_every_page_reference_is_remapped(self):
-        result = source_result()
-        prs = Presentation(BytesIO(result['file_bytes']))
-        closing = prs.slides.add_slide(prs.slide_layouts[6])
-        closing.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = '맺음말'
-        buffer = BytesIO(); prs.save(buffer)
-        result.update(file_bytes=buffer.getvalue(), source_slide_count=2, output_slide_count=2,
-                      source_page_map={1:1, 2:2})
-        plan = {'items':[brief()]}
-        output = append_detail_pages(result, plan, closing_source_number=2)
-        pages = written_pages(output['file_bytes'])
-        self.assertIn('맺음말', pages[len(pages)])
-        self.assertEqual(output['source_page_map'][2], len(pages))
-        self.assertEqual(plan['items'][0]['detail_slide_numbers'], [2])
-        self.assertEqual(plan['detail_pages']['placements']['R0001'], 2)
-        self.assertTrue(any(item['output_slide_number']==2 and item['action']=='ADD' for item in output['revision_log']))
 
     @patch('bids.services.proposal_coverage.structured_chain')
     def test_optimistic_model_reason_does_not_hide_failed_numeric_quote_check(self,chain):
@@ -165,7 +166,7 @@ class DetailPageTests(SimpleTestCase):
             '2026년 8월 31개 교육 자료를 총 15주간 제공합니다.',{1:numeric}))
 
     def test_read_only_full_review_reconnects_actual_detail_pages_and_ignores_unrelated_ids(self):
-        result=append_detail_pages(source_result(),{'items':[brief()]})
+        result=legacy_details(source_result(),{'items':[brief()]})
         plan={'items':[brief(output_slide_numbers=[1]),brief(2,output_slide_numbers=[1])],'notes':[]}
         bind_existing_details(result['file_bytes'],plan)
         self.assertEqual(plan['items'][0]['output_slide_numbers'],[2,1])
@@ -174,97 +175,10 @@ class DetailPageTests(SimpleTestCase):
         self.assertEqual(plan['detail_pages']['omitted'][0]['id'],'R0002')
         self.assertEqual(plan['items'][1]['output_slide_numbers'],[1])
 
-    def test_custom_template_with_only_one_layout_can_add_details(self):
-        original=source_result();prs=Presentation(BytesIO(original['file_bytes']))
-        layouts=prs.slide_layouts
-        for index in range(len(layouts)-1,0,-1):
-            layouts._sldLayoutIdLst.remove(layouts._sldLayoutIdLst[index])
-        buffer=BytesIO();prs.save(buffer);original['file_bytes']=buffer.getvalue()
-        result=append_detail_pages(original,{'items':[brief()]})
-        self.assertEqual(result['output_slide_count'],2)
-
-    def test_existing_page_preserved_and_complete_briefs_bound_to_editable_pages(self):
-        original=source_result()
-        before=Presentation(BytesIO(original['file_bytes'])).slides[0]._element.xml
-        plan={'items':[brief(),brief(2,channel='price'),brief(3,question='인력 배정 확인 필요')],'notes':[]}
-        result=append_detail_pages(original,plan)
-        prs=Presentation(BytesIO(result['file_bytes']))
-        self.assertEqual(prs.slides[0]._element.xml,before)
-        self.assertEqual(result['source_slide_count'],1)
-        self.assertEqual(result['source_page_map'],{1:1})
-        self.assertEqual(plan['detail_pages']['placed_count'],2)
-        self.assertNotIn('R0002',plan['detail_pages']['placements'])
-        row=plan['items'][0];number=row['detail_slide_numbers'][0]
-        self.assertEqual(row['output_slide_numbers'],[number,1])
-        self.assertIn(row['requirement'],written_pages(result['file_bytes'])[number])
-        for key in ('method','responsible','schedule','deliverable','verification'):
-            self.assertIn(row[key],written_pages(result['file_bytes'])[number])
-        self.assertIn('제안요청서 3쪽',prs.slides[number-1].notes_slide.notes_text_frame.text)
-        self.assertEqual(result['quality_review']['overflow_items'],[])
-        self.assertEqual(result['quality_review']['small_text_items'],[])
-
-    def test_question_follows_answer_with_explicit_point_leading(self):
-        result=append_detail_pages(source_result(),{'items':[brief(question='투입 인원 확인 필요')]})
-        shapes=Presentation(BytesIO(result['file_bytes'])).slides[1].shapes
-        answer=next(s for s in shapes if s.name=='bid3-answer-R0001')
-        question=next(s for s in shapes if s.name=='bid3-question-R0001')
-        self.assertGreaterEqual(question.top,answer.top+answer.height)
-        for box in (answer,question):
-            self.assertTrue(all(p.line_spacing.pt==15 for p in box.text_frame.paragraphs))
-
-    def test_long_answer_uses_a_wide_card_with_separate_condition_column(self):
-        row=brief(method='교육과정 운영과 학습자 지원 계획을 수립하여 수행합니다. '*6,
-                  verification='출석과 수업 결과를 원문 조건에 대조하여 확인합니다. '*3,
-                  question='투입 가능 인원을 확인해야 합니다.',category='교육과정 운영')
-        original=source_result()
-        result=append_detail_pages(original,{'items':[row]})
-        shapes=Presentation(BytesIO(result['file_bytes'])).slides[1].shapes
-        condition=next(s for s in shapes if s.name=='bid3-requirement-R0001')
-        answer=next(s for s in shapes if s.name=='bid3-answer-R0001')
-        question=next(s for s in shapes if s.name=='bid3-question-R0001')
-        self.assertEqual(condition.top,answer.top)
-        self.assertGreater(answer.left,condition.left+condition.width)
-        self.assertGreaterEqual(question.top,answer.top+answer.height)
-        self.assertIn(row['method'],answer.text)
-        self.assertIn('교육과정 운영',next(s.text for s in shapes if s.name=='bid3-title'))
-        self.assertEqual(result['quality_review']['severe_overflow_items'],[])
-
-    def test_page_limit_keeps_original_and_reports_every_omitted_body_condition(self):
-        original=source_result();plan={'items':[brief(),brief(2)]}
-        self.assertIs(append_detail_pages(original,plan,page_limit=1),original)
-        self.assertEqual(plan['detail_pages']['placed_count'],0)
-        self.assertEqual([r['id'] for r in plan['detail_pages']['omitted']],['R0001','R0002'])
-        self.assertTrue(any('미배치' in note for note in plan['notes']))
-
-    def test_many_conditions_pack_without_clipping_and_never_exceed_cap(self):
-        rows=[brief(n,requirement=f'조건 {n}: '+('수업 및 출석 현황을 확인합니다. '*10)) for n in range(1,90)]
-        plan={'items':rows}
-        result=append_detail_pages(source_result(),plan,page_limit=4)
-        self.assertLessEqual(result['output_slide_count'],4)
-        summary=plan['detail_pages']
-        self.assertEqual(summary['placed_count']+len(summary['omitted']),len(rows))
-        self.assertGreater(len(summary['omitted']),0)
-        self.assertEqual(result['quality_review']['overflow_items'],[])
-        self.assertEqual(result['quality_review']['severe_overflow_items'],[])
-
-    def test_oversized_condition_is_not_truncated_or_set_in_tiny_font(self):
-        row=brief(requirement='긴 원문 조건 '*1000);plan={'items':[row]}
-        result=append_detail_pages(source_result(),plan)
-        self.assertEqual(result['output_slide_count'],1)
-        self.assertEqual(plan['detail_pages']['omitted'][0]['id'],row['id'])
-        self.assertEqual(plan['items'][0]['requirement'],row['requirement'])
-
-    def test_explicit_scores_prioritize_limited_space_and_no_body_rows_add_nothing(self):
-        plan={'items':[brief(1),brief(2,points=40)]}
-        result=append_detail_pages(source_result(),plan,page_limit=2)
-        page=written_pages(result['file_bytes'])[2]
-        self.assertLess(page.index('R0002'),page.index('R0001'))
-        empty={'items':[brief(channel='eligibility')]};original=source_result()
-        self.assertIs(append_detail_pages(original,empty),original)
 
     def test_original_condition_is_visible_but_never_used_as_answer_evidence(self):
         row=brief(method='교육 일정과 교사를 배정할 계획입니다.')
-        plan={'items':[row]};result=append_detail_pages(source_result(),plan)
+        plan={'items':[row]};result=legacy_details(source_result(),plan)
         number=row['detail_slide_numbers'][0]
         self.assertIn(row['requirement'],written_pages(result['file_bytes'])[number])
         exported=output_plan(result['file_bytes'])
@@ -285,7 +199,7 @@ class DetailPageTests(SimpleTestCase):
         chain.side_effect=make
         plan={'items':[brief(n,requirement=f'공고 조건 {n}명 교육', method='교육을 편성하여 운영합니다.',
             evidence_ids=[f'K{n}']) for n in range(1,10)]}
-        result=append_detail_pages(source_result(),plan)
+        result=legacy_details(source_result(),plan)
         report=review_final_document(result['file_bytes'],'',Mock())
         self.assertEqual(report['conflicts'],[])
         self.assertEqual(report['failures'],[])
@@ -389,7 +303,7 @@ class DetailPageTests(SimpleTestCase):
             return Mock(invoke=Mock(side_effect=invoke))
         chain.side_effect=make
         row=brief(method='학습자 교육 운영 방법 '*24,verification='끝부분 검증 방법을 확인합니다.',question='투입 가능 인원을 확인해야 합니다.')
-        result=append_detail_pages(source_result(),{'items':[row,brief(2,method='별도 조건의 답변')]})
+        result=legacy_details(source_result(),{'items':[row,brief(2,method='별도 조건의 답변')]})
         plan=output_plan(result['file_bytes']);plan['writing_plan']={'items':[row]}
         review_requirement_coverage({'requirements':[row]},plan,Mock())
         text=seen[0]['candidates'][0]['text']

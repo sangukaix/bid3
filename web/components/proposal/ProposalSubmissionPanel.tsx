@@ -13,6 +13,8 @@ type Report = {
 export default function ProposalSubmissionPanel({bidNtceNo,proposalUpdatedAt,busy}:{
   bidNtceNo:string;proposalUpdatedAt:string;busy:boolean}) {
   const [refresh,setRefresh]=useState(0);
+  const [downloading,setDownloading]=useState(false);
+  const [downloadError,setDownloadError]=useState("");
   const key=`${bidNtceNo}:${proposalUpdatedAt}:${refresh}`;
   const [result,setResult]=useState<{key:string;report:Report|null;error:string}>({key:"",report:null,error:""});
   const report=result.key===key ? result.report : null;
@@ -37,13 +39,27 @@ export default function ProposalSubmissionPanel({bidNtceNo,proposalUpdatedAt,bus
     const link=document.createElement("a");link.href=url;link.download=`proposal-review-${bidNtceNo}.json`;link.click();
     window.setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
+  async function downloadPdf() {
+    const token=localStorage.getItem("auth_token");if (!token || busy) return;
+    setDownloading(true);setDownloadError("");
+    try {
+      const response=await fetch(`${API_BASE_URL}/api/bids/${bidNtceNo}/proposal/submission-check/?file_format=pdf`,{headers:{Authorization:`Token ${token}`}});
+      if (!response.ok) throw new Error((await response.json()).error ?? "검수 PDF를 내려받지 못했습니다.");
+      const url=URL.createObjectURL(await response.blob());const link=document.createElement("a");
+      link.href=url;link.download=`bid3-review-${bidNtceNo}.pdf`;link.click();window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+    } catch(error) {setDownloadError(error instanceof Error ? error.message : "검수 PDF 다운로드 실패");}
+    finally {setDownloading(false);}
+  }
   const pending=report?.automatic_checks.filter(item=>item.status!=="checked").length ?? 0;
   return <section className="mt-4 rounded-md border border-slate-200 bg-white p-4" aria-label="제출 전 점검">
     <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-semibold text-slate-900">제출 전 점검</h3>
-      <div className="flex gap-2"><button type="button" disabled={busy || loading} onClick={()=>setRefresh(n=>n+1)} className="rounded border border-slate-200 px-3 py-2 text-xs text-blue-700 disabled:opacity-40">다시 점검</button>
+      <div className="flex flex-wrap gap-2"><button type="button" disabled={busy || loading} onClick={()=>setRefresh(n=>n+1)} className="rounded border border-slate-200 px-3 py-2 text-xs text-blue-700 disabled:opacity-40">다시 점검</button>
+        <button type="button" disabled={!report || busy || loading || downloading} onClick={()=>void downloadPdf()} className="rounded border border-slate-200 px-3 py-2 text-xs text-blue-700 disabled:opacity-40">{downloading ? "PDF 준비 중…" : "검수표 PDF"}</button>
         <button type="button" disabled={!report || busy || loading} onClick={download} className="rounded border border-slate-200 px-3 py-2 text-xs text-slate-600 disabled:opacity-40">검수 기록 내려받기</button></div>
     </div>
     <p className="mt-2 text-xs leading-5 text-slate-500">현재 PPTX를 읽는 코드 점검입니다. AI를 호출하거나 파일을 수정하지 않습니다.</p>
+    <p className="mt-1 text-xs leading-5 text-slate-500">검수표는 제출용 제안서와 별도 파일로 보관합니다.</p>
+    {downloadError && <p role="alert" className="mt-2 text-xs text-amber-900">{downloadError}</p>}
     {(busy || loading) && <p className="mt-3 text-sm text-slate-600" role="status">{busy ? "진행 중인 작업이 끝나면 다시 점검합니다." : "현재 파일 점검 중…"}</p>}
     {error && !busy && <p role="alert" className="mt-3 text-sm text-amber-900">{error}</p>}
     {report && !busy && <>

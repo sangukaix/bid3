@@ -1,6 +1,6 @@
 # 분야별 제안서 양식
 
-분야 6개와 각 분야의 디자인 변형 2개를 관리합니다. 내용과 페이지 구성은 `domain-profiles.mjs`, 편집 가능한 PPTX 작성은 `build-domain-templates.mjs`에 있습니다. 기존 스튜디오 양식 30개는 유지합니다.
+분야 6개와 각 분야의 기본 디자인 변형 2개, 교육 사진형 양식 1개를 관리합니다. 내용과 페이지 구성은 `domain-profiles.mjs`, 편집 가능한 PPTX 작성은 `build-domain-templates.mjs`에 있습니다. 기존 스튜디오 양식 30개는 유지합니다.
 
 | 분야 | 주요 구조 |
 | --- | --- |
@@ -23,3 +23,9 @@
 원문 다운로드 자료는 `.local/theme-studio-20261014/references/`에, 이번에 확인한 최종 샘플과 다운로드 묶음은 `.local/theme-studio-20261014/review/`에 있습니다. 교육 샘플은 기존 KOTRA 공고의 검토용이며 나머지 5개 샘플은 가상 과업입니다. 실제 제출 시 해당 공고의 필수 목차·분량·서식과 현행 회사 증빙을 우선합니다.
 
 회사 자료의 시각 요소는 `layouts.json`의 `material_slot`에만 배치합니다. 나머지 공정표·WBS·시스템 구성·규격표의 본문 구조는 유지하고, 회사 텍스트는 기존 근거 검토 절차로 현재 과업에 맞게 작성합니다.
+
+## 교육 사진형 양식
+
+교육 분야의 기본 추천은 `education_photo`(21쪽)입니다. `build-photo-template.mjs --source <승인된 사진형 PPTX> --work <비공개 작업 폴더> --mode template`로 작성합니다. `actual` 모드는 같은 디자인의 해당 공고 검토본을 만들며 공용 라이브러리에 설치하지 않습니다. 회사 업로드 이미지·화면과 특정 공고명·연도·금액은 공용 양식에서 제거하고, 회사 자료는 생성 시 소유자의 자료만 지정 영역에 배치합니다. 특정 공고의 예산 차트도 재사용하지 않습니다.
+
+패키지·레이아웃·재가져오기 검증 후 PowerPoint로 PDF와 페이지 PNG를 출력해 전부 확인합니다. `publish-photo-template.py --work <작업 폴더>`로 공용 PPTX, 21쪽 미리보기와 SHA manifest를 함께 설치합니다. 새 버전의 파일명은 `--deck <확정 PPTX> --receipt <검증 receipt JSON>`으로 지정할 수 있습니다. 미리보기는 같은 출력의 `render-template/01.png`부터 `21.png`까지 준비합니다. 내부 검수표는 별도 PDF로 내보내며 제안서에 검수용 장문 페이지를 자동 추가하지 않습니다.

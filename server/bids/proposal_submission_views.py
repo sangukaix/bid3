@@ -3,6 +3,7 @@ from zipfile import BadZipFile
 from lxml.etree import XMLSyntaxError
 from pptx.exc import PackageNotFoundError
 from django.utils import timezone
+from django.http import HttpResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -29,4 +30,13 @@ def submission_check(request,bid_ntce_no):
         return Response({'error':'PPTX를 읽지 못했습니다. 파일을 확인해 주세요.'},status=422)
     report.update(checked_at=timezone.now().isoformat(),bid_number=bid_ntce_no,
                   bid_title=proposal.saved_bid.bid_notice.title)
+    if request.query_params.get('file_format')=='pdf':
+        from .services.proposal_review_pdf import review_pdf
+        try:
+            content=review_pdf(report,(proposal.revision_plan or {}).get('writing_plan'))
+        except (OSError,ValueError):
+            return Response({'error':'검수 PDF를 만들지 못했습니다. 한글 글꼴과 파일을 확인하세요.'},status=422)
+        response=HttpResponse(content,content_type='application/pdf')
+        response['Content-Disposition']=f'attachment; filename="bid3-review-{bid_ntce_no}.pdf"'
+        return response
     return Response({'report':report})

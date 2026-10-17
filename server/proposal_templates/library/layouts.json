@@ -4330,5 +4330,184 @@
       "use_when": "제안 마무리",
       "content_budget": "제안 요약·연락처"
     }
+  },
+  "education_photo.pptx": {
+    "1": {
+      "role": "cover",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "표지",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "2": {
+      "role": "contents",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "제안의 구성",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "3": {
+      "role": "summary",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "교육 운영의 핵심 제안",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "4": {
+      "role": "problem",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "업무와 함께 이어지는 학습",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다.",
+      "material_slot": [
+        0.05,
+        0.24,
+        0.5,
+        0.61
+      ]
+    },
+    "5": {
+      "role": "domain",
+      "theme_id": "education",
+      "kind": "diagram",
+      "use_when": "언어와 목적별 교육",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "6": {
+      "role": "strategy",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "예습·수업·복습 흐름",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다.",
+      "material_slot": [
+        0.05,
+        0.32,
+        0.9,
+        0.38
+      ]
+    },
+    "7": {
+      "role": "domain",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "교육과정과 교재",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "8": {
+      "role": "strategy",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "수업 시간과 이용 환경",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다.",
+      "material_slot": [
+        0.65,
+        0.4,
+        0.3,
+        0.29
+      ]
+    },
+    "9": {
+      "role": "domain",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "AI·영상·일일 학습",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "10": {
+      "role": "metrics",
+      "theme_id": "education",
+      "kind": "diagram",
+      "use_when": "출석·수료 기준",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "11": {
+      "role": "quality",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "강사 선발·훈련·평가",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "12": {
+      "role": "quality",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "학습 평가와 피드백",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다.",
+      "material_slot": [
+        0.65,
+        0.32,
+        0.3,
+        0.52
+      ]
+    },
+    "13": {
+      "role": "metrics",
+      "theme_id": "education",
+      "kind": "diagram",
+      "use_when": "연차별 예산·실비 정산",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "14": {
+      "role": "timeline",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "연차별 운영 일정",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "15": {
+      "role": "organization",
+      "theme_id": "education",
+      "kind": "diagram",
+      "use_when": "직접 투입 인력과 조직",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "16": {
+      "role": "quality",
+      "theme_id": "education",
+      "kind": "diagram",
+      "use_when": "문의·차질 대응",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "17": {
+      "role": "security",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "전원 보안교육·정보 보호",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "18": {
+      "role": "domain",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "회사 서비스·학습 콘텐츠",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다.",
+      "material_slot": [
+        0.65,
+        0.23,
+        0.3,
+        0.6
+      ]
+    },
+    "19": {
+      "role": "deliverables",
+      "theme_id": "education",
+      "kind": "diagram",
+      "use_when": "운영 보고와 인계",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "20": {
+      "role": "governance",
+      "theme_id": "education",
+      "kind": "diagram",
+      "use_when": "직접 수행·계약 준수",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    },
+    "21": {
+      "role": "closing",
+      "theme_id": "education",
+      "kind": "photo",
+      "use_when": "제안의 약속",
+      "content_budget": "사진·화면·도식을 유지하고 항목별 핵심 설명만 작성합니다. 상세 원문·검수표는 별도 파일에 보존합니다."
+    }
   }
 }

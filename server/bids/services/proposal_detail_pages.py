@@ -1,13 +1,12 @@
-"""Editable, source-linked detail pages from the already generated writing briefs."""
+"""Default-template cleanup and read-back compatibility for older detail pages."""
 from io import BytesIO
 import re
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_SHAPE
 from pptx.util import Pt
 
-from .proposal_pptx_renderer import MAX_OUTPUT_SLIDES, inspect_proposal_quality, _replace_text_frame, _set_slide_order, _slide_elements
+from .proposal_pptx_renderer import inspect_proposal_quality, _replace_text_frame, _slide_elements
 from .text_geometry import measure_text, fitting_size
 from .proposal_evidence import requirement_rows
 
@@ -40,20 +39,6 @@ def _text(slide, name, text, x, y, width, height, size=BODY_SIZE, color=INK, bol
         paragraph.font.size = Pt(size)
         paragraph.font.bold = bold
         paragraph.font.color.rgb = RGBColor.from_string(color)
-
-
-def _card(row, width, wide=False):
-    condition = f"공고 조건 · {row['id']}\n{row['requirement']}"
-    answer = '\n'.join(f'{label}: {row.get(key) or "확인 필요"}' for key,label in (
-        ('method','수행안'), ('responsible','담당'), ('schedule','일정'),
-        ('deliverable','산출물'), ('verification','검증')))
-    question = ('확인 필요: ' + row['question']) if row.get('question') else ''
-    if row.get('evidence_ids'):
-        answer += '\n대조할 회사 근거 후보: ' + ', '.join(row['evidence_ids'])
-    widths = (width*.30,width*.70-16,width*.70-16) if wide else (width,)*3
-    heights = [_height(text,space) if text else 0 for text,space in zip((condition,answer,question),widths)]
-    content_height = max(heights[0],sum(heights[1:])) if wide else sum(heights)
-    return (condition,answer,question), heights, content_height + 28
 
 
 def prepare_default_template_output(file_result, register, bid_notice=None):
@@ -176,128 +161,3 @@ def bind_existing_details(content, writing_plan):
         'omitted':[{'id':key,'reason':'현재 파일에 전용 상세 답변 상자가 없습니다. 기존 본문 답변을 별도 대조하세요.'} for key in rows if key not in placements],
         'source':'actual_pptx'}
     writing_plan.setdefault('notes',[]).append(f'현재 파일에서 본문 {len(rows)}개 중 {len(placements)}개의 상세 답변 위치를 다시 연결했습니다. 위치 연결은 조건 충족 판정이 아닙니다.')
-
-
-def append_detail_pages(file_result, writing_plan, page_limit=None, closing_source_number=None):
-    """Never shorten a condition, shrink below 12pt, or silently omit an unplaced row.
-
-    Template target counts are approximate; only verified RFP limits and the global
-    output cap are hard bounds. Existing slides are preserved, not used as proof.
-    """
-    prs = Presentation(BytesIO(file_result['file_bytes']))
-    original_count = len(prs.slides)
-    layout = min(prs.slide_layouts, key=lambda item: len(item.placeholders))
-    cap = min(MAX_OUTPUT_SLIDES, page_limit) if isinstance(page_limit,int) and not isinstance(page_limit,bool) and page_limit>0 else MAX_OUTPUT_SLIDES
-    width, height = prs.slide_width.pt, prs.slide_height.pt
-    margin, gap = 28, 16
-    grid_width = (width - margin*2 - gap)/2
-    column_width = grid_width
-    top, bottom = 94, height - 34
-    rows = [row for row in writing_plan.get('items',[]) if row.get('channel')=='body']
-    rows = sorted(rows, key=lambda row: -(row.get('points') or 0))
-    placements, omitted = {}, []
-    slide = None
-    wide = False
-    columns = 2
-    column, y = 0, top
-    for row in rows:
-        grid = _card(row, grid_width - 20)
-        row_wide = grid[2] > (bottom-top)*.45 or grid_width < 140
-        available_width = width-margin*2 if row_wide else grid_width
-        proposed = _card(row,available_width-20,row_wide)
-        if proposed[2] > bottom-top or available_width < 140:
-            omitted.append({'id':row['id'], 'reason':'읽을 수 있는 크기로 한 칸에 배치할 수 없어 직접 편집이 필요합니다.'})
-            continue
-        texts, heights, card_height = _card(row, column_width - 20,wide)
-        if slide is not None and card_height > bottom-top:
-            column = columns
-        if slide is not None and y + card_height > bottom:
-            column += 1
-            y = top
-        if slide is None or column >= columns:
-            if len(prs.slides) >= cap:
-                omitted.append({'id':row['id'], 'reason':f'출력 상한 {cap}장으로 상세 페이지에 배치하지 못했습니다.'})
-                continue
-            slide = prs.slides.add_slide(layout)
-            wide, column_width = row_wide,available_width
-            columns = 1 if wide else 2
-            texts, heights, card_height = proposed
-            # Custom decks may have only one layout, with title/page placeholders.
-            for shape in list(slide.shapes):
-                shape._element.getparent().remove(shape._element)
-            slide._element.set('showMasterSp','0')
-            slide.background.fill.solid()
-            slide.background.fill.fore_color.rgb = RGBColor(255,255,255)
-            number = len(prs.slides)
-            _text(slide,'section-label-detail','수행 계획 · 공고 조건별 상세 답변',margin,18,width-margin*2,18,11,ACCENT)
-            heading = (row.get('category') or '세부 수행 계획').strip()
-            if len(heading)>36:
-                heading = heading[:35]+'…'
-            _text(slide,'bid3-title',f'{heading} · {number-original_count:02d}',margin,43,width-margin*2,35,24,INK,True)
-            _text(slide,'footer-detail','미래 수행 제안 · 회사 보유 사실 및 자격 증빙과 구분하여 검토',margin,height-24,width-margin*2-40,17,10)
-            _text(slide,'footer-page-detail',str(number),width-margin-35,height-24,35,17,10)
-            column, y = 0, top
-        x = margin + column*(column_width+gap)
-        card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,Pt(x),Pt(y),Pt(column_width),Pt(card_height))
-        card.fill.solid();card.fill.fore_color.rgb = RGBColor.from_string('F1F6F7')
-        card.line.fill.background()
-        current_y = y + 10
-        for kind,text,text_height in zip(('requirement','answer','question'),texts,heights):
-            if not text:
-                continue
-            text_width = column_width-20
-            text_x = x+10
-            if wide:
-                if kind=='requirement':
-                    text_width *= .30
-                else:
-                    text_x += (column_width-20)*.30+16
-                    text_width = (column_width-20)*.70-16
-                    if kind=='answer':
-                        current_y = y+10
-            _text(slide,f'bid3-{kind}-{row["id"]}',text,text_x,current_y,text_width,text_height,
-                  color='9A5B15' if kind=='question' else INK)
-            current_y += text_height
-        placements[row['id']] = len(prs.slides)
-        row['detail_slide_numbers'] = [len(prs.slides)]
-        row['output_slide_numbers'] = list(dict.fromkeys([len(prs.slides),*row.get('output_slide_numbers',[])]))
-        slide.notes_slide.notes_text_frame.text += '\n' + row['id'] + ' 원문 위치: ' + ' · '.join(row.get('sources',[]))
-        y += card_height + gap
-    added = len(prs.slides)-original_count
-    page_map = dict(file_result.get('source_page_map',{}))
-    remap = {number:number for number in range(1,len(prs.slides)+1)}
-    if added and page_map.get(closing_source_number) == original_count:
-        slides = list(prs.slides)
-        _set_slide_order(prs,slides[:original_count-1]+slides[original_count:]+[slides[original_count-1]])
-        remap[original_count] = len(prs.slides)
-        remap.update({number:number-1 for number in range(original_count+1,len(prs.slides)+1)})
-        placements = {key:remap[number] for key,number in placements.items()}
-        page_map = {source:remap.get(output,output) for source,output in page_map.items()}
-        for row in writing_plan.get('items',[]):
-            for key in ('output_slide_numbers','detail_slide_numbers'):
-                if key in row:
-                    row[key] = [remap.get(number,number) for number in row[key]]
-        for number,slide in enumerate(prs.slides,1):
-            for shape in slide.shapes:
-                if shape.name in {'footer-page-detail','bid3-fixed-page'} and getattr(shape,'has_text_frame',False):
-                    _replace_text_frame(shape.text_frame,f'{number:02d}')
-    summary = {'added_slide_count':added,'placed_count':len(placements),'body_count':len(rows),
-               'placements':placements,'omitted':omitted,'page_cap':cap}
-    writing_plan['detail_pages'] = summary
-    writing_plan.setdefault('notes',[]).append(
-        f'조건별 상세 수행안: 본문 {len(rows)}개 중 {len(placements)}개를 추가 {added}장에 배치했습니다. '
-        '배치는 충족 판정이 아니며 수행안·확인 질문은 담당자가 검토해야 합니다.')
-    if omitted:
-        writing_plan['notes'].append('상세 페이지 미배치: '+', '.join(item['id'] for item in omitted)+'. 작성 계획의 해당 항목을 직접 보완하세요.')
-    if not added:
-        return file_result
-    buffer = BytesIO();prs.save(buffer)
-    result = {**file_result, 'file_bytes':buffer.getvalue(), 'output_slide_count':len(prs.slides),
-        'source_page_map':page_map,
-        'revision_log':[{**entry,'output_slide_number':remap.get(entry.get('output_slide_number'),entry.get('output_slide_number'))}
-                        for entry in file_result['revision_log']] + [
-            {'source_slide_number':None,'output_slide_number':remap[number],'action':'ADD',
-             'title':f'조건별 상세 수행안 {number-original_count}', 'reason':'공고 원문·작성 계획 기반 상세 답변',
-             'changes':[],'warnings':[]} for number in range(original_count+1,len(prs.slides)+1)]}
-    result['quality_review'] = inspect_proposal_quality(result['file_bytes'],result['revision_log'])
-    return result

@@ -251,7 +251,7 @@ def prepare_material_template(source_path, materials, directory, bid_title='', s
         margin=width*.05;body_top=height*.30;caption_y=height*.88
         if meta.get('theme_id'):
             for shape in list(slide.shapes):
-                if shape.name.startswith('bid3-material-placeholder-'):
+                if shape.name.startswith('bid3-material-placeholder-') or shape.name=='bid3-fixed-visual-caption':
                     shape._element.getparent().remove(shape._element)
             x,y,w,h=meta['material_slot']
             slot=(width*x,height*y,width*w,height*h)

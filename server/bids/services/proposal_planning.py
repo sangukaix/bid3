@@ -127,7 +127,7 @@ def build_writing_plan(register, inventory, knowledge, model):
             briefs[row['id']] = brief
     result = [{**row, **briefs[row['id']], 'channel':channel_for(row),
                'points':explicit_points(row.get('evaluation_points','')), 'source_slide_numbers':[]} for row in rows]
-    pages = [slide for slide in inventory if slide.get('role') not in {'cover','contents','divider'} and slide.get('elements')]
+    pages = [slide for slide in inventory if slide.get('role') not in {'cover','contents','divider','closing'} and slide.get('elements')]
     body = [row for row in result if row['channel']=='body']
     # Give every body condition a destination, then use remaining pages for weighted detail.
     loads = {slide['slide_number']:0 for slide in pages}
@@ -135,8 +135,8 @@ def build_writing_plan(register, inventory, knowledge, model):
         if not pages:
             row['question'] = (row['question'] + ' 본문 작성 페이지가 없습니다.').strip()
             continue
-        slide = max(pages, key=lambda s: (loads[s['slide_number']]==0,
-            relevance(' '.join(str(s.get(k,'')) for k in ('title','role','use_when')), row['requirement']),
+        slide = max(pages, key=lambda s: (
+            relevance(' '.join(str(s.get(k,'')) for k in ('title','role','use_when')), row.get('category','')+' '+row['requirement']),
             -loads[s['slide_number']], -s['slide_number']))
         row['source_slide_numbers'].append(slide['slide_number']); loads[slide['slide_number']] += 1
     for slide in pages:
@@ -152,7 +152,7 @@ def build_writing_plan(register, inventory, knowledge, model):
 
 
 def page_brief(plan, numbers):
-    rows = [row for row in plan.get('items', []) if set(row.get('source_slide_numbers', [])) & set(numbers)]
+    rows = [row for row in plan.get('items', []) if row.get('channel')=='body' and set(row.get('source_slide_numbers', [])) & set(numbers)]
     return json.dumps(rows, ensure_ascii=False) if rows else '이 페이지에 배정된 본문 요구사항 없음. 공고 조건을 추가로 지어내지 마세요.'
 
 

@@ -58,10 +58,11 @@ def recommend_proposal_template(bid_notice, profile=None):
     elif _contains_keyword(title, ("시공", "건축공사", "토목", "리모델링", "시설개선", "시설 개선", "보수공사")):
         domain = "construction_site"
     elif _contains_keyword(title, ("교육", "연수", "외국어", "직무훈련", "역량강화", "워크숍")):
-        domain = "education_learning"
+        domain = "education_photo"
     elif _contains_keyword(title, TEMPLATE_KEYWORDS["corporate"]):
         domain = "supply_spec"
     domain_reasons = {
+        "education_photo": "사진·회사 서비스 화면과 학습·운영 도식 중심의 구성입니다. 내부 검수표는 별도 PDF로 보관합니다.",
         "education_learning": "교육 과정표, 학습 흐름, 출석·평가와 교육 운영 일정 중심의 구조입니다.",
         "construction_site": "공종 WBS, 개념 공정표, 품질 승인점, 안전·준공 인계 중심의 구조입니다.",
         "it_architecture": "IT 시스템 구성, 요구사항 추적, 데이터 전환과 시험·개통 중심의 구조입니다.",

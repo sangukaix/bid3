@@ -29,6 +29,17 @@ class LocalModeTests(SimpleTestCase):
                 self.assertEqual(model_selection('PROPOSAL','cloud-default'), ('ollama','qwen3:14b'))
 
     @patch('bids.services.llm.requests.post')
+    def test_gemma_disables_broken_draft_runner_without_changing_base_model(self,post):
+        post.return_value.json.return_value={'message':{'content':'확인'}}
+        model=OllamaChatModel(model='gemma4:26b',num_ctx=32768,num_predict=400)
+        self.assertEqual(model.invoke('검증').content,'확인')
+        payload=post.call_args.kwargs['json']
+        self.assertEqual(payload['model'],'gemma4:26b')
+        self.assertEqual(payload['options'],{'temperature':0,'num_ctx':32768,'num_predict':400,'draft_num_predict':0})
+        OllamaChatModel(model='qwen3:14b').invoke('검증')
+        self.assertNotIn('draft_num_predict',post.call_args.kwargs['json']['options'])
+
+    @patch('bids.services.llm.requests.post')
     def test_gemma_context_initialization_failure_retries_same_local_request_once(self,post):
         import requests
         def response(status,data):
@@ -235,6 +246,24 @@ class LocalModeTests(SimpleTestCase):
         result=build_local_slide_plan({'slide_number':1,'title':'목표','elements':[
             {'target':'shape-0','text':'교육 목표'},{'target':'shape-1','text':'기존 문구'}]}, {})
         self.assertEqual([c.revised_text for c in result.slide_changes[0].text_changes],['학습 성취도 확인','정상 문구'])
+
+    @patch("bids.services.rag.proposal.structured_chain")
+    def test_spaced_or_renamed_placeholder_retries_only_unfilled_visual_fields(self,factory):
+        from unittest.mock import Mock
+        from bids.services.rag.proposal import build_local_slide_plan
+        for replacement in ('[수료 기준]','[공고 요구사항]','기준 [수료 기준]'):
+            with self.subTest(replacement=replacement):
+                def create(prompt,model,schema):
+                    if schema.__name__=='RequiredSlideOutput':
+                        self.assertEqual(set(schema.model_fields['edits'].annotation.model_fields),{'shape-0'})
+                        edits={'shape-0':'80%'}
+                    else:edits={'shape-0':replacement,'shape-1':'작성 완료 문구'}
+                    return Mock(invoke=Mock(return_value=schema.model_validate({'edits':edits,'review_notes':[]})))
+                factory.side_effect=create
+                result=build_local_slide_plan({'slide_number':10,'title':'출석 기준','elements':[
+                    {'target':'shape-0','text':'[수료기준]','max_chars':20},
+                    {'target':'shape-1','text':'출석률 기준','max_chars':30}]},{})
+                self.assertEqual([r.revised_text for r in result.slide_changes[0].text_changes],['80%','작성 완료 문구'])
 
     @patch("bids.services.rag.proposal.structured_chain")
     def test_copied_placeholder_is_refilled_without_rewriting_other_targets(self, factory):

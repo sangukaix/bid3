@@ -2627,7 +2627,7 @@ class BidProposalTests(TestCase):
         self.assertIn("IT", response.json()["template_recommendation_reason"])
         self.assertEqual(
             [item["id"] for item in response.json()["templates"]][:5],
-            ["education_learning", "education_seminar", "construction_site", "construction_field", "it_architecture"],
+            ["education_photo", "education_learning", "education_seminar", "construction_site", "construction_field"],
         )
 
     def test_마감되어_비활성화된_공고도_제안서_프로젝트에서_조회한다(self):
@@ -2646,7 +2646,7 @@ class BidProposalTests(TestCase):
         )
 
         cases = [
-            ("교육 프로그램 운영 용역", "용역", "education_learning"),
+            ("교육 프로그램 운영 용역", "용역", "education_photo"),
             ("청사 시설 개선 공사", "공사", "construction_site"),
             ("업무용 장비 구매", "물품", "supply_spec"),
             ("공공기관 정책 평가 연구", "용역", "research_evidence"),
@@ -2661,7 +2661,7 @@ class BidProposalTests(TestCase):
                 result = recommend_proposal_template(notice)
                 self.assertEqual(result["id"], expected_template)
         notice = BidNotice(title="임직원 교육 용역",business_type="용역",notice_organization="한국전력공사")
-        self.assertEqual(recommend_proposal_template(notice)["id"], "education_learning")
+        self.assertEqual(recommend_proposal_template(notice)["id"], "education_photo")
 
     def test_제안서를_삭제하면_PDF_미리보기_캐시도_삭제한다(self):
         from bids.services.proposal_preview import get_proposal_preview_path

@@ -129,6 +129,21 @@ class CompanyMaterialTests(TestCase):
         self.assertEqual(sum(s.has_table for p in before.slides for s in p.shapes),
                          sum(s.has_table for p in after.slides for s in p.shapes))
 
+    def test_photo_source_caption_replaces_placeholder_notice_without_overlapping_it(self):
+        materials=collect_company_materials(self.user)
+        template=Path(settings.PROPOSAL_TEMPLATES['education_photo']['path'])
+        prepared,items=prepare_material_template(template,materials,self.directory/'photo',
+            bid_title='교육 품질 평가 서비스 운영',select_asset=lambda q,c,t:c[0]['id'])
+        self.assertTrue(items)
+        for item in items:
+            page=Presentation(prepared).slides[item['source_slide_number']-1]
+            names=[s.name for s in page.shapes]
+            self.assertEqual(names.count('bid3-fixed-material-caption'),1)
+            self.assertNotIn('bid3-fixed-visual-caption',names)
+            text='\n'.join(s.text for s in page.shapes if s.has_text_frame)
+            self.assertNotIn('회사 원문 시각 자료를 배치하는 영역',text)
+            self.assertIn('현행 적용 범위 확인 필요',text)
+
     def test_diagram_is_kept_whole_and_source_pages_are_not_repeated(self):
         materials=collect_company_materials(self.user)
         _,items=prepare_material_template(self.template,materials,self.directory/'whole',

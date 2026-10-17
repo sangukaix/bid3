@@ -37,7 +37,7 @@ class TemplateLibraryTests(SimpleTestCase):
         from .services.proposal_layouts import get_proposal_slide_layout
 
         studio = load_studio_templates(settings.BASE_DIR / "proposal_templates/library")
-        themed = {key: value for key, value in studio.items() if value.get("theme_id")}
+        themed = {key: value for key, value in studio.items() if value.get("theme_id") and key!='education_photo'}
         self.assertEqual(len(themed), 12)
         self.assertEqual(set(Counter(t["theme_id"] for t in themed.values()).values()), {2})
         signatures = {}
@@ -55,6 +55,18 @@ class TemplateLibraryTests(SimpleTestCase):
                 signatures[domain] = kinds
                 self.assertEqual(len(template["outline"]), 12)
         self.assertEqual(len(set(signatures.values())), 6)
+
+    def test_photo_template_keeps_visuals_and_contains_no_company_uploads_or_fixed_budget_chart(self):
+        template=load_studio_templates(settings.BASE_DIR/'proposal_templates/library')['education_photo']
+        self.assertEqual(len(bundled_previews(template)),21)
+        deck=Presentation(template['path'])
+        self.assertEqual(len(deck.slides),21)
+        self.assertGreaterEqual(sum(any(s.shape_type==13 for s in page.shapes) for page in deck.slides),8)
+        self.assertTrue(any(s.has_table for page in deck.slides for s in page.shapes))
+        self.assertFalse(any(s.has_chart for page in deck.slides for s in page.shapes))
+        text='\n'.join(s.text for page in deck.slides for s in page.shapes if s.has_text_frame)
+        for token in ('KOTRA','당근영어','test1','287,910,000','143,955,000'):
+            self.assertNotIn(token,text)
 
     def test_domain_generation_edits_cells_without_flattening_diagrams(self):
         for key in ("construction_site", "it_architecture", "supply_spec"):
@@ -128,9 +140,10 @@ class TemplateCatalogApiTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.get("/api/proposal-templates/")
         self.assertEqual(response.status_code,200)
-        self.assertEqual(len(response.json()["templates"]),47)
-        self.assertTrue(all(t["theme_id"] for t in response.json()["templates"][:12]))
-        self.assertEqual(len(response.json()["templates"][0]["outline"]),12)
+        self.assertEqual(len(response.json()["templates"]),48)
+        self.assertTrue(all(t["theme_id"] for t in response.json()["templates"][:13]))
+        self.assertEqual(response.json()['templates'][0]['id'],'education_photo')
+        self.assertEqual(len(response.json()["templates"][0]["outline"]),19)
         self.assertNotIn("path",response.json()["templates"][5])
         response = self.client.get("/api/proposal-templates/civic_navy/download/")
         self.assertEqual(response.status_code,200)
