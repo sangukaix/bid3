@@ -477,13 +477,22 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                     </p>
                   </div>
                   {previewUrl && (
-                    <button
-                      className="cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-                      onClick={() => setIsPreviewModalOpen(true)}
-                      type="button"
-                    >
-                      전체 화면
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <a
+                        className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                        download="bid3-preview.pdf"
+                        href={previewUrl}
+                      >
+                        미리보기 PDF 저장
+                      </a>
+                      <button
+                        className="cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                        onClick={() => setIsPreviewModalOpen(true)}
+                        type="button"
+                      >
+                        전체 화면
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -527,6 +536,12 @@ export default function ProposalWorkspace({ bidNtceNo }: { bidNtceNo: string }) 
                     </div>
                   ) : null}
                 </div>
+
+                {previewUrl && (
+                  <p className="mt-2 text-xs text-slate-500">
+                    미리보기 화면이 비어 보이면 PDF를 저장해 확인하세요. 최종 확정 전에는 검토용 초안입니다.
+                  </p>
+                )}
 
                 <ProposalSubmissionPanel bidNtceNo={bidNtceNo} proposalUpdatedAt={proposal.updated_at}
                   busy={isGenerating || isReviewingOutput || isFinalizing} />
