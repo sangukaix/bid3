@@ -23,12 +23,14 @@ if (-not (Test-Path -LiteralPath $configPath)) {
     [ordered]@{
         origin = "https://pending.trycloudflare.com"
         transport = "cloudflare"
+        require_invitation = $false
         password = (New-DemoSecret)
         signing_key = (New-DemoSecret)
         django_secret_key = (New-DemoSecret)
     } | ConvertTo-Json | Set-Content -LiteralPath $configPath -Encoding UTF8
 }
 $demo = Get-Content -LiteralPath $configPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$requireInvitation = $demo.require_invitation -ne $false
 if ($Service -eq "tunnel") {
     $cloudflared = Get-Command cloudflared.exe -ErrorAction Stop
     $demo | Add-Member -MemberType NoteProperty -Name transport -Value "cloudflare" -Force
@@ -47,20 +49,25 @@ if ($demo.transport -eq "cloudflare") {
 }
 if ($demo.password.Length -lt 24 -or $demo.signing_key.Length -lt 32 -or $demo.django_secret_key.Length -lt 32 -or
     $demo.origin -notmatch '^https://([a-z0-9.-]+\.ts\.net:8443|[a-z0-9-]+\.trycloudflare\.com)$') { throw "Invalid private demo configuration." }
+$invitationInstructions = if ($requireInvitation) {
+    "초대 암호: $($demo.password)`r`n웹 주소를 열고 초대 암호를 입력합니다. 초대 접속은 8시간 유지됩니다."
+} else {
+    "초대 암호 없이 웹 주소를 바로 열 수 있습니다."
+}
 @"
 AI비드 선생님용 접속 안내
 
 웹 주소: $($demo.origin)/mainPage
-초대 암호: $($demo.password)
+$invitationInstructions
 
-1. 웹 주소를 열고 위 초대 암호를 입력합니다. Tailscale 설치는 필요 없습니다.
+1. 웹 주소를 엽니다. Tailscale 설치는 필요 없습니다.
 2. BID3 계정으로 로그인합니다. 새 계정은 회원가입으로 만들 수 있습니다.
 3. 각 계정의 회사 자료와 제안서는 별도로 관리됩니다. 기존 사용자의 문서는 다른 계정에서 보이지 않습니다.
 4. 개인 노트북의 공개용 웹/API, Ollama와 공유 터널이 실행 중이어야 합니다.
-5. 초대 접속은 8시간 후 만료됩니다. 초대 암호는 초대한 분에게만 별도로 전달하세요.
+5. 회사 자료와 작성 기능에는 BID3 계정 로그인이 필요합니다.
 6. Cloudflare 임시 연결을 다시 시작하면 주소가 바뀝니다. 최신 안내 파일을 전달하세요.
 
-이 파일은 초대 암호를 포함합니다. Git이나 공개 포트폴리오에 넣지 마세요.
+초대 모드를 켠 경우 이 파일에 암호가 포함됩니다. Git이나 공개 포트폴리오에 넣지 마세요.
 "@ | Set-Content -LiteralPath $guidePath -Encoding UTF8
 if ($Service -eq "info") {
     Write-Host "Public demo URL: $($demo.origin)/mainPage"
@@ -71,7 +78,7 @@ $port = if ($Service -eq "api") { 8002 } else { 3002 }
 if ($Service -ne "build" -and @(Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue).Count -gt 0) {
     throw "Port $port is already in use. Check its owner; do not stop unrelated services."
 }
-$names = @("DJANGO_DEBUG", "DJANGO_SECRET_KEY", "DJANGO_ALLOWED_HOSTS", "DJANGO_CORS_ALLOWED_ORIGINS",
+$names = @("DJANGO_DEBUG", "DJANGO_SECRET_KEY", "DJANGO_ALLOWED_HOSTS", "DJANGO_CORS_ALLOWED_ORIGINS", "BID3_PUBLIC_WEB", "BID3_DEMO_REQUIRE_INVITE",
     "NEXT_PUBLIC_API_MODE", "BID_API_BASE_URL", "BID3_DIST_DIR", "BID3_PUBLIC_DEMO", "BID3_DEMO_PASSWORD", "BID3_DEMO_SIGNING_KEY", "BID3_DEMO_ORIGIN")
 $previous = @{}
 foreach ($name in $names) { $previous[$name] = [Environment]::GetEnvironmentVariable($name, "Process") }
@@ -79,6 +86,7 @@ Push-Location $projectRoot
 try {
     if ($Service -eq "api") {
         $env:DJANGO_DEBUG = "false"
+        $env:BID3_PUBLIC_WEB = "1"
         $env:DJANGO_SECRET_KEY = $demo.django_secret_key
         $publicHost = ([Uri]$demo.origin).Host
         $env:DJANGO_ALLOWED_HOSTS = "localhost,127.0.0.1,$publicHost"
@@ -90,6 +98,7 @@ try {
         $env:BID_API_BASE_URL = "http://127.0.0.1:8002"
         $env:BID3_DIST_DIR = ".next-public-demo"
         $env:BID3_PUBLIC_DEMO = "1"
+        $env:BID3_DEMO_REQUIRE_INVITE = if ($requireInvitation) { "1" } else { "0" }
         $env:BID3_DEMO_PASSWORD = $demo.password
         $env:BID3_DEMO_SIGNING_KEY = $demo.signing_key
         $env:BID3_DEMO_ORIGIN = $demo.origin

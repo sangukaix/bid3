@@ -1,6 +1,9 @@
 from pathlib import Path
 
 from django.contrib.auth import authenticate, get_user_model
+from django.conf import settings
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from pptx import Presentation
 from rest_framework import serializers
 
@@ -32,6 +35,14 @@ class SignupSerializer(serializers.Serializer):
     email = serializers.EmailField()  # 회원 이메일
     password = serializers.CharField(min_length=4, write_only=True)  # 학습용 계정은 최소 4자리 허용
     password_confirm = serializers.CharField(write_only=True)  # 비밀번호 확인용
+
+    def validate_password(self, value):
+        if settings.BID3_PUBLIC_WEB:
+            try:
+                validate_password(value)
+            except ValidationError as error:
+                raise serializers.ValidationError(error.messages)
+        return value
 
     def validate_username(self, username):
         if User.objects.filter(username=username).exists():

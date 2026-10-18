@@ -50,7 +50,7 @@ HTTPS를 처음 활성화할 때 Tailscale이 안내하는 계정 설정이 필�
 Ollama/API 포트를 추가로 공유하거나 공유기 포트포워딩을 설정할 필요가 없습니다.
 Serve는 tailnet 접근 정책을 따릅니다. 공개 인터넷에 노출하는 Funnel은 사용하지 않습니다.
 
-위 내용은 기존 개인용 공유 기준입니다. 초대한 선생님이 Tailscale 없이 접속하는 별도의 Cloudflare 임시 공개 주소는 [초대 시연 안내](RUN_PUBLIC_DEMO.md)를 따릅니다. 개인용 443번 Serve와 분리하며, 초대 암호와 BID3 계정 로그인을 모두 확인합니다.
+위 내용은 기존 개인용 공유 기준입니다. 선생님이 Tailscale 없이 접속하는 별도의 Cloudflare 임시 공개 주소는 [공개 시연 안내](RUN_PUBLIC_DEMO.md)를 따릅니다. 개인용 443번 Serve와 분리하며, 첫 화면은 초대 암호 없이 열리고 회사 자료·작성 기능에는 BID3 계정 로그인을 확인합니다.
 
 공유만 끄려면:
 ```powershell

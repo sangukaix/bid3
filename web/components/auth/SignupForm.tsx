@@ -44,8 +44,8 @@ export default function SignupForm() {
     <form className="mt-8 space-y-4 rounded-lg border border-slate-200 bg-white p-6" onSubmit={handleSubmit}>
       <Input autoComplete="username" label="아이디" name="username" placeholder="사용할 아이디" required />
       <Input autoComplete="email" label="이메일" name="email" placeholder="company@example.com" required type="email" />
-      <Input autoComplete="new-password" label="비밀번호" minLength={4} name="password" placeholder="4자 이상 입력" required type="password" />
-      <Input autoComplete="new-password" label="비밀번호 확인" minLength={4} name="password_confirm" placeholder="비밀번호 다시 입력" required type="password" />
+      <Input autoComplete="new-password" label="비밀번호" minLength={8} name="password" placeholder="8자 이상, 흔한 비밀번호·숫자만 입력 불가" required type="password" />
+      <Input autoComplete="new-password" label="비밀번호 확인" minLength={8} name="password_confirm" placeholder="비밀번호 다시 입력" required type="password" />
 
       {error && (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">

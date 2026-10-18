@@ -15,7 +15,7 @@ from django.http import FileResponse, JsonResponse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes, throttle_classes
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -25,6 +25,7 @@ from .serializers import CompanyDocumentSerializer, CompanyProfileSerializer, Lo
 from .services.business_registration import extract_business_registration
 from .services.proposal_template_recommendation import recommend_proposal_template
 from .services.recommendation import get_profile_keywords
+from .public_auth_throttles import PublicLoginGlobalThrottle, PublicLoginThrottle, PublicSignupThrottle
 
 
 logger = logging.getLogger(__name__)
@@ -123,6 +124,7 @@ def logout(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@throttle_classes([PublicLoginThrottle, PublicLoginGlobalThrottle])
 def login(request):
     serializer = LoginSerializer(data=request.data)
 
@@ -145,6 +147,7 @@ def login(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@throttle_classes([PublicSignupThrottle])
 def signup(request):
     serializer = SignupSerializer(data=request.data)
 

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createAccessToken, demoConfigured, demoCookieName, demoEnabled, demoSessionSeconds, passwordMatches } from "../../../lib/demo-access";
+import { createAccessToken, demoConfigured, demoCookieName, demoEnabled, demoInviteRequired, demoSessionSeconds, passwordMatches } from "../../../lib/demo-access";
 
 export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "private, no-store", "X-Robots-Tag": "noindex, nofollow" };
@@ -9,6 +9,7 @@ let failures = 0;
 export async function POST(request: NextRequest) {
   if (!demoEnabled()) return new NextResponse(null, { status: 404 });
   if (!demoConfigured()) return new NextResponse(null, { status: 503, headers });
+  if (!demoInviteRequired()) return new NextResponse(null, { status: 404, headers });
   if (request.headers.get("origin") !== process.env.BID3_DEMO_ORIGIN) {
     return new NextResponse(null, { status: 403, headers });
   }

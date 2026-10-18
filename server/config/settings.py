@@ -24,6 +24,7 @@ G2B_API_KEY = os.getenv("G2B_API_KEY")#.evn에서 나라장터 인증키를 가�
 
 # Local development defaults; deployments must supply their own secret.
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() in {"true", "1", "yes"}
+BID3_PUBLIC_WEB = os.getenv("BID3_PUBLIC_WEB", "0") == "1"
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or "django-insecure-bid3-local-development-only"
 if not DEBUG and not os.getenv("DJANGO_SECRET_KEY"):
     from django.core.exceptions import ImproperlyConfigured

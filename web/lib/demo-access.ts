@@ -7,6 +7,10 @@ export function demoEnabled() {
   return process.env.BID3_PUBLIC_DEMO_BUILD === "1" || process.env.BID3_PUBLIC_DEMO === "1";
 }
 
+export function demoInviteRequired() {
+  return process.env.BID3_DEMO_REQUIRE_INVITE !== "0";
+}
+
 export function demoConfigured() {
   return (process.env.BID3_DEMO_PASSWORD?.length ?? 0) >= 24
     && (process.env.BID3_DEMO_SIGNING_KEY?.length ?? 0) >= 32

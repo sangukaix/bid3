@@ -1,13 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createAccessToken, demoConfigured, demoEnabled, passwordMatches, validAccessToken, demoSessionSeconds } from "../lib/demo-access.ts";
+import { createAccessToken, demoConfigured, demoEnabled, demoInviteRequired, passwordMatches, validAccessToken, demoSessionSeconds } from "../lib/demo-access.ts";
 
 test("public demo gate validates configuration, password, expiry and signed cookies", () => {
-  const keys = ["BID3_PUBLIC_DEMO", "BID3_PUBLIC_DEMO_BUILD", "BID3_DEMO_PASSWORD", "BID3_DEMO_SIGNING_KEY", "BID3_DEMO_ORIGIN"];
+  const keys = ["BID3_PUBLIC_DEMO", "BID3_PUBLIC_DEMO_BUILD", "BID3_DEMO_REQUIRE_INVITE", "BID3_DEMO_PASSWORD", "BID3_DEMO_SIGNING_KEY", "BID3_DEMO_ORIGIN"];
   const previous = Object.fromEntries(keys.map(key => [key, process.env[key]]));
   try {
     keys.forEach(key => delete process.env[key]);
     assert.equal(demoEnabled(), false);
+    assert.equal(demoInviteRequired(), true);
+    process.env.BID3_DEMO_REQUIRE_INVITE = "false";
+    assert.equal(demoInviteRequired(), true);
+    process.env.BID3_DEMO_REQUIRE_INVITE = "0";
+    assert.equal(demoInviteRequired(), false);
     process.env.BID3_PUBLIC_DEMO_BUILD = "1";
     assert.equal(demoEnabled(), true);
     assert.equal(demoConfigured(), false);

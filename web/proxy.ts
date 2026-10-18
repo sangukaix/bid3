@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { demoConfigured, demoCookieName, demoEnabled, validAccessToken } from "./lib/demo-access";
+import { demoConfigured, demoCookieName, demoEnabled, demoInviteRequired, validAccessToken } from "./lib/demo-access";
 
 export function proxy(request: NextRequest) {
   if (!demoEnabled()) return NextResponse.next();
@@ -8,6 +8,12 @@ export function proxy(request: NextRequest) {
     return new NextResponse("외부 시연 접속 설정을 확인해 주세요.", { status: 503, headers });
   }
   const path = request.nextUrl.pathname;
+  if (!demoInviteRequired()) {
+    if (path === "/access") {
+      return NextResponse.redirect(new URL("/mainPage", process.env.BID3_DEMO_ORIGIN), { status: 307, headers });
+    }
+    return NextResponse.next({ headers });
+  }
   if (path === "/access" || path === "/access/verify" || path.startsWith("/_next/static/") || path === "/favicon.ico") {
     return NextResponse.next({ headers });
   }
