@@ -20,6 +20,8 @@ PC·모바일 브라우저에서 사용하는 웹 서비스이며 별도 Android
 
 다른 네트워크의 학원 노트북에서 접속하려면 [Tailscale 사용 안내](docs/RUN_TAILSCALE.md)를 참고하세요. 개인 노트북의 웹·API·Ollama와 Tailscale 연결이 유지되어야 합니다.
 
+선생님이 Tailscale 설치 없이 접속하는 **초대 암호가 있는 외부 시연**은 [공개 시연 실행 안내](docs/RUN_PUBLIC_DEMO.md)를 참고하세요. 개인용 주소와 별도의 Cloudflare 임시 HTTPS 주소를 사용하며 공유 연결을 재시작하면 주소가 바뀝니다.
+
 ## Windows에서 실행
 
 Python 3.12, Node.js, Git을 설치합니다. PPTX 미리보기에는 PowerPoint 또는 LibreOffice가 필요합니다.
