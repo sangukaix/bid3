@@ -22,6 +22,11 @@ def main():
     parser.add_argument('--work-dir', type=Path, default=WORK)
     args = parser.parse_args()
     manifest = json.loads((PUBLIC / 'presenter.json').read_text('utf-8'))
+    inputs = json.loads((args.work_dir / 'inputs.json').read_text('utf-8'))
+    assert manifest['character'] == inputs['character'], 'Published character differs from this render'
+    assert manifest['portrait_sha256'] == inputs['portrait_sha256']
+    if inputs.get('custom_source'):
+        assert digest(ROOT / inputs['custom_source']['portrait']) == manifest['portrait_sha256']
     story_file = ROOT / 'web/features/product-demo/storyboard.json'
     story = json.loads(story_file.read_text('utf-8'))
     video = PUBLIC / 'intro-with-guide.mp4'
@@ -35,12 +40,12 @@ def main():
         assert digest(captions) == manifest['captions_sha256']
         assert captions.read_text('utf-8').count(' --> ') == sum(
             len(s['narration'].rstrip('.').split('. ')) for s in story['scenes'])
-        assert 'position:37.5% size:72%' in captions.read_text('utf-8'), 'Keep captions off the avatar'
+        assert 'position:36.36% size:70%' in captions.read_text('utf-8'), 'Keep captions off the avatar'
         assert digest(PUBLIC / Path(manifest['screen_captions']).name) == manifest['screen_captions_sha256']
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     probe = subprocess.run([ffmpeg, '-hide_banner', '-i', str(video)], capture_output=True, text=True)
     assert len(re.findall(r'Stream #0:\d+.*Audio:', probe.stderr)) == 1, 'Exactly one audio track required'
-    assert '2560x1080' in probe.stderr
+    assert f"{manifest['width']}x{manifest['height']}" in probe.stderr
     decoded = subprocess.run([ffmpeg, '-v', 'error', '-i', str(video), '-progress', 'pipe:1',
                              '-f', 'null', '-'], capture_output=True, text=True, check=True)
     assert not decoded.stderr.strip(), decoded.stderr
@@ -65,6 +70,7 @@ def main():
         offset += size
     assert boxes.index(b'moov') < boxes.index(b'mdat')
     assert (PUBLIC / 'poster-with-guide.webp').stat().st_size > 0
+    assert digest(PUBLIC / 'poster-with-guide.webp') == manifest['poster_sha256']
     result = {'frames_decoded': frames, 'duration': manifest['duration'], 'single_audio_track': True,
               'screen_decoded_audio_sha256': audio_hashes[0], 'composite_decoded_audio_sha256': audio_hashes[1],
               'main_video_preserved': True, 'fast_start': True, 'source_and_storyboard_match': True}

@@ -54,7 +54,7 @@ def main():
     cues = caption_text(story, narration)
     screen_captions.write_text(cues, encoding='utf-8')
     # Keep browser captions over the walkthrough, leaving the character unobstructed.
-    captions.write_text('\n'.join(line + ' position:37.5% size:72%' if ' --> ' in line else line
+    captions.write_text('\n'.join(line + ' position:36.36% size:70%' if ' --> ' in line else line
                                  for line in cues.split('\n')), encoding='utf-8')
     # Replace only audio/captions in the screen-only companion. Keep the base intact.
     subprocess.run([ffmpeg, '-v', 'error', '-y', '-i', str(PUBLIC / 'intro.mp4'), '-i', str(mix),
@@ -64,7 +64,7 @@ def main():
         '-t', str(sum(s['duration'] for s in story['scenes'])), str(screen)], check=True)
     subprocess.run([ffmpeg, '-v', 'error', '-y', '-i', str(screen), '-i', str(avatar),
         # Cover the 25→24fps endpoint rounding; final -t keeps the exact timeline.
-        '-filter_complex', '[1:v]scale=640:1080:force_original_aspect_ratio=increase,crop=640:1080,'
+        '-filter_complex', '[1:v]scale=720:1080,'
         'fps=24,tpad=stop_mode=clone:stop_duration=0.1,setsar=1[face];[0:v][face]hstack=inputs=2:shortest=1[v]',
         '-map', '[v]', '-map', '0:a:0', '-map', '0:s?', '-c:v', 'libx264', '-preset', 'fast',
         '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-c:s', 'copy', '-movflags', '+faststart',
@@ -72,26 +72,28 @@ def main():
     subprocess.run([ffmpeg, '-v', 'error', '-i', str(temporary), '-f', 'null', '-'], check=True)
     temporary.replace(destination)
     poster = WORK / 'preview-with-guide.webp' if args.preview else PUBLIC / 'poster-with-guide.webp'
-    subprocess.run([ffmpeg, '-v', 'error', '-y', '-ss', '2.5', '-i', str(destination),
+    subprocess.run([ffmpeg, '-v', 'error', '-y', '-ss', '6', '-i', str(destination),
                     '-frames:v', '1', str(poster)], check=True)
     if not args.preview:
-        version = hashlib.sha256((digest(destination) + digest(captions) + digest(screen_captions)).encode()).hexdigest()[:12]
+        version = hashlib.sha256((digest(destination) + digest(captions) + digest(screen_captions) + digest(poster)).encode()).hexdigest()[:12]
         report = {'version': version, 'storyboard_version': story['version'], 'character': inputs['character'],
             'video': '/product-demo/intro-with-guide.mp4', 'poster': '/product-demo/poster-with-guide.webp',
+            'poster_sha256': digest(poster),
             'screen_video': '/product-demo/intro-screen.mp4', 'screen_video_sha256': digest(screen),
             'captions': '/product-demo/captions-with-guide.ko.vtt',
             'captions_sha256': digest(captions),
             'screen_captions': '/product-demo/captions-screen.ko.vtt', 'screen_captions_sha256': digest(screen_captions),
-            'width': 2560, 'height': 1080, 'duration': render['duration'],
+            'width': 2640, 'height': 1080, 'duration': render['duration'],
             'main_video_sha256': digest(PUBLIC / 'intro.mp4'), 'storyboard_sha256': digest(STORY),
             'avatar_sha256': digest(avatar), 'video_sha256': digest(destination),
             'portrait_sha256': inputs['portrait_sha256'], 'narration': inputs['audio'],
             'single_audio_track': True, 'voice': inputs.get('voice'), 'cloud_inference_calls': 0,
             'gesture_duration': render.get('gesture_duration', 0),
-            'source_image_generation': 'built-in image_gen; original fictional Zoe identity reference',
-            'limitations': ['Offline generated face motion; one bounded greeting gesture, then resting posture',
+            'gesture_segments': render.get('gesture_segments', []),
+            'source_image_generation': (inputs.get('custom_source') or {}).get('origin', 'legacy fictional portrait'),
+            'limitations': ['Offline generated face motion; scheduled explanatory gestures, resting between segments',
                             'Korean articulation and naturalness require human review',
-                            'Original fictional character; model chain not commercially cleared by this demo']}
+                            'Reference-based synthetic presenter; not footage or speech of the reference person']}
         (PUBLIC / 'presenter.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print('Composed', destination, f'{destination.stat().st_size / 1048576:.1f} MiB', flush=True)
 

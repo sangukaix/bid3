@@ -1,88 +1,128 @@
-# 조이 안내 영상 제작 자료 — 2026-10-19
+# 서 있는 안내 아바타 제작 자료 — 2026-10-19
 
-요청: 기존 시연 영상 오른쪽에는 조이(Zoe)와 실내 배경만 표시한다.
-안내 문구·이름표·장식 패널은 제거하고 한국어 여성 음성과 짧은 손 인사를 적용한다.
-조이는 Speak의 원본 가상 성인 캐릭터다. 실제 인물의 얼굴·목소리를 복제하지 않는다.
+최신 요청: 사용자가 첨부한 얼굴을 참고해 기상캐스터처럼 서서 배꼽 부근까지 보이며
+손으로 설명한다. 한국어 여성 합성 음성과 문구 없는 실내 배경을 유지한다.
+이 버전은 첨부 얼굴을 참고한 합성 장면이다. 조이 또는 앞서 만든 앉은 인물을
+사용하지 않으며, 참조 인물이 실제 출연하거나 말한 녹화 영상이라는 뜻이 아니다.
 
-## 출처와 보존
+## 선택본과 출처
 
-- 기준 이미지: Speak의 `tutor-zoe-blonde-v2.png`, SHA256
-  `970c45f8e8fe25746fbaa09d40297ac4f591d2777f15ba9c0e16e90b367b92e3`.
-- 아래 두 제작용 파생 이미지는 내장 `image_gen` 도구로 편집했다. Speak 원본은
-  수정하지 않았다. 프로젝트에 저장한 선택본:
-  `web/public/product-demo/presenter/zoe-room-source.png`,
-  `web/public/product-demo/presenter/zoe-room-neutral.png`.
-- 음성: Supertonic2 기본 F2 여성 스타일, 한국어 `ko`, 속도1.13,12steps.
-  유명인/사용자 음성 복제가 아니다. 공식 모델
-  [Supertone/supertonic-2](https://huggingface.co/Supertone/supertonic-2),
-  revision `75e6727618a02f323c720cba9478152d4bc16ca4`, CPU ONNX.
-  `supertonic==1.3.1`은 별도 `.local/product-demo/tts-venv`에 설치했다.
-  모델 파일은 `.local/product-demo/supertonic2`에 저장하고 배포/소스에 넣지 않는다.
-- Edge 온라인 음성은403으로 실패해 사용하지 않았다. 실패 후 접근 제한을 우회하지
-  않았으며, 실제 배포 음성은 로컬 합성이다. OpenAI API 키를 사용하지 않았다.
-- 동작: 기존 로컬 LTX-Video2B0.9.6distilled, 얼굴 발화: 기존 Ditto/HuBERT/렌더러.
-  모델·코드의 정확한 해시는 연구 환경의 기존 매니페스트와 새 출력 기록으로 확인한다.
-  이 자료는 전체 모델 체인의 상업적 이용 허가를 보증하지 않는다.
+- `web/public/product-demo/presenter/standing-neutral.png`: 중립 자세, 얼굴 발화 등록 원본.
+- `web/public/product-demo/presenter/standing-explain.png`: 양손 설명의 중간 자세.
+- `web/public/product-demo/presenter/standing-screen.png`: 왼쪽 시연 화면 안내의 중간 자세.
+- 출처·인물·중립 자세 해시·수동 얼굴 등록 좌표:
+  `web/features/product-demo/presenter-source.json`.
+- 내장 `image_gen` 도구의 얼굴 유지 편집으로 제작했다. CLI/API 키 경로를
+  사용하지 않았다. 원본 첨부 사진은 공개 소스에 복사하지 않고 비공개 작업 폴더의
+  `user-face-reference.png`에 보존한다. 출력 원본의 SHA는 `inputs.json`,
+  중간 자세는 각 동작의 `report.json`에 기록한다.
+- 모든 생성·편집 프롬프트는 아래에 보존한다. 이전 앉은 후보는 비공개 작업 폴더에
+  보존하고 현재 공개 아바타의 원본으로 사용하지 않는다.
+- 음성은 Supertonic2 기본 F2 한국어 여성 합성 음성이다. 참조 사진 인물의 목소리를
+  복제한 것이 아니다. 언어 `ko`, 속도1.13,12steps, CPU ONNX.
+  공식 모델 [Supertone/supertonic-2](https://huggingface.co/Supertone/supertonic-2),
+  revision `75e6727618a02f323c720cba9478152d4bc16ca4`,
+  별도 환경 `supertonic==1.3.1`.
+- 몸 동작은 LTX-Video2B0.9.6distilled, 얼굴 발화는 Ditto/HuBERT/렌더러로
+  로컬에서 사전 생성한다. Speak의 기존 연구 런타임·범용 가중치만 읽기 전용으로
+  재사용하며, Speak의 캐릭터·설정·소스를 수정하지 않는다. 다른 작업의 모델을
+  강제 종료하거나 Gemma 설정을 변경하지 않는다.
+- 이미지 생성은 Codex 내장 도구를 사용했다. 영상/음성 작업의 외부 추론 호출0회를
+  이미지 생성까지 전부 오프라인이라는 뜻으로 설명하지 않는다.
+  완성 MP4 재생에는 GPU 추론이나 Gemma가 필요하지 않다.
 
-## 선택본 이미지 프롬프트
+## 실제 이미지 프롬프트와 계보
 
-실행 경로는 내장 image_gen이며, CLI/API 키 경로를 사용하지 않았다.
+첫 편집은 사용자 첨부 얼굴 사진을 입력으로 사용했다. 두 번째는 첫 출력의
+카메라 구도를 수정했다. 양손 설명은 중립 자세에서 만들고 손을 안쪽으로 모으는
+수정을 한 번 더 했다. 화면 안내 자세는 중립 자세에서 만들었다.
+모든 단계는 내장 image_gen이며 선택본 세 장을 프로젝트에 저장했다.
 
-첫 이미지:
+### standing_from_user_reference
 
-> Use case: identity-preserve edit. Edit target: the attached original fictional adult female AI character Zoe. Create one photorealistic production still for a calm presenter animation. Preserve her exact recognizable face, freckles, adult age, short wavy blonde bob, eye color, body proportions, and blue linen shirt worn open over the same plain white top. No beautification or different identity. Frame from head to below the waist, with head fully visible and BOTH COMPLETE HANDS clearly inside the frame. She is seated facing the camera. Her right forearm is lifted gently, elbow bent, with her right hand at lower chest height in a natural relaxed open greeting pose; five normal separate fingers. Her left hand rests naturally on her lap and is fully visible. Keep all fingers well below the chin, without face occlusion. Warm closed-mouth smile, direct eye contact. Set her in a quiet softly daylit real room with a warm grey/ivory wall, subtle depth, a softly out-of-focus small plant at the far side and restrained home-office feel; no furniture obstructing her hands. Match the original natural light and realistic skin, avoid glamor retouching. Portrait 2:3 composition. The output is only the woman and the room background: absolutely NO text, labels, captions, logo, borders, nameplate, graphic overlays, or interface.
+> Use case: identity-preserve.
+> Asset type: reference-based synthetic presenter for a Korean service walkthrough, portrait 1024x1536.
+> Input image 1 is the FACE AND HAIR identity reference supplied by the user. Preserve the recognizable adult woman's face, eye shape, nose, mouth, jawline and black shoulder-length softly waved hair. Do not replace her with a generic new face or beautify her facial structure.
+> Create a new scene: she stands upright like a professional Korean weathercaster explaining a service. Eye-level locked camera, facing the viewer, entire head with breathing room through just below the navel/waist visible, both elbows and COMPLETE hands inside the frame. She wears a simple tailored midnight-navy blazer over a plain ivory blouse, fully clothed waist, polished contemporary professional styling. Her hands rest gently together at upper waist as a neutral explanatory presenter pose. Shoulders relaxed and level, head upright and looking directly at camera, slight warm closed-mouth smile.
+> Background: a refined bright real studio room, warm off-white wall, restrained light wood accents and a subtle out-of-focus plant at the side. Diffused soft daylight, clean depth. No desk or chair, no screen, no other person.
+> Photorealistic natural skin texture and consistent photographic light. Presenter fills the portrait frame but leave space on each side for future hand gestures below her chest. Both hands anatomically natural, no cropped fingers.
+> Output ONLY the standing presenter in her room. No captions, logos, news branding, nameplate, graphic overlays, watermark, borders or interface. This is a new synthetic presenter scene, not the original newspaper photograph.
 
-마지막 자세 이미지:
+### waist_framing
 
-> Identity-preserving precise pose edit of this SAME original fictional adult woman Zoe. This image is the final resting keyframe of a short hand greeting. Change ONLY her raised right arm/hand pose: gently lower her right forearm and place her right hand naturally on her lap beside her existing left hand, with both complete hands relaxed and visible. Preserve the same exact face, freckles, hair, expression, eye contact, blue linen shirt, white top, seated position, camera, framing, lighting, chair and room background. Keep her head in exactly the same location and size. No new gesture or objects. No text, borders, graphics or labels. Same 2:3 portrait composition. Both arms should now rest naturally, neither hand is raised.
+> Use case: identity-preserve. Edit target: this standing synthetic Korean presenter. Preserve her exact face and hair, navy blazer, ivory blouse, warm studio room, lighting, eye contact and neutral hands gently together at waist. Change ONLY camera framing to the waist-up weathercaster framing requested: the bottom edge must end just below her complete hands at navel/waist height, with NO thighs or upper legs visible. Head and both complete hands remain visible, leave breathing room above head and to sides. Tighten the crop by moving the camera closer, not changing her anatomy. Vertical 1024x1536 composition. Only presenter and room, no text/graphics/logos.
 
-## 제작 및 검증 기록
+### explanatory_pose
 
-이번 작업 폴더는 `.local/product-demo/presenter-zoe-20261019`다. 이전 Alex 출력과
-원본 소개 영상은 보존한다. `narration-v2/voice.json`은 음성별 길이·해시·합성 조건,
-`inputs.json`은 대응 음성과 조이 원본·등록 좌표, `gesture-keyframes/report.json`은
-동작 조건, `acceptance.json`은 채택 여부와 프레임 해시를 보존한다.
-실패하거나 채택하지 않은 동작 후보를 완성 손짓으로 설명하지 않는다.
+> Use case: identity-preserve. Edit target: the attached standing waist-up synthetic presenter. This is a middle keyframe of an explanatory gesture.
+> Change ONLY her arms/hands: open both forearms slightly outward at upper-waist/lower-chest level, both palms gently facing upward as if calmly explaining two options. Hands below chest and far below chin, fingers relaxed and anatomically natural, both complete hands and elbows remain within the frame with margin. The right hand on viewer's left may extend a little farther toward the adjacent service demonstration. This is a restrained weathercaster explanation, NOT a greeting wave.
+> Preserve EXACTLY her recognizable face, head position and size, black hairstyle, soft expression, eye contact, navy blazer/ivory blouse, standing posture, waist-up camera crop, background and lighting. No zoom or camera movement. Portrait 1024x1536. Only presenter and room, no writing/logos/interface.
 
-손 인사는 도입부의 제한된 구간이며, 나머지는 휴식 자세에서 설명하는 구성이다.
-동작을 반복 재생하거나 전체90초가 실시간으로 생성된다고 설명하지 않는다.
-화면만 보기와 아바타 보기 모두 같은 한국어 여성 음성을 사용한다.
-`check_presenter.py`는 두 버전의 오디오 동일성·트랙1개·전체 디코딩·소스 해시를 확인한다.
+### explanatory_pose_inset
 
-## 이번 출력의 확인 범위
+> Use case: precise-object-edit / identity-preserve. Change ONLY the placement of both open hands and forearms of this exact standing presenter: bring each open palm inward toward the torso by about one hand-width, leaving a clear margin of at least 120 pixels between every fingertip and either side edge of the 1024px-wide image. Hands remain gently palm-up below chest, an understated explanatory gesture. Both complete hands must stay within the central 75 percent of the image width; do not spread the arms far apart. Preserve exact face, head, hair, facial expression, body position, blazer, blouse, room, lighting and camera framing. Same 1024x1536 portrait, no text or graphics.
 
-조이+실내 배경 이외의 우측 그래픽을 제거했다. 도입부7.72초의 서로 다른193개
-몸 동작 프레임에서 손 인사 후 손을 내리는 구간을 사용하고, 이후에는 마지막
-휴식 자세를 바탕으로 얼굴 발화를 계속 생성한다. 몸 동작을 반복 재생하지 않는다.
-8개 몸 동작 시점과6개 발화 시점을 시각 검수했고, 실제 웹에서 손 인사와 자막이
-좌측 화면에만 표시되는 것을 확인했다. 미세한 손가락·입 모양과 목소리 취향의
-최종 자연스러움은 사용자 검토 범위다.
+### screen_guidance_pose
 
-90초2,160프레임 전체 디코딩, 화면 전용/조이 합성본의 새 한국어 오디오 SHA 일치,
-오디오1개, 원래 시연 MP4 보존, 자막·소스 해시, byte-range206, lint·TypeScript·
-production build를 통과했다. 실제 HTTPS에서 자동재생 안 함,65초 장면 이동,
-일시정지 상태의 아바타 전환 시 위치 차이0초, 자막 readyState2, 가로 넘침 없음,
-비로그인 회사 API401을 확인했다. 실제 웹 캡처와 JSON은 작업 폴더의
-`browser-preview.png`, `browser-verification.json`, `verification.json`에 있다.
-Gemma는 자연 만료로 GPU를 반환했으며 다른 프로젝트의 모델을 강제 종료하지 않았다.
+> Use case: identity-preserve. Edit target: the attached standing waist-up presenter with hands resting together.
+> Change ONLY the right arm and hand (on viewer's left): lift that forearm to just below chest and open the palm gently UPWARD and angled toward the adjacent demonstration on viewer's LEFT, like a weathercaster introducing the chart beside her. Keep the complete hand inside the central 75 percent of image width, minimum 120px side margin, five relaxed natural fingers. Do not point one index finger or wave hello. The other hand rests at waist. Both arms remain below chest, hands nowhere near face.
+> Preserve her EXACT recognizable face, upright head position/size, hair, expression and eye contact, navy blazer, ivory blouse, standing posture, waist-up framing, room and lighting. No camera change, no added object, no text or graphics. Same 1024x1536 portrait.
 
-## 다음 수정 시
+## 동작 배치와 재생
 
-정적인 얼굴 등록 좌표와 출처는 `web/features/product-demo/presenter-source.json`에
-있다. 새로운 작업 폴더를 지정해 이전 결과를 보존한다. 모델 경로·실행기는 기존
-별도 환경을 지정한다. 내레이션과 장면 길이가 같으면 기존 무음 아바타 트랙으로
-화면만 다시 합성할 수 있다. 음성을 바꾸면 음성 분석·얼굴 발화를 다시 출력한다.
+작업 폴더: `.local/product-demo/presenter-standing-20261019`.
+`narration/`의10개 WAV와 `voice.json`은 기존 한국어 F2 출력을 그대로 복사했다.
+`inputs.json`은 음성·원본·특징 해시, `gesture-open/report.json`,
+`gesture-screen/report.json`은 실제 생성 조건을 기록한다.
+각 `acceptance.json`은 시각 검토와 전체 프레임 해시를 보존한다.
+
+두 종류의 설명 동작은 각각 중립 → 설명 → 중립 자세를 연결한다.
+`timeline.json`으로0·16·35·56·76초에 배치한다. 짧은 두 동작을 여러 장면에서
+재사용하며, 사이에는 마지막 휴식 자세를 유지하고 얼굴 발화를 계속 생성한다.
+90초 전체의 새로운 몸 동작이나 실시간 대화를 생성했다는 뜻이 아니다.
+구간 이동·정지·음성·아바타는 하나의 MP4 시계를 사용한다.
+
+합성은2640×1080(원래 시연1920 + 아바타720)이다. 2:3 아바타를720×1080으로
+비율대로 확대해 손끝을 자르지 않는다. 자막은 좌측 시연 영역에 배치한다.
+아바타를 꺼도 `intro-screen.mp4`의 같은 한국어 여성 음성을 사용한다.
+이전 원본 `intro.mp4`는 보존한다.
+
+## 다시 제작하기
+
+기존 로컬 연구 환경의 절대 경로를 실행기 변수에 지정하고 새 작업 폴더를 사용한다.
+음성이 같고 화면만 바뀌면 기존 무음 아바타와 다시 합성하면 된다. 음성·장면 길이를
+바꾸면 분석과 얼굴 발화를 다시 생성한다. 인물이 바뀌면 얼굴 등록과 몸 동작도 바꾼다.
 
 ```powershell
-& $ttsPython scripts/product-demo/narrate_local.py --download --model-dir .local/product-demo/supertonic2 --output "$work/narration"
-& $cpuOnnxPython -I scripts/product-demo/presenter.py prepare --research-root $research --work-dir $work --tutor zoe --narration-dir "$work/narration" --source-config web/features/product-demo/presenter-source.json
-# 손 인사를 다시 만들 때만 실행한다. 출력과 손 모양을 검토한 후 acceptance.json을 기록한다.
-& $bodyPython -I scripts/product-demo/gesture.py --research-root $research --source-image web/public/product-demo/presenter/zoe-room-source.png --end-image web/public/product-demo/presenter/zoe-room-neutral.png --output "$work/gesture"
-& $avatarPython -I scripts/product-demo/presenter.py render --research-root $research --work-dir $work --gesture-dir "$work/gesture"
+& $cpuOnnxPython -I scripts/product-demo/presenter.py prepare --research-root $research --work-dir $work --tutor bid3-guide --narration-dir "$work/narration" --source-config web/features/product-demo/presenter-source.json
+# 두 동작 각각: source/end는 standing-neutral.png, middle은 각 설명 자세.
+& $bodyPython -I scripts/product-demo/gesture.py --research-root $research --source-image $neutral --middle-image $middle --end-image $neutral --character "BID3 standing presenter" --prompt-file $motionPrompt --output $candidate
+# 실제 손/얼굴/연속성을 검토하고 acceptance.json을 기록한 후 timeline.json에 배치한다.
+& $avatarPython -I scripts/product-demo/presenter.py render --research-root $research --work-dir $work --gesture-timeline "$work/timeline.json"
 .\server\venv\Scripts\python.exe scripts/product-demo/compose_presenter.py --work-dir $work
 .\server\venv\Scripts\python.exe scripts/product-demo/check_presenter.py --work-dir $work
 ```
 
-`acceptance.json`은 검토를 마친 후보의 `accepted`, `video_sha256`, 순서대로193개
-`frame_sha256`, 실제 확인한 `viewed_frames`, 검토 범위 `scope`를 기록한다.
-해시가 다르거나 채택 기록이 없으면 얼굴/몸 합성을 진행하지 않는다.
+검수되지 않은 클립, 원본/끝 자세 불일치, 프레임 변경, 겹치거나90초를 초과하는 배치는
+합성하지 않는다. `acceptance.json`은 `accepted`, `video_sha256`,
+전체 `frame_sha256`, 실제 `viewed_frames`, 확인 범위 `scope`를 기록한다.
+
+## 이번 출력의 검증 범위
+
+두 몸 동작에서 각각8개 시점, 얼굴 발화 합성에서 초반6개 시점과80초 장면을
+시각 확인했다. 두 종류의7.72초 동작을 다섯 구간에 사용하며 총38.6초이고,
+나머지는 중립 자세에서 얼굴 발화를 이어간다. 몸 동작은 반복 재생 루프가 아니라
+명시한 장면 시간에 배치한다. 두 원본 클립을 재사용하는 점은 그대로다.
+
+90초/2,160프레임 전체 디코딩, 단일 음성 트랙, 화면 전용/아바타 합성본의 디코딩
+오디오 SHA 일치, 원래 시연 영상 보존, 원본·자막·포스터 해시와 fast-start 검사를
+통과했다. production build(TypeScript 포함)와 동작 배치 검증 테스트5개를 통과했다.
+실제 HTTPS에서2640×1080 재생, 자동재생 안 함,65초 이동, 일시정지 상태의 양방향
+전환 시 위치 유지(차이0.000002초), 자막 readyState2와733px 화면의 가로 넘침 없음을
+확인했다. 영상 byte-range는206이며 공개 포스터 SHA도 로컬 출력과 일치한다.
+
+19.6초 실제 웹 화면에서 서 있는 상반신, 화면을 안내하는 손바닥, 좌측에만 표시되는
+자막, 우측 이름표/별도 안내 문구 없음을 확인했다. 비공개 검수 파일은 작업 폴더의
+`verification.json`, `browser-verification.json`, `browser-preview.png`,
+`http-verification.json`이다. 미세한 손가락·입 모양과 목소리 취향의 최종 자연스러움은
+사용자 검토 범위다. 다른 작업의 Gemma는 종료하지 않았다.

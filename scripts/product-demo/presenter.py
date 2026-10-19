@@ -1,4 +1,4 @@
-"""Build an offline narrator from BID3's existing audio and Speak's original Alex.
+"""Build an offline narrator from BID3's audio and an explicitly registered portrait.
 
 Reuses an explicitly supplied, pinned local research runtime; installs/downloads
 nothing and never edits Speak. The published player uses one composited video,
@@ -37,10 +37,53 @@ def portrait_for(tutor):
     return resolve_revision(tutor)
 
 
+def load_gestures(gesture_dir, timeline_file, portrait_sha256, total_frames):
+    """Validate reviewed clips once, then map scheduled frames onto the audio clock."""
+    if not gesture_dir and not timeline_file:
+        return {}, None
+    if timeline_file:
+        timeline = json.loads(timeline_file.read_text('utf-8'))
+        if timeline['fps'] != 25 or timeline['portrait_sha256'] != portrait_sha256:
+            raise ValueError('Gesture timeline portrait/fps mismatch')
+        schedule = [(item['start_seconds'], timeline_file.parent / item['clip']) for item in timeline['segments']]
+    else:
+        schedule = [(0, gesture_dir)]
+    cache, frames, segments = {}, {}, []
+    for seconds, folder in schedule:
+        start = round(seconds * 25)
+        if seconds < 0 or abs(start / 25 - seconds) > 1e-6:
+            raise ValueError('Gesture must begin on an in-range video frame')
+        if folder not in cache:
+            report = json.loads((folder / 'report.json').read_text('utf-8'))
+            accepted = json.loads((folder / 'acceptance.json').read_text('utf-8'))
+            video_sha = digest(folder / 'gesture.mp4')
+            if not accepted.get('accepted') or accepted['video_sha256'] != video_sha or report['video_sha256'] != video_sha:
+                raise ValueError('Hand/identity visual acceptance required before use')
+            if report['fps'] != 25 or not 1 <= report['frames'] <= 250:
+                raise ValueError('Only bounded reviewed gesture clips are supported')
+            if (report.get('end_image_sha256') or report['source_sha256']) != portrait_sha256:
+                raise ValueError('Gesture resting portrait differs from the registered character')
+            if timeline_file and report['source_sha256'] != portrait_sha256:
+                raise ValueError('Scheduled explanation must start and finish at the same neutral pose')
+            paths = [folder / f'frame-{i:03}.png' for i in range(report['frames'])]
+            if [digest(path) for path in paths] != accepted['frame_sha256']:
+                raise ValueError('Gesture frames changed after review')
+            cache[folder] = (paths, video_sha)
+        paths, video_sha = cache[folder]
+        if start + len(paths) > total_frames or any(i in frames for i in range(start, start + len(paths))):
+            raise ValueError('Gesture segments overlap or exceed the narration')
+        frames.update({start + i: path for i, path in enumerate(paths)})
+        segments.append({'start_seconds': seconds, 'duration': len(paths) / 25, 'clip': folder.name, 'video_sha256': video_sha})
+    source_sha = digest(timeline_file) if timeline_file else segments[0]['video_sha256']
+    return frames, {'duration': len(frames) / 25, 'video_sha256': source_sha, 'segments': segments}
+
+
 def prepare(research, tutor, narration, source_config=None):
     from ditto_audio_worker import load_session
     from ditto_contract import extract_features
 
+    if tutor == 'bid3-guide' and not source_config:
+        raise ValueError('BID3 guide requires its own source config; no Speak character fallback')
     story = json.loads(STORY.read_text('utf-8'))
     WORK.mkdir(parents=True, exist_ok=True)
     session, _ = load_session()
@@ -76,13 +119,13 @@ def prepare(research, tutor, narration, source_config=None):
     voice_info = narration / 'voice.json'
     voice = json.loads(voice_info.read_text('utf-8')) if voice_info.exists() else {'engine': 'Windows SAPI', 'voice': 'ko-KR'}
     save(WORK / 'inputs.json', {'storyboard_sha256': digest(STORY), 'main_video_sha256': digest(PUBLIC / 'intro.mp4'),
-         'portrait_sha256': digest(portrait), 'character': 'Alex' if tutor == 'alex' else 'Zoe', 'tutor_id': tutor,
+         'portrait_sha256': digest(portrait), 'character': custom['character'] if custom else ('Alex' if tutor == 'alex' else 'Zoe'), 'tutor_id': tutor,
          'narration_dir': str(narration.resolve()), 'voice': voice, 'audio': voice['engine'] + ' ' + voice['voice'],
          'custom_source': custom,
          'cloud_calls': 0, 'scenes': records})
 
 
-def render(research, preview, gesture_dir=None):
+def render(research, preview, gesture_dir=None, gesture_timeline=None):
     from gpu_guard import has_physical_gpu_headroom
     if not has_physical_gpu_headroom(12 * 1024):
         raise RuntimeError('Less than 12GiB physical GPU free; no eviction or fallback')
@@ -187,12 +230,13 @@ def render(research, preview, gesture_dir=None):
     converter.v_min_max_for_clip = None
     driving = converter.cvt_fmt(sequence[:, :count])
     stitch = MotionStitch.__new__(MotionStitch)
-    stitch.setup(N_d=count, flag_stitching=False, x_s_info=source, is_image_flag=gesture_dir is None,
+    has_gestures = bool(gesture_dir or gesture_timeline)
+    stitch.setup(N_d=count, flag_stitching=False, x_s_info=source, is_image_flag=not has_gestures,
                  delta_eye_arr=None, relative_d=True, overall_ctrl_info={})
     yy, xx = np.mgrid[:side, :side].astype(np.float32)
     radius = ((xx - side * .5) / (side * .43))**2 + ((yy - side * .47) / (side * .48))**2
     alpha = np.clip((1 - radius) / .25, 0, 1)[..., None]
-    if gesture_dir:
+    if has_gestures:
         # Keep the greeting hand outside the face blend, including lifted fingers.
         lower = np.clip((yy / side - .50) / .10, 0, 1)
         safe_x = np.clip((xx / side - .30) / .10, 0, 1)
@@ -202,18 +246,7 @@ def render(research, preview, gesture_dir=None):
     if target.exists():
         raise ValueError('Completed narrator already exists; do not overwrite')
     width, height = reg['output_size']
-    body_report = None
-    body_frames = []
-    if gesture_dir:
-        body_report = json.loads((gesture_dir / 'report.json').read_text('utf-8'))
-        accepted = json.loads((gesture_dir / 'acceptance.json').read_text('utf-8'))
-        if not accepted.get('accepted') or accepted['video_sha256'] != digest(gesture_dir / 'gesture.mp4'):
-            raise ValueError('Hand/identity visual acceptance required before use')
-        if body_report['fps'] != 25 or body_report['frames'] > 250:
-            raise ValueError('Only one bounded greeting segment is supported')
-        body_frames = [gesture_dir / f'frame-{i:03}.png' for i in range(body_report['frames'])]
-        if [digest(path) for path in body_frames] != accepted['frame_sha256']:
-            raise ValueError('Gesture frames changed after review')
+    body_frames, body_report = load_gestures(gesture_dir, gesture_timeline, inputs['portrait_sha256'], expected_frames)
     body_cache = None
     command = [str(ffmpeg), '-v', 'error', '-n', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{width}x{height}',
                '-r', '25', '-i', 'pipe:0', '-an', '-c:v', 'libx264', '-preset', 'fast', '-crf', '19',
@@ -224,8 +257,8 @@ def render(research, preview, gesture_dir=None):
             with torch.inference_mode(), torch.autocast('cuda', dtype=torch.float16):
                 for index, info in enumerate(driving):
                     if body_frames:
-                        if index < len(body_frames) or body_cache is None:
-                            frame = cv2.cvtColor(cv2.imread(str(body_frames[min(index, len(body_frames) - 1)])), cv2.COLOR_BGR2RGB)
+                        if index in body_frames or body_cache is None:
+                            frame = cv2.cvtColor(cv2.imread(str(body_frames[index])), cv2.COLOR_BGR2RGB) if index in body_frames else cv2.resize(original, (width, height))
                             if frame.shape != (height, width, 3):
                                 raise ValueError('Gesture frame dimensions changed')
                             scale = width / original.shape[1]
@@ -272,7 +305,8 @@ def render(research, preview, gesture_dir=None):
         'cloud_calls': 0, 'static_torso': not bool(body_frames), 'gesture_control': bool(body_frames),
         'gesture_duration': body_report['duration'] if body_report else 0,
         'gesture_video_sha256': body_report['video_sha256'] if body_report else None,
-        'scope': 'offline original fictional narrator; Korean lip motion requires human review'})
+        'gesture_segments': body_report['segments'] if body_report else [],
+        'scope': 'offline synthetic narrator; Korean lip motion requires human review'})
 
 
 def main():
@@ -282,10 +316,12 @@ def main():
     parser.add_argument('--research-root', type=Path, required=True)
     parser.add_argument('--preview', action='store_true')
     parser.add_argument('--work-dir', type=Path, default=WORK)
-    parser.add_argument('--tutor', choices=['alex', 'zoe'], default='alex')
+    parser.add_argument('--tutor', choices=['alex', 'zoe', 'bid3-guide'], default='alex')
     parser.add_argument('--narration-dir', type=Path, default=ROOT / '.local/product-demo/narration')
     parser.add_argument('--source-config', type=Path)
-    parser.add_argument('--gesture-dir', type=Path)
+    gestures = parser.add_mutually_exclusive_group()
+    gestures.add_argument('--gesture-dir', type=Path)
+    gestures.add_argument('--gesture-timeline', type=Path)
     args = parser.parse_args()
     WORK = args.work_dir.resolve()
     research = args.research_root.resolve(strict=True)
@@ -293,7 +329,7 @@ def main():
     if args.stage == 'prepare':
         prepare(research, args.tutor, args.narration_dir.resolve(strict=True), args.source_config)
     else:
-        render(research, args.preview, args.gesture_dir)
+        render(research, args.preview, args.gesture_dir, args.gesture_timeline)
 
 
 if __name__ == '__main__':

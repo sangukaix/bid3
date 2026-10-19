@@ -1,23 +1,23 @@
 {
-  "version": "5d5c5759883b",
+  "version": "a39231fa58e6",
   "storyboard_version": "20261015-1",
-  "character": "Zoe",
+  "character": "BID3 standing presenter",
   "video": "/product-demo/intro-with-guide.mp4",
   "poster": "/product-demo/poster-with-guide.webp",
   "screen_video": "/product-demo/intro-screen.mp4",
   "screen_video_sha256": "82c8762cc1297d9aa1d64d5a9cd5312d1a51049a431b6d878e6052a7c60646f9",
   "captions": "/product-demo/captions-with-guide.ko.vtt",
-  "captions_sha256": "7c6fb1c7eb4b717c343e1df015728426ad106711cd6c541508da81f6e47cdd6f",
+  "captions_sha256": "77e52913e03c5696e830743d076413deea1ea21e029a64400623daca6096af3e",
   "screen_captions": "/product-demo/captions-screen.ko.vtt",
   "screen_captions_sha256": "1a68cbe32ece3bdd091482bc6cf4daf24c00143f59f13af840d7855ca35822c0",
-  "width": 2560,
+  "width": 2640,
   "height": 1080,
   "duration": 90.0,
   "main_video_sha256": "459d43d0d5b524f9aac66b81d1dc009bb7da923186de98382de6eff4c3a0945f",
   "storyboard_sha256": "275f60f95f4a805e70cda84c99420bb601303950cd9511f7a7c031f212448406",
-  "avatar_sha256": "86ffb7b12071fd71bfed10684e611d91563ae4a1d817d4b28090f244b01e673a",
-  "video_sha256": "cdfc45c9d8d46054bea9d42a2975b1e28de5b0b8f46d83c81aea87dbe8832bcb",
-  "portrait_sha256": "b700c59cd3d317274ad5186039841ccc128269fc6b1a46a9ea3604b8e72b467c",
+  "avatar_sha256": "9e5d31c6a59e2c0f4a2ae4ea72b82d3464f971b385dca6a89f0aaf356f40ab49",
+  "video_sha256": "5618e98bad9a921114d20143cbc615fda3e5fccd9dc118cb556102a4a9c26041",
+  "portrait_sha256": "1186740a8d6121b71d655c1eac5cf39af2dafdaa9991eaee72375fdf345849f4",
   "narration": "Supertonic2 local CPU F2",
   "single_audio_track": true,
   "voice": {
@@ -95,11 +95,44 @@
     ]
   },
   "cloud_inference_calls": 0,
-  "gesture_duration": 7.72,
-  "source_image_generation": "built-in image_gen; original fictional Zoe identity reference",
+  "gesture_duration": 38.6,
+  "gesture_segments": [
+    {
+      "start_seconds": 0,
+      "duration": 7.72,
+      "clip": "gesture-open",
+      "video_sha256": "64b7098d68015e7a11ca610f11e75a53d8519a53a9c3f6cbcbab6b1921513304"
+    },
+    {
+      "start_seconds": 16,
+      "duration": 7.72,
+      "clip": "gesture-screen",
+      "video_sha256": "2b37d87b5539fe3aa8ee89a52c38d7ddeff6fe48beec377dfa66e7bfab7c0449"
+    },
+    {
+      "start_seconds": 35,
+      "duration": 7.72,
+      "clip": "gesture-open",
+      "video_sha256": "64b7098d68015e7a11ca610f11e75a53d8519a53a9c3f6cbcbab6b1921513304"
+    },
+    {
+      "start_seconds": 56,
+      "duration": 7.72,
+      "clip": "gesture-screen",
+      "video_sha256": "2b37d87b5539fe3aa8ee89a52c38d7ddeff6fe48beec377dfa66e7bfab7c0449"
+    },
+    {
+      "start_seconds": 76,
+      "duration": 7.72,
+      "clip": "gesture-open",
+      "video_sha256": "64b7098d68015e7a11ca610f11e75a53d8519a53a9c3f6cbcbab6b1921513304"
+    }
+  ],
+  "source_image_generation": "built-in image_gen: synthetic standing presenter edited from user-supplied face reference; no Speak character",
   "limitations": [
-    "Offline generated face motion; one bounded greeting gesture, then resting posture",
+    "Offline generated face motion; scheduled explanatory gestures, resting between segments",
     "Korean articulation and naturalness require human review",
-    "Original fictional character; model chain not commercially cleared by this demo"
-  ]
+    "Reference-based synthetic presenter; not footage or speech of the reference person"
+  ],
+  "poster_sha256": "e164e783279e01b094ab0e90f547377b86087add899913f10403aff68a17126d"
 }

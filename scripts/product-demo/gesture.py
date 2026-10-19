@@ -1,4 +1,4 @@
-"""One local, bounded greeting-hand candidate for the existing fictional Zoe.
+"""One local, bounded hand-motion candidate for an explicit presenter portrait.
 
 Reuses Speak's pinned LTX runtime read-only. Output is a silent motion candidate,
 not an accepted gesture until hands, identity and continuity are visually checked.
@@ -15,8 +15,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--research-root', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--source-image', type=Path)
+    parser.add_argument('--source-image', type=Path, required=True)
     parser.add_argument('--end-image', type=Path)
+    parser.add_argument('--middle-image', type=Path)
+    parser.add_argument('--prompt-file', type=Path)
+    parser.add_argument('--character', default='BID3 Korean guide')
     args = parser.parse_args()
     research = args.research_root.resolve(strict=True)
     output = args.output.resolve()
@@ -24,16 +27,16 @@ def main():
         raise ValueError('Preserve previous candidate; choose a new output folder')
     sys.path.insert(0, str(research))
     import render_body as body
-    from portrait_revisions import resolve_revision
+    from body_phase_profile import VaePhaseProfile
     if not body.has_physical_gpu_headroom(12 * 1024) or body.torch.cuda.mem_get_info()[0] < 12 * 1024**3:
         raise RuntimeError('Need 12GiB physical/CUDA headroom; never unload another project')
     for item in json.loads((research / 'body-model-manifest.json').read_text('utf-8')):
         if body.digest(Path(item['path'])) != item['sha256']:
             raise ValueError('Pinned model hash mismatch')
-    portrait = args.source_image.resolve(strict=True) if args.source_image else resolve_revision('zoe')
-    prompt = (
-        'A fixed camera medium shot of the same friendly adult blonde woman wearing '
-        'the same blue linen shirt over a white top, seated against the same softly lit '
+    portrait = args.source_image.resolve(strict=True)
+    prompt = args.prompt_file.read_text('utf-8') if args.prompt_file else (
+        'A fixed camera medium shot of the same friendly adult woman wearing '
+        'exactly the same clothes, seated against the same softly lit '
         'room. Her right hand is already raised in an open greeting pose. '
         'She moves her right wrist gently side to side in one small welcoming wave, then '
         'lowers her hand back to her lap. Five natural fingers, relaxed wrist and arm. '
@@ -75,8 +78,13 @@ def main():
     if args.end_image:
         end = body.load_image_to_tensor_with_resize_and_crop(str(args.end_image.resolve(strict=True)), height, width)
         conditioning.append(body.ConditioningItem(end, frames - 1, 1.0))
+    if args.middle_image:
+        if not args.end_image:
+            raise ValueError('An explanatory middle pose also requires an end pose')
+        middle = body.load_image_to_tensor_with_resize_and_crop(str(args.middle_image.resolve(strict=True)), height, width)
+        conditioning.append(body.ConditioningItem(middle, (frames - 1) // 2, 1.0))
     print('Rendering one greeting candidate:', frames, 'frames', flush=True)
-    with torch.inference_mode():
+    with VaePhaseProfile(vae, torch.cuda, release_own_cache_before_decode=True) as phases, torch.inference_mode():
         images = pipe(height=height, width=width, num_frames=frames, frame_rate=fps,
             prompt=None, negative_prompt=None, prompt_embeds=embedding, prompt_attention_mask=mask.cuda(),
             negative_prompt_embeds=torch.zeros_like(embedding), negative_prompt_attention_mask=mask.cuda(),
@@ -96,10 +104,11 @@ def main():
         for index, frame in enumerate(pixels):
             writer.append_data(frame)
             body.Image.fromarray(frame).save(output / f'frame-{index:03}.png')
-    report = {'character': 'Zoe', 'frames': frames, 'fps': fps, 'duration': frames / fps,
+    report = {'character': args.character, 'frames': frames, 'fps': fps, 'duration': frames / fps,
               'source_sha256': body.digest(portrait), 'video_sha256': body.digest(output / 'gesture.mp4'),
               'end_image_sha256': body.digest(args.end_image) if args.end_image else None,
-              'prompt': prompt, 'seconds': time.perf_counter() - started, 'seed': 7,
+              'middle_image_sha256': body.digest(args.middle_image) if args.middle_image else None,
+              'prompt': prompt, 'seconds': time.perf_counter() - started, 'seed': 7, 'vae_phases': phases.calls,
               'cloud_calls': 0, 'accepted': False, 'status': 'candidate-needs-hand-and-identity-review'}
     (output / 'report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
     print('Candidate ready for visual review', flush=True)

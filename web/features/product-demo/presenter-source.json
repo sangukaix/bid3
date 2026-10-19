@@ -1,13 +1,15 @@
 {
-  "portrait": "web/public/product-demo/presenter/zoe-room-neutral.png",
-  "portrait_sha256": "b700c59cd3d317274ad5186039841ccc128269fc6b1a46a9ea3604b8e72b467c",
-  "derived_from_zoe_sha256": "970c45f8e8fe25746fbaa09d40297ac4f591d2777f15ba9c0e16e90b367b92e3",
+  "character": "BID3 standing presenter",
+  "origin": "built-in image_gen: synthetic standing presenter edited from user-supplied face reference; no Speak character",
+  "reference_sha256": "6382ab75e84faede04763ea50a3ce5bd5aeb22ef9dd48ac38abb50eac5cd0b30",
+  "portrait": "web/public/product-demo/presenter/standing-neutral.png",
+  "portrait_sha256": "1186740a8d6121b71d655c1eac5cf39af2dafdaa9991eaee72375fdf345849f4",
   "registration": {
-    "portrait_sha256": "b700c59cd3d317274ad5186039841ccc128269fc6b1a46a9ea3604b8e72b467c",
+    "portrait_sha256": "1186740a8d6121b71d655c1eac5cf39af2dafdaa9991eaee72375fdf345849f4",
     "crop": [
-      220,
-      60,
-      650
+      260,
+      20,
+      540
     ],
     "output_size": [
       512,
@@ -17,97 +19,97 @@
       {
         "corners": [
           [
-            188,
-            262
+            170,
+            280
           ],
           [
-            251,
-            249
+            235,
+            288
           ]
         ],
         "vertical_pairs": [
           [
             [
-              202,
-              252
+              185,
+              277
             ],
             [
-              202,
-              274
+              185,
+              290
             ]
           ],
           [
             [
-              221,
-              247
+              204,
+              272
             ],
             [
-              221,
-              271
+              204,
+              294
             ]
           ],
           [
             [
-              238,
-              246
+              223,
+              279
             ],
             [
-              238,
-              264
+              223,
+              292
             ]
           ]
         ],
         "pupil": [
-          222,
-          258
+          204,
+          282
         ]
       },
       {
         "corners": [
           [
-            315,
-            247
+            286,
+            295
           ],
           [
-            368,
-            230
+            344,
+            296
           ]
         ],
         "vertical_pairs": [
           [
             [
-              330,
-              229
+              299,
+              286
             ],
             [
-              330,
-              247
+              299,
+              301
             ]
           ],
           [
             [
-              343,
-              224
+              316,
+              281
             ],
             [
-              343,
-              245
+              316,
+              300
             ]
           ],
           [
             [
-              357,
-              223
+              333,
+              286
             ],
             [
-              357,
-              240
+              333,
+              300
             ]
           ]
         ],
         "pupil": [
-          344,
-          235
+          316,
+          290
         ]
       }
     ]
