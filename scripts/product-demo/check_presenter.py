@@ -45,8 +45,8 @@ def main():
         assert render['continuous_body'] and render['frames'] == manifest['duration'] * 25
         assert render['gesture_duration'] == manifest['duration'], 'No held body gaps in a continuous version'
         assert render['stable_reference_appearance'] and render['silence_mouth_gate']
-    if manifest.get('fixed_head_geometry'):
-        assert manifest['face_style'] == 'steady'
+    if manifest.get('fixed_head_geometry') or manifest.get('bounded_head_motion'):
+        assert manifest['face_style'] == ('steady' if manifest.get('fixed_head_geometry') else 'expressive')
         fixed_body = manifest['body_stabilization']
         assert fixed_body['fixed_upper_body_verified_frames'] == manifest['duration'] * 25
         assert fixed_body['fixed_above_y_px'] == 360
@@ -63,6 +63,13 @@ def main():
         assert timing == render['speech_sync']
         assert timing['face_delay_frames'] in (0, 1, 2)
         assert timing['face_delay_ms'] == timing['face_delay_frames'] * 40
+    if manifest.get('bounded_head_motion'):
+        pose = manifest['bounded_head_motion']
+        assert manifest['face_style'] == 'expressive'
+        assert pose == render['bounded_head_motion']
+        assert not pose['scale_changed'] and not pose['translation_changed']
+        assert pose['pitch_max_degrees'] <= 2 and pose['yaw_max_degrees'] <= 1.5
+        assert pose['roll_max_degrees'] <= .5
     assert manifest['storyboard_version'] == story['version']
     if 'captions' in manifest:
         captions = PUBLIC / Path(manifest['captions']).name
@@ -105,6 +112,7 @@ def main():
               'main_video_preserved': True, 'fast_start': True, 'source_and_storyboard_match': True,
               'continuous_body': manifest.get('continuous_body', False), 'face_style': manifest.get('face_style', 'legacy'),
               'fixed_head_geometry': manifest.get('fixed_head_geometry', False),
+              'bounded_head_motion': manifest.get('bounded_head_motion'),
               'background_plate_verified': bool(manifest.get('background'))}
     args.work_dir.mkdir(parents=True, exist_ok=True)
     (args.work_dir / 'verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')

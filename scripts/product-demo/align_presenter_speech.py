@@ -1,4 +1,4 @@
-"""CPU composition of a reviewed fixed-head face track and speech-timed hands.
+"""CPU composition of a reviewed registered-camera face track and timed hands.
 
 An explicit 0..2 frame face delay is a reviewed timing correction, not an
 automatic claim of phoneme accuracy. Neither the narration nor head geometry
@@ -33,8 +33,10 @@ def main():
     timing = json.loads(args.timing_audit.read_text('utf-8'))
     body_report = json.loads((body / 'report.json').read_text('utf-8'))
     accepted = json.loads((body / 'acceptance.json').read_text('utf-8'))
-    if not report['fixed_head_geometry'] or report['face_style'] != 'steady':
-        raise ValueError('Only a reviewed fixed-head track can be reused')
+    bounded = report.get('bounded_head_motion')
+    if not report['fixed_head_geometry'] and not (report['face_style'] == 'expressive' and bounded
+            and not bounded['scale_changed'] and not bounded['translation_changed']):
+        raise ValueError('Only a reviewed registered-camera face track can be reused')
     actor_sha = digest(source / 'avatar.mp4')
     if actor_sha != report['video_sha256'] or actor_sha != timing['actor_sha256']:
         raise ValueError('Source actor/timing audit mismatch')
@@ -43,6 +45,8 @@ def main():
     if (body_report['frames'], body_report['fps']) != (report['frames'], report['fps']):
         raise ValueError('Body/face clocks differ')
     stable = body_report['stabilization']
+    if stable['fixed_upper_body_pixel_sha256'] != report['body_stabilization']['fixed_upper_body_pixel_sha256']:
+        raise ValueError('Face and new body have different registered upper-body pixels')
     if stable['speech_inputs_sha256'] != digest(source / 'inputs.json'):
         raise ValueError('Body uses different narration timing')
     if any(c['diagnostic']['offset_frames'] != -args.face_delay_frames or
@@ -86,12 +90,15 @@ def main():
         encoder.wait()
     if encoder.returncode:
         raise RuntimeError('Encoder failed')
+    previous_delay = (report.get('speech_sync') or {}).get('face_delay_frames', 0)
     report.update(video_sha256=digest(destination), gesture_video_sha256=digest(body / 'gesture.mp4'),
         body_stabilization=stable, gesture_segments=[{'start_seconds': 0, 'duration': report['duration'],
         'clip': body.name, 'video_sha256': digest(body / 'gesture.mp4')}],
-        speech_sync={'face_delay_frames': args.face_delay_frames, 'face_delay_ms': args.face_delay_frames * 40,
+        speech_sync={'face_delay_frames': previous_delay + args.face_delay_frames,
+        'face_delay_ms': (previous_delay + args.face_delay_frames) * 40,
+        'additional_face_delay_frames': args.face_delay_frames,
         'source_actor_sha256': actor_sha, 'before_audit_sha256': digest(args.timing_audit),
-        'method': 'Explicit fixed-head face-track delay; narration and body clock unchanged',
+        'method': 'Reuse reviewed registered-camera face track; optional additional delay; narration/body clock unchanged',
         'scope': 'Four manual-crop SyncNet intervals and known-delay control; not phoneme accuracy'})
     (work / 'render.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
     shutil.copy2(source / 'inputs.json', work / 'inputs.json')

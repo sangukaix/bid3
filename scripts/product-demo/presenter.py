@@ -104,7 +104,7 @@ def speech_energy(inputs):
     return np.array(result, np.float32)
 
 
-def speech_gesture_schedule(inputs):
+def speech_gesture_schedule(inputs, minimum_frames=0):
     """One bounded explanation per spoken scene, resting naturally in gaps."""
     energy = speech_energy(inputs)
     cursor, offset, schedule = 0, 0, []
@@ -114,6 +114,7 @@ def speech_gesture_schedule(inputs):
         if len(voiced):
             start = offset + max(0, int(voiced[0]) - 3)
             end = offset + min(count, int(voiced[-1]) + 1 + 5)
+            end = min(offset + count, max(end, start + minimum_frames))
             if start > cursor:
                 schedule.append(('neutral', start - cursor))
             schedule.append(('open' if index % 2 == 0 else 'screen', end - start))
@@ -140,6 +141,21 @@ def restrained_expression(info, first, activity, gain=.72):
     expression[:, lips] = initial[:, lips] + (expression[:, lips] - initial[:, lips]) * gain * activity
     result['exp'] = expression.reshape(info['exp'].shape)
     return result
+
+
+def presenter_pose(frames, activity):
+    """Small smooth orientation only: never change head scale or translation."""
+    seconds = np.arange(frames, dtype=np.float32) / 25
+    envelope = np.convolve(np.pad(activity[:frames], (12, 12), mode='edge'),
+                           np.ones(25, np.float32) / 25, mode='valid')
+    amount = .35 + .65 * envelope
+    # A smooth initial entrance avoids a different first-frame camera/face pose.
+    entrance = np.clip(seconds / 1.5, 0, 1)
+    entrance = entrance * entrance * (3 - 2 * entrance)
+    return (np.stack([1.6 * np.sin(seconds * 1.31) + .35 * np.sin(seconds * 2.23),
+                      1.25 * np.sin(seconds * .79),
+                      .45 * np.sin(seconds * .93)], axis=1)
+            * amount[:, None] * entrance[:, None]).astype(np.float32)
 
 
 def blink_envelope(frames):
@@ -214,7 +230,7 @@ def prepare(research, tutor, narration, source_config=None):
          'cloud_calls': 0, 'scenes': records})
 
 
-def render(research, preview, gesture_dir=None, gesture_timeline=None, face_style='steady', preview_seconds=15):
+def render(research, preview, gesture_dir=None, gesture_timeline=None, face_style='expressive', preview_seconds=15):
     from gpu_guard import has_physical_gpu_headroom
     if not has_physical_gpu_headroom(12 * 1024):
         raise RuntimeError('Less than 12GiB physical GPU free; no eviction or fallback')
@@ -321,13 +337,15 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None, face_styl
     driving = converter.cvt_fmt(sequence[:, :count])
     stitch = MotionStitch.__new__(MotionStitch)
     has_gestures = bool(gesture_dir or gesture_timeline)
-    natural = face_style in ('natural', 'steady')
-    steady = face_style == 'steady'
+    natural = face_style in ('natural', 'steady', 'expressive')
+    steady = face_style in ('steady', 'expressive')
+    expressive = face_style == 'expressive'
     stitch.setup(N_d=count, flag_stitching=False, x_s_info=source, is_image_flag=not has_gestures,
                  use_d_keys=('exp',) if steady else None,
                  drive_eye=False if natural else None,
                  delta_eye_arr=None, relative_d=True, overall_ctrl_info={})
     activity = speech_activity(inputs) if natural else np.ones(expected_frames)
+    pose = presenter_pose(count, activity) if expressive else None
     original_keypoints = transform_keypoint(source)
     blink = blink_envelope(count)
     closed_eye_delta = None
@@ -375,7 +393,9 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None, face_styl
         encoder = subprocess.Popen(command, stdin=subprocess.PIPE, stderr=log)
         try:
             with torch.inference_mode(), torch.autocast('cuda', dtype=torch.float16):
-                for index, info in enumerate(driving):
+                for index in range(count):
+                    face_index = max(0, index - 1) if expressive else index
+                    info = driving[face_index]
                     if body_frames:
                         if index in body_frames or body_cache is None:
                             frame = cv2.cvtColor(cv2.imread(str(body_frames[index])), cv2.COLOR_BGR2RGB) if index in body_frames else cv2.resize(original, (width, height))
@@ -412,7 +432,10 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None, face_styl
                             anchor['t'] = source['t'] + .65 * (active_source['t'] - baseline['t'])
                             anchor['scale'] = source['scale'] * np.clip(active_source['scale'] / baseline['scale'], .95, 1.05)
                         anchor['exp'] = source['exp']
-                        info = restrained_expression(info, driving[0], activity[index])
+                        if expressive:
+                            for axis, key in enumerate(('pitch', 'yaw', 'roll')):
+                                anchor[key] = bin66_to_degree(source[key]) + pose[index, axis]
+                        info = restrained_expression(info, driving[0], activity[face_index])
                         _, target_kp = stitch(anchor, info)
                         target_kp = target_kp + closed_eye_delta * blink[index]
                         source_kp, active_volume = original_keypoints, volume
@@ -450,7 +473,13 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None, face_styl
         'body_join_method': body_report.get('join_method') if body_report else None,
         'body_tempo_ratio': body_report.get('body_tempo_ratio', 1) if body_report else 1,
         'face_style': face_style, 'stable_reference_appearance': natural,
-        'fixed_head_geometry': steady, 'body_stabilization': body_report.get('stabilization') if body_report else None,
+        'fixed_head_geometry': face_style == 'steady',
+        'bounded_head_motion': {'pitch_max_degrees': 1.95, 'yaw_max_degrees': 1.25,
+                                'roll_max_degrees': .45, 'scale_changed': False,
+                                'translation_changed': False} if expressive else None,
+        'speech_sync': {'face_delay_frames': 1, 'face_delay_ms': 40,
+                        'method': 'One-frame acoustic expression delay; head and blink clocks unchanged'} if expressive else None,
+        'body_stabilization': body_report.get('stabilization') if body_report else None,
         'motion_cache_reused': motion_cache_reused,
         'lip_gain': .72 if natural else 1, 'silence_mouth_gate': natural,
         'eye_control': 'pinned LivePortrait eye retargeter with authored blink timing' if natural else 'legacy',
@@ -464,7 +493,7 @@ def main():
     parser.add_argument('--research-root', type=Path, required=True)
     parser.add_argument('--preview', action='store_true')
     parser.add_argument('--preview-seconds', type=float, default=15)
-    parser.add_argument('--face-style', choices=['steady', 'natural', 'legacy'], default='steady')
+    parser.add_argument('--face-style', choices=['expressive', 'steady', 'natural', 'legacy'], default='expressive')
     parser.add_argument('--work-dir', type=Path, default=WORK)
     parser.add_argument('--tutor', choices=['alex', 'zoe', 'bid3-guide'], default='alex')
     parser.add_argument('--narration-dir', type=Path, default=ROOT / '.local/product-demo/narration')

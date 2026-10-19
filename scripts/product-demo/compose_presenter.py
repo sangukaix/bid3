@@ -65,9 +65,9 @@ def main():
     subprocess.run([ffmpeg, '-v', 'error', '-y', '-i', str(screen), '-i', str(avatar),
         # Preserve every25fps avatar frame; only the original24fps screen is resampled.
         '-filter_complex', '[0:v]fps=25,tpad=stop_mode=clone:stop_duration=0.04,setsar=1[screen];'
-        '[1:v]scale=720:1080,setsar=1[face];[screen][face]hstack=inputs=2:shortest=1[v]',
+        '[1:v]scale=720:1080,setsar=1[face];[screen][face]hstack=inputs=2:shortest=1,scale=1936:792[v]',
         '-map', '[v]', '-map', '0:a:0', '-map', '0:s?', '-c:v', 'libx264', '-preset', 'fast',
-        '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-c:s', 'copy', '-movflags', '+faststart',
+        '-crf', '20', '-g', '50', '-keyint_min', '25', '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-c:s', 'copy', '-movflags', '+faststart',
         '-t', str(render['duration']), str(temporary)], check=True)
     subprocess.run([ffmpeg, '-v', 'error', '-i', str(temporary), '-f', 'null', '-'], check=True)
     temporary.replace(destination)
@@ -87,7 +87,7 @@ def main():
             'captions': '/product-demo/captions-with-guide.ko.vtt',
             'captions_sha256': digest(captions),
             'screen_captions': '/product-demo/captions-screen.ko.vtt', 'screen_captions_sha256': digest(screen_captions),
-            'width': 2640, 'height': 1080, 'fps': 25, 'duration': render['duration'],
+            'width': 1936, 'height': 792, 'fps': 25, 'duration': render['duration'],
             'main_video_sha256': digest(PUBLIC / 'intro.mp4'), 'storyboard_sha256': digest(STORY),
             'avatar_sha256': digest(avatar), 'video_sha256': digest(destination),
             'portrait_sha256': inputs['portrait_sha256'], 'narration': inputs['audio'],
@@ -100,6 +100,7 @@ def main():
             'face_style': render.get('face_style', 'legacy'),
             'speech_sync': render.get('speech_sync'),
             'fixed_head_geometry': render.get('fixed_head_geometry', False),
+            'bounded_head_motion': render.get('bounded_head_motion'),
             'body_stabilization': render.get('body_stabilization'),
             'stable_reference_appearance': render.get('stable_reference_appearance', False),
             'lip_gain': render.get('lip_gain', 1), 'silence_mouth_gate': render.get('silence_mouth_gate', False),

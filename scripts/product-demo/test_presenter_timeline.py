@@ -7,7 +7,7 @@ import wave
 
 import numpy as np
 
-from presenter import blink_envelope, digest, face_blend_mask, load_gestures, restrained_expression, speech_activity, speech_gesture_schedule
+from presenter import blink_envelope, digest, face_blend_mask, load_gestures, presenter_pose, restrained_expression, speech_activity, speech_gesture_schedule
 
 
 class GestureTimelineTests(unittest.TestCase):
@@ -139,6 +139,17 @@ class GestureTimelineTests(unittest.TestCase):
         schedule = speech_gesture_schedule({'narration_dir': str(self.root),
             'scenes': [{'id': 'silent', 'duration': 2}, {'id': 'silent', 'duration': 2}]})
         self.assertEqual(schedule, [('neutral', 100)])
+
+    def test_subtle_pose_is_continuous_bounded_and_not_a_scale_track(self):
+        speech = np.zeros(2250, np.float32)
+        speech[25:1250] = 1
+        pose = presenter_pose(2250, speech)
+        self.assertEqual(pose.shape, (2250, 3))  # orientation only
+        self.assertEqual(pose.dtype, np.float32)
+        np.testing.assert_array_equal(pose[0], [0, 0, 0])
+        self.assertTrue(np.all(np.abs(pose).max(axis=0) <= [1.95, 1.25, .45]))
+        self.assertLess(np.abs(np.diff(pose, axis=0)).max(), .2)
+        self.assertGreater(np.ptp(pose[100:1000, 0]), 2.)
 
 
 if __name__ == '__main__':

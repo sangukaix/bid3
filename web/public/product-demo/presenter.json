@@ -1,24 +1,24 @@
 {
-  "version": "d094eb6ac453",
+  "version": "33cdf3cfd4ff",
   "storyboard_version": "20261015-1",
   "character": "BID3 standing presenter",
   "video": "/product-demo/intro-with-guide.mp4",
   "poster": "/product-demo/poster-with-guide.webp",
-  "poster_sha256": "9e18b93135769a0b91ea587e1f45ba542093ee42e16db81cba72685854115f78",
+  "poster_sha256": "9857ce4a3eb989669e17c64d65245244e3df309a555ec57a5dd326ba9e2dd8ae",
   "screen_video": "/product-demo/intro-screen.mp4",
   "screen_video_sha256": "82c8762cc1297d9aa1d64d5a9cd5312d1a51049a431b6d878e6052a7c60646f9",
   "captions": "/product-demo/captions-with-guide.ko.vtt",
   "captions_sha256": "77e52913e03c5696e830743d076413deea1ea21e029a64400623daca6096af3e",
   "screen_captions": "/product-demo/captions-screen.ko.vtt",
   "screen_captions_sha256": "1a68cbe32ece3bdd091482bc6cf4daf24c00143f59f13af840d7855ca35822c0",
-  "width": 2640,
-  "height": 1080,
+  "width": 1936,
+  "height": 792,
   "fps": 25,
   "duration": 90.0,
   "main_video_sha256": "459d43d0d5b524f9aac66b81d1dc009bb7da923186de98382de6eff4c3a0945f",
   "storyboard_sha256": "275f60f95f4a805e70cda84c99420bb601303950cd9511f7a7c031f212448406",
-  "avatar_sha256": "817223aa2af51cd4828ed59649b5d180d0c859f0ea274f2238984df325ee5753",
-  "video_sha256": "8b32d9d870113b867e827ae4d03066421bc132bea6deef6e6b9d78cdcc27dbbb",
+  "avatar_sha256": "8d929d93ee2d19200308c88bdfe86e6fe6cbfde169c0e9e3d3cd9ee231dcb72d",
+  "video_sha256": "3ad4f5447720c8bfbdc0438f191f0497649d8ed20eda245e2f62449b2858a8b3",
   "portrait_sha256": "1186740a8d6121b71d655c1eac5cf39af2dafdaa9991eaee72375fdf345849f4",
   "narration": "Supertonic2 local CPU F2",
   "single_audio_track": true,
@@ -103,23 +103,31 @@
     {
       "start_seconds": 0,
       "duration": 90.0,
-      "clip": "body-speech",
-      "video_sha256": "a5811773166b09673a241348dc7b6446eccf47c51d89e3045a2b0c2f6b667c15"
+      "clip": "body-paced",
+      "video_sha256": "2a7a624542ff427d6607a1171c883bc2a4cca4a0db0f7cff1b85838340ea4ca3"
     }
   ],
   "continuous_body": true,
   "body_join_method": "fixed upper body; bounded reused gestures; DIS motion interpolation",
   "body_tempo_ratio": 1,
-  "face_style": "steady",
+  "face_style": "expressive",
   "speech_sync": {
     "face_delay_frames": 1,
     "face_delay_ms": 40,
-    "source_actor_sha256": "49cffb9b3783596baa03c607bd7e6014efbce4813bc11356643b9c6a9beb4143",
-    "before_audit_sha256": "232546a8f32adc259c7022f6b6d55f96f39b7f75ad62107a8379aa40ff3ba685",
-    "method": "Explicit fixed-head face-track delay; narration and body clock unchanged",
+    "additional_face_delay_frames": 0,
+    "source_actor_sha256": "c02365d33f12dc1e44504ab1a689f085cd1ca33bbe959e5ef6c0ac0d13119751",
+    "before_audit_sha256": "de2794e12b20695cdb06960ab844ea2f6159b869d05c044d3fd0df7585d155d8",
+    "method": "Reuse reviewed registered-camera face track; optional additional delay; narration/body clock unchanged",
     "scope": "Four manual-crop SyncNet intervals and known-delay control; not phoneme accuracy"
   },
-  "fixed_head_geometry": true,
+  "fixed_head_geometry": false,
+  "bounded_head_motion": {
+    "pitch_max_degrees": 1.95,
+    "yaw_max_degrees": 1.25,
+    "roll_max_degrees": 0.45,
+    "scale_changed": false,
+    "translation_changed": false
+  },
   "body_stabilization": {
     "method": "Fixed registered head/hair/neck/shoulders; lower-arm gestures only",
     "fixed_above_y_px": 360,
@@ -130,12 +138,14 @@
     "source_clips": [
       {
         "clip": "open",
-        "first": 75,
-        "last": 160,
-        "report_sha256": "6a9dd2af855b3279caee1e80c886bbd46bf4517d59058765d81dbf519a59857d"
+        "source_clip": "screen",
+        "first": 0,
+        "last": 64,
+        "report_sha256": "ca0ee11e5bfc808f35cd6d119af7b2a0c2e306b218a808da7946a0c54af35196"
       },
       {
         "clip": "screen",
+        "source_clip": "screen",
         "first": 0,
         "last": 192,
         "report_sha256": "ca0ee11e5bfc808f35cd6d119af7b2a0c2e306b218a808da7946a0c54af35196"
@@ -150,12 +160,12 @@
       {
         "clip": "open",
         "start_frame": 11,
-        "frames": 116
+        "frames": 150
       },
       {
         "clip": "neutral",
-        "start_frame": 127,
-        "frames": 58
+        "start_frame": 161,
+        "frames": 24
       },
       {
         "clip": "screen",
@@ -240,19 +250,18 @@
       {
         "clip": "screen",
         "start_frame": 2110,
-        "frames": 99
-      },
-      {
-        "clip": "neutral",
-        "start_frame": 2209,
-        "frames": 41
+        "frames": 140
       }
     ],
-    "unique_gesture_sources": 2,
+    "unique_gesture_sources": 1,
     "speech_aligned": true,
     "speech_inputs_sha256": "c030c6c00a5180d18493df24b4289ea1763f8365df278f2122803346d997f9dd",
     "gesture_anticipation_frames": 3,
     "gesture_release_frames": 5,
+    "hand_transition_method": "clean short lift with eased authored return; complete screen lift/return; no raised-to-neutral morph",
+    "minimum_gesture_frames": 150,
+    "resting_reference": "reviewed screen source frame0; original registered upper body",
+    "motion_pacing": "hand-region pixel-change travel; smooth endpoint speed",
     "scope": "Authored reuse, not unique continuous90s model generation"
   },
   "stable_reference_appearance": true,
@@ -269,7 +278,7 @@
     "model_license": "GPL-3.0",
     "model_sha256": "f01e0c9338b9a6a31b881ea6d4360d70c1e549701b3792e14c9ed88d6196c5a1",
     "downsample_ratio": 0.5,
-    "source_actor_sha256": "8645fabbff5418511c096ee33ed9d00f6fd463e4ae80c7e9533646b1228d1a9b",
+    "source_actor_sha256": "1b336560c543cec5c8543f1e68132096ec19d74b59a6d328b68b0f105858056c",
     "gpu_used": false,
     "sample_frames": [
       0,
@@ -293,7 +302,7 @@
       2000,
       2249
     ],
-    "seconds": 229.91,
+    "seconds": 246.829,
     "scope": "Background replacement only. Hair/finger edge quality requires visual review."
   },
   "source_image_generation": "built-in image_gen: synthetic standing presenter edited from user-supplied face reference; no Speak character",
