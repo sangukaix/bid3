@@ -1,10 +1,10 @@
 {
-  "version": "1a7ed209aac3",
+  "version": "ca7c201f9a68",
   "storyboard_version": "20261015-1",
   "character": "BID3 standing presenter",
   "video": "/product-demo/intro-with-guide.mp4",
   "poster": "/product-demo/poster-with-guide.webp",
-  "poster_sha256": "b4df520025f43a79895b21172c5ce79a9a849bc3b01dcb7dcecb7d6f63f9eeed",
+  "poster_sha256": "bf9a34224c4c1fc5a268b12c03b31d25c269ccbfc3c20ef322a32ffea558f0d2",
   "screen_video": "/product-demo/intro-screen.mp4",
   "screen_video_sha256": "82c8762cc1297d9aa1d64d5a9cd5312d1a51049a431b6d878e6052a7c60646f9",
   "captions": "/product-demo/captions-with-guide.ko.vtt",
@@ -17,8 +17,8 @@
   "duration": 90.0,
   "main_video_sha256": "459d43d0d5b524f9aac66b81d1dc009bb7da923186de98382de6eff4c3a0945f",
   "storyboard_sha256": "275f60f95f4a805e70cda84c99420bb601303950cd9511f7a7c031f212448406",
-  "avatar_sha256": "070c6a51c8ad8124f2d100e94e785494c6b641f712f391d94a4bb98d62be19da",
-  "video_sha256": "888be6359ea8f051afeb7a0e13e330a415f1a3458dab439c49c405f765fb44d6",
+  "avatar_sha256": "f183e3e2911d1f4ddb445271297faff63665383c1f90ca4c40edf6cc98622470",
+  "video_sha256": "6321966904c3c1a1110a0d3e6de1ddf32744ac057dcaefd18f75a0141016df23",
   "portrait_sha256": "1186740a8d6121b71d655c1eac5cf39af2dafdaa9991eaee72375fdf345849f4",
   "narration": "Supertonic2 local CPU F2",
   "single_audio_track": true,
@@ -103,14 +103,81 @@
     {
       "start_seconds": 0,
       "duration": 90.0,
-      "clip": "body-smooth-v3",
-      "video_sha256": "94d5f09780c86673a3143a98902a2d969c0a66d9a93936084ad680f7b97513cb"
+      "clip": "body-calm",
+      "video_sha256": "5dae4bbd438fedb2b6ff86ff5d499258f1ce124820d03363d828462338c1c5b1"
     }
   ],
   "continuous_body": true,
-  "body_join_method": "DIS optical-flow17-frame overlaps with occlusion guard",
-  "body_tempo_ratio": 0.9093333333333333,
-  "face_style": "natural",
+  "body_join_method": "fixed upper body; bounded reused gestures; DIS motion interpolation",
+  "body_tempo_ratio": 1,
+  "face_style": "steady",
+  "fixed_head_geometry": true,
+  "body_stabilization": {
+    "method": "Fixed registered head/hair/neck/shoulders; lower-arm gestures only",
+    "fixed_above_y_px": 360,
+    "transition_ends_y_px": 430,
+    "breathing_max_px": 0.6,
+    "fixed_upper_body_pixel_sha256": "ec686372059624197684e5d4e93161adbe255eb862144209fbf4cac0fa210933",
+    "fixed_upper_body_verified_frames": 2250,
+    "source_clips": [
+      {
+        "clip": "open",
+        "first": 75,
+        "last": 160,
+        "report_sha256": "6a9dd2af855b3279caee1e80c886bbd46bf4517d59058765d81dbf519a59857d"
+      },
+      {
+        "clip": "screen",
+        "first": 0,
+        "last": 192,
+        "report_sha256": "ca0ee11e5bfc808f35cd6d119af7b2a0c2e306b218a808da7946a0c54af35196"
+      }
+    ],
+    "schedule": [
+      {
+        "clip": "open",
+        "start_frame": 0,
+        "frames": 275
+      },
+      {
+        "clip": "screen",
+        "start_frame": 275,
+        "frames": 300
+      },
+      {
+        "clip": "open",
+        "start_frame": 575,
+        "frames": 275
+      },
+      {
+        "clip": "screen",
+        "start_frame": 850,
+        "frames": 250
+      },
+      {
+        "clip": "open",
+        "start_frame": 1100,
+        "frames": 300
+      },
+      {
+        "clip": "screen",
+        "start_frame": 1400,
+        "frames": 275
+      },
+      {
+        "clip": "open",
+        "start_frame": 1675,
+        "frames": 300
+      },
+      {
+        "clip": "screen",
+        "start_frame": 1975,
+        "frames": 275
+      }
+    ],
+    "unique_gesture_sources": 2,
+    "scope": "Authored reuse, not unique continuous90s model generation"
+  },
   "stable_reference_appearance": true,
   "lip_gain": 0.72,
   "silence_mouth_gate": true,
@@ -125,7 +192,7 @@
     "model_license": "GPL-3.0",
     "model_sha256": "f01e0c9338b9a6a31b881ea6d4360d70c1e549701b3792e14c9ed88d6196c5a1",
     "downsample_ratio": 0.5,
-    "source_actor_sha256": "d94cb971b0b42b1a99a66967453873b7541b0a3034f57a43eb433300f9235c6e",
+    "source_actor_sha256": "49cffb9b3783596baa03c607bd7e6014efbce4813bc11356643b9c6a9beb4143",
     "gpu_used": false,
     "sample_frames": [
       0,
@@ -149,12 +216,12 @@
       2000,
       2249
     ],
-    "seconds": 217.89,
+    "seconds": 293.418,
     "scope": "Background replacement only. Hair/finger edge quality requires visual review."
   },
   "source_image_generation": "built-in image_gen: synthetic standing presenter edited from user-supplied face reference; no Speak character",
   "limitations": [
-    "Offline chained body generation with17-frame continuation; not a live avatar",
+    "Offline authored reuse of reviewed short gestures and optical-flow interpolation; not live or unique90s body generation",
     "Korean articulation and naturalness require human review",
     "Reference-based synthetic presenter; not footage or speech of the reference person"
   ]

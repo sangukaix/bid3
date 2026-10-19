@@ -45,6 +45,12 @@ def main():
         assert render['continuous_body'] and render['frames'] == manifest['duration'] * 25
         assert render['gesture_duration'] == manifest['duration'], 'No held body gaps in a continuous version'
         assert render['stable_reference_appearance'] and render['silence_mouth_gate']
+    if manifest.get('fixed_head_geometry'):
+        assert manifest['face_style'] == 'steady'
+        fixed_body = manifest['body_stabilization']
+        assert fixed_body['fixed_upper_body_verified_frames'] == manifest['duration'] * 25
+        assert fixed_body['fixed_above_y_px'] == 360
+        assert len(fixed_body['fixed_upper_body_pixel_sha256']) == 64
     assert manifest['storyboard_version'] == story['version']
     if 'captions' in manifest:
         captions = PUBLIC / Path(manifest['captions']).name
@@ -86,6 +92,7 @@ def main():
               'screen_decoded_audio_sha256': audio_hashes[0], 'composite_decoded_audio_sha256': audio_hashes[1],
               'main_video_preserved': True, 'fast_start': True, 'source_and_storyboard_match': True,
               'continuous_body': manifest.get('continuous_body', False), 'face_style': manifest.get('face_style', 'legacy'),
+              'fixed_head_geometry': manifest.get('fixed_head_geometry', False),
               'background_plate_verified': bool(manifest.get('background'))}
     args.work_dir.mkdir(parents=True, exist_ok=True)
     (args.work_dir / 'verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')

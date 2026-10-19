@@ -79,6 +79,7 @@ def load_gestures(gesture_dir, timeline_file, portrait_sha256, total_frames):
     continuous = bool(not timeline_file and report.get('continuous'))
     return frames, {'duration': len(frames) / 25, 'video_sha256': source_sha, 'segments': segments,
                     'continuous': continuous, 'join_method': report.get('join_method') if continuous else None,
+                    'stabilization': report.get('stabilization'),
                     'body_tempo_ratio': report.get('body_tempo_ratio', 1) if continuous else 1}
 
 
@@ -185,7 +186,7 @@ def prepare(research, tutor, narration, source_config=None):
          'cloud_calls': 0, 'scenes': records})
 
 
-def render(research, preview, gesture_dir=None, gesture_timeline=None, face_style='natural', preview_seconds=15):
+def render(research, preview, gesture_dir=None, gesture_timeline=None, face_style='steady', preview_seconds=15):
     from gpu_guard import has_physical_gpu_headroom
     if not has_physical_gpu_headroom(12 * 1024):
         raise RuntimeError('Less than 12GiB physical GPU free; no eviction or fallback')
@@ -292,8 +293,10 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None, face_styl
     driving = converter.cvt_fmt(sequence[:, :count])
     stitch = MotionStitch.__new__(MotionStitch)
     has_gestures = bool(gesture_dir or gesture_timeline)
-    natural = face_style == 'natural'
+    natural = face_style in ('natural', 'steady')
+    steady = face_style == 'steady'
     stitch.setup(N_d=count, flag_stitching=False, x_s_info=source, is_image_flag=not has_gestures,
+                 use_d_keys=('exp',) if steady else None,
                  drive_eye=False if natural else None,
                  delta_eye_arr=None, relative_d=True, overall_ctrl_info={})
     activity = speech_activity(inputs) if natural else np.ones(expected_frames)
@@ -331,6 +334,8 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None, face_styl
         raise ValueError('Completed narrator already exists; do not overwrite')
     width, height = reg['output_size']
     body_frames, body_report = load_gestures(gesture_dir, gesture_timeline, inputs['portrait_sha256'], expected_frames)
+    if steady and body_frames and not (body_report.get('stabilization') or {}).get('fixed_above_y_px'):
+        raise ValueError('Steady face requires a reviewed fixed-upper-body track')
     if body_report and body_report['continuous'] and any(i not in body_frames for i in range(count)):
         raise ValueError('Continuous motion must cover every rendered frame; never hold a missing body')
     body_cache = None
@@ -351,12 +356,15 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None, face_styl
                             scale = width / original.shape[1]
                             bx, by, bs = (round(v * scale) for v in (x, y, side))
                             body_crop = frame[by:by + bs, bx:bx + bs]
-                            body_image = cv2.resize(body_crop, (256, 256), interpolation=cv2.INTER_AREA)
-                            body_tensor = torch.from_numpy(body_image.copy()).permute(2, 0, 1)[None].cuda().float() / 255
-                            body_volume = volume if natural else appearance(body_tensor)
-                            body_extracted = extractor(body_tensor)
-                            body_source = {key: value.float().cpu().numpy() for key, value in zip(
-                                ('pitch', 'yaw', 'roll', 't', 'exp', 'scale', 'kp'), body_extracted)}
+                            if steady:
+                                body_volume, body_source = volume, source
+                            else:
+                                body_image = cv2.resize(body_crop, (256, 256), interpolation=cv2.INTER_AREA)
+                                body_tensor = torch.from_numpy(body_image.copy()).permute(2, 0, 1)[None].cuda().float() / 255
+                                body_volume = volume if natural else appearance(body_tensor)
+                                body_extracted = extractor(body_tensor)
+                                body_source = {key: value.float().cpu().numpy() for key, value in zip(
+                                    ('pitch', 'yaw', 'roll', 't', 'exp', 'scale', 'kp'), body_extracted)}
                             if reference_body is None:
                                 reference_body = {key: value.copy() for key, value in body_source.items()}
                             body_alpha = cv2.resize(alpha, (bs, bs), interpolation=cv2.INTER_LINEAR)[..., None]
@@ -369,11 +377,12 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None, face_styl
                     if natural:
                         anchor = dict(source)
                         baseline = reference_body or source
-                        for key in ('pitch', 'yaw', 'roll'):
-                            anchor[key] = bin66_to_degree(source[key]) + .65 * (
-                                bin66_to_degree(active_source[key]) - bin66_to_degree(baseline[key]))
-                        anchor['t'] = source['t'] + .65 * (active_source['t'] - baseline['t'])
-                        anchor['scale'] = source['scale'] * np.clip(active_source['scale'] / baseline['scale'], .95, 1.05)
+                        if not steady:
+                            for key in ('pitch', 'yaw', 'roll'):
+                                anchor[key] = bin66_to_degree(source[key]) + .65 * (
+                                    bin66_to_degree(active_source[key]) - bin66_to_degree(baseline[key]))
+                            anchor['t'] = source['t'] + .65 * (active_source['t'] - baseline['t'])
+                            anchor['scale'] = source['scale'] * np.clip(active_source['scale'] / baseline['scale'], .95, 1.05)
                         anchor['exp'] = source['exp']
                         info = restrained_expression(info, driving[0], activity[index])
                         _, target_kp = stitch(anchor, info)
@@ -413,6 +422,7 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None, face_styl
         'body_join_method': body_report.get('join_method') if body_report else None,
         'body_tempo_ratio': body_report.get('body_tempo_ratio', 1) if body_report else 1,
         'face_style': face_style, 'stable_reference_appearance': natural,
+        'fixed_head_geometry': steady, 'body_stabilization': body_report.get('stabilization') if body_report else None,
         'motion_cache_reused': motion_cache_reused,
         'lip_gain': .72 if natural else 1, 'silence_mouth_gate': natural,
         'eye_control': 'pinned LivePortrait eye retargeter with authored blink timing' if natural else 'legacy',
@@ -426,7 +436,7 @@ def main():
     parser.add_argument('--research-root', type=Path, required=True)
     parser.add_argument('--preview', action='store_true')
     parser.add_argument('--preview-seconds', type=float, default=15)
-    parser.add_argument('--face-style', choices=['natural', 'legacy'], default='natural')
+    parser.add_argument('--face-style', choices=['steady', 'natural', 'legacy'], default='steady')
     parser.add_argument('--work-dir', type=Path, default=WORK)
     parser.add_argument('--tutor', choices=['alex', 'zoe', 'bid3-guide'], default='alex')
     parser.add_argument('--narration-dir', type=Path, default=ROOT / '.local/product-demo/narration')

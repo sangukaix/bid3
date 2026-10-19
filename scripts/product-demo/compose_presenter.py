@@ -76,6 +76,10 @@ def main():
                     '-frames:v', '1', str(poster)], check=True)
     if not args.preview:
         version = hashlib.sha256((digest(destination) + digest(captions) + digest(screen_captions) + digest(poster)).encode()).hexdigest()[:12]
+        reused_gestures = (render.get('body_stabilization') or {}).get('unique_gesture_sources')
+        motion_scope = ('Offline authored reuse of reviewed short gestures and optical-flow interpolation; not live or unique90s body generation'
+                        if reused_gestures else 'Offline chained body generation with17-frame continuation; not a live avatar'
+                        if render.get('continuous_body') else 'Offline generated face motion; scheduled gestures, resting between segments')
         report = {'version': version, 'storyboard_version': story['version'], 'character': inputs['character'],
             'video': '/product-demo/intro-with-guide.mp4', 'poster': '/product-demo/poster-with-guide.webp',
             'poster_sha256': digest(poster),
@@ -94,13 +98,14 @@ def main():
             'continuous_body': render.get('continuous_body', False),
             'body_join_method': render.get('body_join_method'), 'body_tempo_ratio': render.get('body_tempo_ratio', 1),
             'face_style': render.get('face_style', 'legacy'),
+            'fixed_head_geometry': render.get('fixed_head_geometry', False),
+            'body_stabilization': render.get('body_stabilization'),
             'stable_reference_appearance': render.get('stable_reference_appearance', False),
             'lip_gain': render.get('lip_gain', 1), 'silence_mouth_gate': render.get('silence_mouth_gate', False),
             'eye_control': render.get('eye_control', 'legacy'),
             'background': render.get('background'),
             'source_image_generation': (inputs.get('custom_source') or {}).get('origin', 'legacy fictional portrait'),
-            'limitations': [('Offline chained body generation with17-frame continuation; not a live avatar' if render.get('continuous_body')
-                             else 'Offline generated face motion; scheduled gestures, resting between segments'),
+            'limitations': [motion_scope,
                             'Korean articulation and naturalness require human review',
                             'Reference-based synthetic presenter; not footage or speech of the reference person']}
         (PUBLIC / 'presenter.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

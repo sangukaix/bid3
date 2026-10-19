@@ -11,3 +11,6 @@
 # Optional background_presenter.py uses the existing isolated torch/OpenCV CPU
 # runtime and an explicitly supplied official RVM v1.0.0 TorchScript checkpoint.
 # See docs/PRESENTER_ASSETS.md for source, SHA256, license and reproduction.
+# Optional stabilize_presenter.py uses existing isolated CPython3.10/MediaPipe
+# 0.10.21 CPU runtime and the pinned Face Landmarker task; no app installation.
+# calm_body.py uses the existing OpenCV/DIS authoring runtime only.

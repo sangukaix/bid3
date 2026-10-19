@@ -1,6 +1,67 @@
 # 서 있는 안내 아바타 제작 자료 — 2026-10-19
 
-## 뉴스 스튜디오 배경 — 2026-10-19 최신
+## 고정 구도·차분한 손짓 — 2026-10-19 최신 후속
+
+사용자가 지적한 얼굴 크기 변화와 과한 좌우 흔들림을 재검토했다. 기존 뉴스 배경
+출력은 완전 디코딩과 일부 표본은 통과했으나, 그 검사로 시각 품질 전체가 확인된 것은
+아니었다. 원시 긴 몸 영상의2176프레임 부근에서 색/형태가 깨지는 것을 직접 확인했다.
+긴13개 생성 구간을 이어 사용한 방식은 현재 출력에서 제외한다. 이전 출력/진단 자료를
+삭제하지 않으며 아래 연속 생성 절의 품질·동작 방식은 이전 버전의 기록이다.
+
+- `stabilize_presenter.py`: 기존 MediaPipe0.10.21/Face Landmarker를 CPU에서 재사용한다.
+  원본 얼굴 기준의 눈 중심/간격/회전을 추정하고, 짧은 몸 클립의 카메라 변화에 역변환을
+  적용한다. 실패 시 독립 이미지 검출을 시도하고 재검출도 실패하면 중단한다.
+  누락을 조용히 정지 프레임으로 채우지 않는다. 모델/입력/측정 배열 해시를 보존한다.
+  모델 SHA256: `64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff`.
+  [공식 사용법](https://developers.google.com/edge/mediapipe/solutions/vision/face_landmarker/python)을
+  확인했으며 기존 격리된 CPython3.10 `latentsync-venv`를 읽기 전용으로 재사용한다.
+- `calm_body.py`: 검수된 짧은 두 손짓을 사용한다. open은 몸이 크게 기울어지는 초반을
+  제외한75..160프레임, screen은0..192프레임이다. 손짓 전후를 기준 중립 자세에 연결해
+  90초 일정에 명시적으로 재사용한다. 새90초 전체를 한 번에 생성했다는 의미가 아니다.
+  11·12·11·10·12·11·12·11초 구간으로 교차 배치하며 DIS 모션 보간을 사용한다.
+- 512×768 원본 기준 y<360의 머리·머리카락·목·어깨는 등록 원본을 그대로 유지하고,
+  y360..430에서 아래 팔/손 동작으로 연결한다. 가슴 아래에 최대0.6px의 작은 호흡
+  변위만 더한다. 얼굴 좌우 이동/카메라 줌/큰 몸 기울임은 추가하지 않는다.
+  얼굴 합성 전2250프레임 모두에서 상단 영역 RGB SHA가 기준 원본과 같은지 강제 검사한다.
+- `presenter.py`의 기본 `steady` 프로필은 원본 얼굴 pose/scale/translation을 고정하고
+  음성 기반 입 표현과 눈 깜빡임만 반영한다. 몸 프레임마다 얼굴 pose를 재추출하는
+  호출도 생략한다. `natural`/`legacy`는 과거 출력 재현을 위한 명시 옵션으로 남긴다.
+  steady에 고정 상단 검증이 없는 몸 영상을 넣으면 합성을 거부한다.
+- 기존2250프레임 발화 캐시·10개 음성 특징·한국어 F2 WAV·뉴스 스튜디오 배경판은
+  그대로 재사용한다. 새 이미지/음성/몸 모델 생성 호출이나 OpenAI API 호출은 없다.
+  다른 프로젝트의 Gemma를 내리지 않았고 자연 종료 후12GiB 여유 조건에서 얼굴만 출력했다.
+
+비공개 작업 폴더는 `.local/product-demo/presenter-steady-20261019`다.
+`old-audit/measurement.json`, `new-audit/measurement.json`은 같은 검출기의2250프레임
+추정 결과다. 이전/수정 출력의 눈 중심 가로 범위는58.329/0.736px, 세로 범위는
+50.701/1.224px, 눈 간격 p95/p05는1.073526/1.004237이었다. 이전에는2177프레임에서
+독립 재검출이 필요했고 새 얼굴 출력은 재검출 없이2250프레임을 처리했다.
+이 값은 검출기 추정 좌표이며 얼굴 실제 치수·자연스러움·한국어 발음 정확도 점수가 아니다.
+
+몸 입력 표본8개, 고정 상단 최종 몸 표본12개(연결부274/275 및 문제였던2164/2176/2177
+포함)를 확대 검토했다. 얼굴 출력은 실제 브라우저에서480px 폭으로90초 끝까지
+일반 재생했고 media error는 없었다. 재생 상태 확인과 일부 시점의 시각 검토이며
+2250프레임을 사람이 개별 판정했다는 뜻은 아니다. 손가락/입술의 미세한 합성 오차는
+남을 수 있다. 최종 뉴스 배경 적용물은 별도 `presenter-steady-newsroom-20261019`에 둔다.
+
+재현 순서: 짧은 손짓별 `stabilize_presenter.py measure` → `stabilize` → 실제 검토 후
+`acceptance.json` → `calm_body.py --work-dir` → 몸 검토 → 얼굴 `--face-style steady`
+렌더 → 기존 `background_presenter.py` → `compose_presenter.py`/`check_presenter.py`.
+새 입력이나 음성 변경이 없으면 준비된 특징/발화 캐시는 SHA를 검증해 재사용한다.
+카메라 안정화 회귀 테스트3개와 기존 얼굴/일정10개, 모션 연결4개를 통과했다.
+
+최종 버전 `ca7c201f9a68`: 2640×1080/25fps/90초,16,427,911 bytes.
+뉴스 배경 적용 후2164/2176/2177프레임을 다시 추출해 이전 색/형태 파손 구간이
+새 고정 구도에서 정상인 것을 시각 확인했다. 전체2250프레임 디코딩, 배경판·자막·
+포스터·원래 시연 해시, 단일 음성 및 화면 전용/합성본 디코딩 음성 SHA 일치,
+fast-start 검사와 production build(TypeScript 포함)를 통과했다.
+실제 HTTPS의 영상 range206, 포스터 SHA 일치와 미로그인 회사 자료 API401을 확인했다.
+공개 웹에서도 새 버전0초→48.107초→90초 종료를 확인했고 media error는 없었다.
+정지한35.008741초의 아바타 끄기/켜기에서 위치와 정지를 유지했다. 자막 readyState2,
+609px 화면의 가로 넘침 없음을 확인했다. 최종 웹 화면과 재생 기록은 새 뉴스 배경
+작업 폴더의 `browser-preview.png`, `browser-verification.json`에 보존한다.
+
+## 뉴스 스튜디오 배경 제작 기록 — 2026-10-19
 
 사용자 요청에 따라 밝은 식물/목재 실내를 청록·네이비 뉴스 스튜디오로 교체한다.
 현재 인물의 외형·손짓·얼굴 발화·한국어 F2 음성·90초 시계는 그대로 재사용한다.
@@ -270,7 +331,7 @@ production build(TypeScript 포함)를 통과했다. 실제 공개 HTTPS에서0�
 # 두 동작 각각: source/end는 standing-neutral.png, middle은 각 설명 자세.
 & $bodyPython -I scripts/product-demo/gesture.py --research-root $research --source-image $neutral --middle-image $middle --end-image $neutral --character "BID3 standing presenter" --prompt-file $motionPrompt --output $candidate
 # 실제 손/얼굴/연속성을 검토하고 acceptance.json을 기록한 후 timeline.json에 배치한다.
-& $avatarPython -I scripts/product-demo/presenter.py render --research-root $research --work-dir $work --gesture-timeline "$work/timeline.json"
+& $avatarPython -I scripts/product-demo/presenter.py render --research-root $research --work-dir $work --face-style natural --gesture-timeline "$work/timeline.json"
 .\server\venv\Scripts\python.exe scripts/product-demo/compose_presenter.py --work-dir $work
 .\server\venv\Scripts\python.exe scripts/product-demo/check_presenter.py --work-dir $work
 ```
