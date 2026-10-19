@@ -88,6 +88,7 @@ def main():
             'avatar_sha256': digest(avatar), 'video_sha256': digest(destination),
             'portrait_sha256': inputs['portrait_sha256'], 'narration': inputs['audio'],
             'single_audio_track': True, 'voice': inputs.get('voice'), 'cloud_inference_calls': 0,
+            'cloud_inference_scope': 'Offline motion, voice and composition; excludes source/background image authoring',
             'gesture_duration': render.get('gesture_duration', 0),
             'gesture_segments': render.get('gesture_segments', []),
             'continuous_body': render.get('continuous_body', False),
@@ -96,6 +97,7 @@ def main():
             'stable_reference_appearance': render.get('stable_reference_appearance', False),
             'lip_gain': render.get('lip_gain', 1), 'silence_mouth_gate': render.get('silence_mouth_gate', False),
             'eye_control': render.get('eye_control', 'legacy'),
+            'background': render.get('background'),
             'source_image_generation': (inputs.get('custom_source') or {}).get('origin', 'legacy fictional portrait'),
             'limitations': [('Offline chained body generation with17-frame continuation; not a live avatar' if render.get('continuous_body')
                              else 'Offline generated face motion; scheduled gestures, resting between segments'),

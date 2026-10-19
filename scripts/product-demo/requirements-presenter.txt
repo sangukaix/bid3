@@ -8,3 +8,6 @@
 # Reuse audited Speak research helpers, original portrait registration and pinned
 # weights via --research-root. presenter.py does NOT download or install anything.
 # CPU composition/checking uses requirements.txt in this directory.
+# Optional background_presenter.py uses the existing isolated torch/OpenCV CPU
+# runtime and an explicitly supplied official RVM v1.0.0 TorchScript checkpoint.
+# See docs/PRESENTER_ASSETS.md for source, SHA256, license and reproduction.

@@ -1,5 +1,66 @@
 # 서 있는 안내 아바타 제작 자료 — 2026-10-19
 
+## 뉴스 스튜디오 배경 — 2026-10-19 최신
+
+사용자 요청에 따라 밝은 식물/목재 실내를 청록·네이비 뉴스 스튜디오로 교체한다.
+현재 인물의 외형·손짓·얼굴 발화·한국어 F2 음성·90초 시계는 그대로 재사용한다.
+이 절의 배경 교체는 아래 연속 동작/얼굴 생성이 끝난 뒤 적용하는 별도 단계다.
+
+- 배경판: `web/public/product-demo/presenter/newsroom-studio.png`.
+  built-in `image_gen`으로 생성한 빈 스튜디오이며 외부 방송사 로고/화면을 복사하지
+  않았다. 실제 촬영 장소나 실제 방송 출연 영상이 아니다. 정확한 최종 프롬프트는
+  [presenter-newsroom-prompt.txt](presenter-newsroom-prompt.txt)에 보존한다.
+  프로젝트 OpenAI API 키를 사용하지 않지만, 배경판은 로컬 LLM 생성물이 아니다.
+- 인물 분리: [공식 Robust Video Matting](https://github.com/PeterL1n/RobustVideoMatting)의
+  `v1.0.0/rvm_mobilenetv3_fp32.torchscript` (15,501,891 bytes), SHA256
+  `f01e0c9338b9a6a31b881ea6d4360d70c1e549701b3792e14c9ed88d6196c5a1`.
+  GPL-3.0 라이선스 모델을 비공개 오프라인 제작 단계에서만 사용하며 앱 의존성이나
+  배포 소스/공개 폴더에 모델·원본 코드를 넣지 않는다.
+- `background_presenter.py`: TorchScript CPU 4스레드, downsample ratio0.5.
+  공식 [추론 설명](https://github.com/PeterL1n/RobustVideoMatting/blob/master/documentation/inference.md)에
+  맞춰 전체 영상에서 네 recurrent state를 이어 사용한다. 프레임마다 상태를 초기화하지
+  않는다. 불투명 인물 내부(alpha≥0.995)는 기존 RGB를 유지하고 경계부는 모델의
+  foreground/alpha로 기존 밝은 실내 색 번짐을 줄인다. 추가 얼굴 생성·색 보정은 없다.
+- GPU를 쓰지 않고 다른 작업의 Gemma/서버/모델 설정을 변경하지 않는다.
+  512×768/25fps 아바타의 프레임 수와 시간, 손·팔·머리 위치를 유지한다.
+  최종 합성에서는 기존처럼720×1080으로 비율 확대한다.
+- 기존 입력: `.local/product-demo/presenter-natural-v4-20261019/avatar.mp4`.
+  새 출력: `.local/product-demo/presenter-newsroom-20261019/avatar.mp4`.
+  `inputs.json`은 그대로 복사하고 `render.json.background`에 원본 영상·배경판·모델 해시,
+  실제 처리 시간과 검토 표본을 기록한다. 기존 공개 영상은 새 작업 폴더의
+  `previous-public/`에 보존한다. 원래 등록 얼굴과 포즈 이미지의 실내는 수정하지 않는다.
+- 배경판만 바꾸려면 기존 원본 아바타에 다시 적용한다. 이전에 합성한 뉴스 배경 영상에
+  연속 재적용하지 않는다. 화면 디자인 변경은 기존 `compose_presenter.py`로 다시
+  합성하며, `check_presenter.py`가 배경판/영상/자막/음성 해시를 확인한다.
+
+재현 명령(격리된 기존 제작용 `$bodyPython` 사용):
+
+```powershell
+& $bodyPython -I scripts/product-demo/background_presenter.py --source-work .local/product-demo/presenter-natural-v4-20261019 --work-dir .local/product-demo/presenter-newsroom-20261019 --background web/public/product-demo/presenter/newsroom-studio.png --checkpoint .local/product-demo/presenter-newsroom-20261019/models/rvm_mobilenetv3_fp32.torchscript
+.\server\venv\Scripts\python.exe scripts/product-demo/compose_presenter.py --work-dir .local/product-demo/presenter-newsroom-20261019
+.\server\venv\Scripts\python.exe scripts/product-demo/check_presenter.py --work-dir .local/product-demo/presenter-newsroom-20261019
+```
+
+머리카락·움직이는 손 가장자리의 미세한 알파 오차는 모델 합성의 한계다.
+디코딩/해시 검사가 모든 프레임의 시각적 완전성이나 실제 인물의 발화임을 보장하지 않는다.
+
+이번 결과: 버전 `1a7ed209aac3`, 2640×1080/25fps/90초, 22,421,605 bytes.
+CPU 배경 분리/합성은217.890초였으며 비교 성능 실험은 아니다. 인물 영상 표본은
+0·150·500·1000·1250·1500·2000·2249프레임을 시각 확인했다.
+전체2250프레임 디코딩, 단일 음성, 화면 전용/합성본의 디코딩 음성 SHA 일치,
+배경판/포스터/자막/시연 원본 해시, fast-start 검사를 통과했다. production build와
+TypeScript 검사를 통과했다. 실제 HTTPS에서 새 버전2640×1080 재생을 확인했고,
+영상 range206, 공개 포스터 SHA 일치, 미로그인 회사 자료 API401을 확인했다.
+원본 얼굴 모델/동작은 바꾸지 않았으며 해당 생성 모델을 다시 실행하지 않았다.
+일반 브라우저에서0초부터90초 종료까지 재생했고 media error는 없었다.
+검수 중 정지 상태의 소스 전환에서 이전 자막이 겹쳐 남는 현상을 발견해
+`ProductDemo.tsx`의 비디오를 소스별 key로 새로 등록한다. 기존 pending seek와
+재생 복원 동작을 유지한다. 수정 후 정지 전환은15.799634초로 양방향 유지했고,
+재생 중 전환도 계속 재생됐다. 최종53.569초 부근에서 중복 없는 자막 한 줄,
+새 배경, 자막 readyState2,609px 뷰포트의 가로 넘침 없음을 확인했다.
+실제 화면과 기록은 새 작업 폴더의 `browser-preview.png`,
+`browser-verification.json`, `http-verification.json`, `verification.json`에 보존한다.
+
 ## 연속 동작·자연스러운 얼굴 보정 — 2026-10-19 후속
 
 사용자가 지적한 몸 동작 정지와 얼굴/입의 부자연스러움을 별도로 수정한다.

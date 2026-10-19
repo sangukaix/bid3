@@ -34,6 +34,12 @@ def main():
     assert manifest['storyboard_sha256'] == digest(story_file), 'Recompose after changing the storyboard'
     assert manifest['video_sha256'] == digest(video)
     assert manifest['duration'] == sum(s['duration'] for s in story['scenes'])
+    if manifest.get('background'):
+        background = manifest['background']
+        assert digest(ROOT / background['plate']) == background['plate_sha256']
+        render = json.loads((args.work_dir / 'render.json').read_text('utf-8'))
+        assert manifest['background'] == render['background'], 'Background provenance differs'
+        assert digest(args.work_dir / 'avatar.mp4') == manifest['avatar_sha256']
     if manifest.get('continuous_body'):
         render = json.loads((args.work_dir / 'render.json').read_text('utf-8'))
         assert render['continuous_body'] and render['frames'] == manifest['duration'] * 25
@@ -79,7 +85,8 @@ def main():
     result = {'frames_decoded': frames, 'duration': manifest['duration'], 'single_audio_track': True,
               'screen_decoded_audio_sha256': audio_hashes[0], 'composite_decoded_audio_sha256': audio_hashes[1],
               'main_video_preserved': True, 'fast_start': True, 'source_and_storyboard_match': True,
-              'continuous_body': manifest.get('continuous_body', False), 'face_style': manifest.get('face_style', 'legacy')}
+              'continuous_body': manifest.get('continuous_body', False), 'face_style': manifest.get('face_style', 'legacy'),
+              'background_plate_verified': bool(manifest.get('background'))}
     args.work_dir.mkdir(parents=True, exist_ok=True)
     (args.work_dir / 'verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
     print('PASS:', frames, 'frames; identical screen/composite narration; source hashes; single audio; fast-start.')

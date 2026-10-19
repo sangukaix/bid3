@@ -95,6 +95,7 @@ export default function ProductDemo() {
           </div>
           <div className="relative" style={{ aspectRatio: withGuide ? `${presenter.width} / ${presenter.height}` : "16 / 9" }}>
             <video
+              key={source}
               ref={video}
               aria-label="AI비드 서비스 소개 영상"
               aria-describedby="product-demo-description"
