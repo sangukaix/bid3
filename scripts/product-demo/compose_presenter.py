@@ -63,9 +63,9 @@ def main():
         '-metadata:s:s:0', 'language=kor', '-disposition:s:0', 'default', '-movflags', '+faststart',
         '-t', str(sum(s['duration'] for s in story['scenes'])), str(screen)], check=True)
     subprocess.run([ffmpeg, '-v', 'error', '-y', '-i', str(screen), '-i', str(avatar),
-        # Cover the 25→24fps endpoint rounding; final -t keeps the exact timeline.
-        '-filter_complex', '[1:v]scale=720:1080,'
-        'fps=24,tpad=stop_mode=clone:stop_duration=0.1,setsar=1[face];[0:v][face]hstack=inputs=2:shortest=1[v]',
+        # Preserve every25fps avatar frame; only the original24fps screen is resampled.
+        '-filter_complex', '[0:v]fps=25,tpad=stop_mode=clone:stop_duration=0.04,setsar=1[screen];'
+        '[1:v]scale=720:1080,setsar=1[face];[screen][face]hstack=inputs=2:shortest=1[v]',
         '-map', '[v]', '-map', '0:a:0', '-map', '0:s?', '-c:v', 'libx264', '-preset', 'fast',
         '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-c:s', 'copy', '-movflags', '+faststart',
         '-t', str(render['duration']), str(temporary)], check=True)
@@ -83,15 +83,22 @@ def main():
             'captions': '/product-demo/captions-with-guide.ko.vtt',
             'captions_sha256': digest(captions),
             'screen_captions': '/product-demo/captions-screen.ko.vtt', 'screen_captions_sha256': digest(screen_captions),
-            'width': 2640, 'height': 1080, 'duration': render['duration'],
+            'width': 2640, 'height': 1080, 'fps': 25, 'duration': render['duration'],
             'main_video_sha256': digest(PUBLIC / 'intro.mp4'), 'storyboard_sha256': digest(STORY),
             'avatar_sha256': digest(avatar), 'video_sha256': digest(destination),
             'portrait_sha256': inputs['portrait_sha256'], 'narration': inputs['audio'],
             'single_audio_track': True, 'voice': inputs.get('voice'), 'cloud_inference_calls': 0,
             'gesture_duration': render.get('gesture_duration', 0),
             'gesture_segments': render.get('gesture_segments', []),
+            'continuous_body': render.get('continuous_body', False),
+            'body_join_method': render.get('body_join_method'), 'body_tempo_ratio': render.get('body_tempo_ratio', 1),
+            'face_style': render.get('face_style', 'legacy'),
+            'stable_reference_appearance': render.get('stable_reference_appearance', False),
+            'lip_gain': render.get('lip_gain', 1), 'silence_mouth_gate': render.get('silence_mouth_gate', False),
+            'eye_control': render.get('eye_control', 'legacy'),
             'source_image_generation': (inputs.get('custom_source') or {}).get('origin', 'legacy fictional portrait'),
-            'limitations': ['Offline generated face motion; scheduled explanatory gestures, resting between segments',
+            'limitations': [('Offline chained body generation with17-frame continuation; not a live avatar' if render.get('continuous_body')
+                             else 'Offline generated face motion; scheduled gestures, resting between segments'),
                             'Korean articulation and naturalness require human review',
                             'Reference-based synthetic presenter; not footage or speech of the reference person']}
         (PUBLIC / 'presenter.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

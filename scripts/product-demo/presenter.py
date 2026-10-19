@@ -59,7 +59,8 @@ def load_gestures(gesture_dir, timeline_file, portrait_sha256, total_frames):
             video_sha = digest(folder / 'gesture.mp4')
             if not accepted.get('accepted') or accepted['video_sha256'] != video_sha or report['video_sha256'] != video_sha:
                 raise ValueError('Hand/identity visual acceptance required before use')
-            if report['fps'] != 25 or not 1 <= report['frames'] <= 250:
+            maximum = total_frames if report.get('continuous') else 250
+            if report['fps'] != 25 or not 1 <= report['frames'] <= maximum:
                 raise ValueError('Only bounded reviewed gesture clips are supported')
             if (report.get('end_image_sha256') or report['source_sha256']) != portrait_sha256:
                 raise ValueError('Gesture resting portrait differs from the registered character')
@@ -75,7 +76,66 @@ def load_gestures(gesture_dir, timeline_file, portrait_sha256, total_frames):
         frames.update({start + i: path for i, path in enumerate(paths)})
         segments.append({'start_seconds': seconds, 'duration': len(paths) / 25, 'clip': folder.name, 'video_sha256': video_sha})
     source_sha = digest(timeline_file) if timeline_file else segments[0]['video_sha256']
-    return frames, {'duration': len(frames) / 25, 'video_sha256': source_sha, 'segments': segments}
+    continuous = bool(not timeline_file and report.get('continuous'))
+    return frames, {'duration': len(frames) / 25, 'video_sha256': source_sha, 'segments': segments,
+                    'continuous': continuous, 'join_method': report.get('join_method') if continuous else None,
+                    'body_tempo_ratio': report.get('body_tempo_ratio', 1) if continuous else 1}
+
+
+def speech_activity(inputs):
+    """Close the mouth in genuine pauses; preserve120ms around quiet consonants."""
+    result = []
+    narration = Path(inputs['narration_dir'])
+    for scene in inputs['scenes']:
+        with wave.open(str(narration / (scene['id'] + '.wav'))) as audio:
+            samples = np.frombuffer(audio.readframes(audio.getnframes()), '<i2').astype(np.float32) / 32768
+            samples = samples.reshape(-1, audio.getnchannels()).mean(axis=1)
+            rate = audio.getframerate()
+        start = round(.45 * rate)
+        padded = np.zeros(round(scene['duration'] * rate), np.float32)
+        padded[start:start + len(samples)] = samples
+        for frame in range(scene['duration'] * 25):
+            window = padded[round(frame * rate / 25):round((frame + 1) * rate / 25)]
+            result.append(float(np.sqrt(np.mean(window**2))) > .0015)
+    active = np.array(result, np.float32)
+    extended = np.maximum.reduce([np.pad(active, (2, 2))[i:i + len(active)] for i in range(5)])
+    return np.convolve(extended, [.25, .5, .25], mode='same').astype(np.float32)
+
+
+def restrained_expression(info, first, activity, gain=.72):
+    """Retain acoustic articulation, reducing exaggerated lip motion and silence chatter."""
+    result = dict(info)
+    expression = info['exp'].copy().reshape(1, 21, 3)
+    initial = first['exp'].reshape(1, 21, 3)
+    lips = [6, 12, 14, 17, 19, 20]
+    expression[:, lips] = initial[:, lips] + (expression[:, lips] - initial[:, lips]) * gain * activity
+    result['exp'] = expression.reshape(info['exp'].shape)
+    return result
+
+
+def blink_envelope(frames):
+    """Irregular authored blinks, independent of speech and body-model eye noise."""
+    seconds = np.arange(frames) / 25
+    envelope = np.zeros(frames, np.float32)
+    rng = np.random.default_rng(43)
+    center = 3.6
+    while center < frames / 25:
+        distance = np.abs(seconds - center)
+        envelope = np.maximum(envelope, np.where(distance < .16,
+            .5 + .5 * np.cos(np.pi * np.minimum(distance, .16) / .16), 0))
+        center = round((center + rng.uniform(3.8, 6.2)) * 25) / 25
+    return envelope.astype(np.float32)
+
+
+def face_blend_mask(side, keep_greeting_hand=False):
+    yy, xx = np.mgrid[:side, :side].astype(np.float32)
+    radius = ((xx - side * .5) / (side * .43))**2 + ((yy - side * .47) / (side * .48))**2
+    alpha = np.clip((1 - radius) / .25, 0, 1)[..., None]
+    if keep_greeting_hand:
+        lower = np.clip((yy / side - .50) / .10, 0, 1)
+        safe_x = np.clip((xx / side - .30) / .10, 0, 1)
+        alpha *= (1 - lower * (1 - safe_x))[..., None]
+    return alpha
 
 
 def prepare(research, tutor, narration, source_config=None):
@@ -125,7 +185,7 @@ def prepare(research, tutor, narration, source_config=None):
          'cloud_calls': 0, 'scenes': records})
 
 
-def render(research, preview, gesture_dir=None, gesture_timeline=None):
+def render(research, preview, gesture_dir=None, gesture_timeline=None, face_style='natural', preview_seconds=15):
     from gpu_guard import has_physical_gpu_headroom
     if not has_physical_gpu_headroom(12 * 1024):
         raise RuntimeError('Less than 12GiB physical GPU free; no eviction or fallback')
@@ -155,7 +215,7 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None):
     sys.path.insert(0, str(vendor))
     from core.models.modules.LMDM import LMDM
     from core.atomic_components.audio2motion import Audio2Motion
-    from core.atomic_components.motion_stitch import MotionStitch
+    from core.atomic_components.motion_stitch import MotionStitch, transform_keypoint, bin66_to_degree
 
     torch.set_num_threads(4)
     torch.manual_seed(43)
@@ -181,7 +241,8 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None):
     expected_frames = sum(s['duration'] for s in inputs['scenes']) * 25
     assert len(values) == expected_frames
     motion_file = WORK / 'motion.npy'
-    if motion_file.exists():
+    motion_cache_reused = motion_file.exists()
+    if motion_cache_reused:
         record = json.loads((WORK / 'motion.json').read_text('utf-8'))
         if record['inputs_sha256'] != digest(WORK / 'inputs.json') or record['sha256'] != digest(motion_file):
             raise ValueError('Cached motion provenance mismatch')
@@ -225,29 +286,55 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None):
         del diffusion
     if sequence.shape != (1, expected_frames, 265) or not np.isfinite(sequence).all():
         raise ValueError('Motion shape/finite validation failed')
-    count = inputs['scenes'][0]['duration'] * 25 if preview else expected_frames
+    count = min(round(preview_seconds * 25), expected_frames) if preview else expected_frames
     converter = Audio2Motion.__new__(Audio2Motion)
     converter.v_min_max_for_clip = None
     driving = converter.cvt_fmt(sequence[:, :count])
     stitch = MotionStitch.__new__(MotionStitch)
     has_gestures = bool(gesture_dir or gesture_timeline)
+    natural = face_style == 'natural'
     stitch.setup(N_d=count, flag_stitching=False, x_s_info=source, is_image_flag=not has_gestures,
+                 drive_eye=False if natural else None,
                  delta_eye_arr=None, relative_d=True, overall_ctrl_info={})
-    yy, xx = np.mgrid[:side, :side].astype(np.float32)
-    radius = ((xx - side * .5) / (side * .43))**2 + ((yy - side * .47) / (side * .48))**2
-    alpha = np.clip((1 - radius) / .25, 0, 1)[..., None]
-    if has_gestures:
-        # Keep the greeting hand outside the face blend, including lifted fingers.
-        lower = np.clip((yy / side - .50) / .10, 0, 1)
-        safe_x = np.clip((xx / side - .30) / .10, 0, 1)
-        alpha *= (1 - lower * (1 - safe_x))[..., None]
+    activity = speech_activity(inputs) if natural else np.ones(expected_frames)
+    original_keypoints = transform_keypoint(source)
+    blink = blink_envelope(count)
+    closed_eye_delta = None
+    if natural:
+        eye_path = research / 'models/liveportrait-lip-research/stitching_retargeting_module.pth'
+        if digest(eye_path) != '3652d5a3f95099141a56986aaddec92fadf0a73c87a20fac9a2c07c32b28b611':
+            raise ValueError('Pinned existing eye retargeter required')
+        eye_vendor = research / 'vendor/LivePortrait'
+        if subprocess.check_output(['git', '-C', str(eye_vendor), 'rev-parse', 'HEAD'], text=True).strip() != '9b294b3d0536135442ea73cb01e6cb3ca7029dd3':
+            raise ValueError('Pinned LivePortrait eye source required')
+        sys.path.insert(0, str(eye_vendor))
+        from src.modules.stitching_retargeting_network import StitchingRetargetingNetwork
+        eye_model = StitchingRetargetingNetwork(66, [256, 256, 128, 128, 64], 63)
+        eye_state = torch.load(eye_path, map_location='cpu', weights_only=True)['retarget_eye']
+        eye_model.load_state_dict({k.removeprefix('module.'): v for k, v in eye_state.items()}, strict=True)
+        eye_model.eval().cuda()
+        ratios = []
+        for eye in reg['eyes']:
+            corners = np.array(eye['corners'], np.float32)
+            upper, lower = np.array(eye['vertical_pairs'][1], np.float32)
+            ratios.append(float(np.linalg.norm(upper - lower) / np.linalg.norm(corners[0] - corners[1])))
+        features = np.concatenate([original_keypoints.reshape(1, 63), np.array([[*ratios, 0]], np.float32)], axis=1)
+        with torch.inference_mode():
+            closed_eye_delta = eye_model(torch.from_numpy(features).cuda()).cpu().numpy().reshape(1, 21, 3)
+        del eye_model, eye_state
+    # Her hands stay below the face. A legacy wave mask would expose a second
+    # body-model eye through the lower-left eyelid, creating a dark double eye.
+    alpha = face_blend_mask(side, keep_greeting_hand=has_gestures and not natural)
     ffmpeg = research.parents[1] / '.research-tools/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe'
     target = WORK / ('avatar-preview.mp4' if preview else 'avatar.mp4')
     if target.exists():
         raise ValueError('Completed narrator already exists; do not overwrite')
     width, height = reg['output_size']
     body_frames, body_report = load_gestures(gesture_dir, gesture_timeline, inputs['portrait_sha256'], expected_frames)
+    if body_report and body_report['continuous'] and any(i not in body_frames for i in range(count)):
+        raise ValueError('Continuous motion must cover every rendered frame; never hold a missing body')
     body_cache = None
+    reference_body = None
     command = [str(ffmpeg), '-v', 'error', '-n', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{width}x{height}',
                '-r', '25', '-i', 'pipe:0', '-an', '-c:v', 'libx264', '-preset', 'fast', '-crf', '19',
                '-pix_fmt', 'yuv420p', '-movflags', '+faststart', str(target)]
@@ -266,10 +353,12 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None):
                             body_crop = frame[by:by + bs, bx:bx + bs]
                             body_image = cv2.resize(body_crop, (256, 256), interpolation=cv2.INTER_AREA)
                             body_tensor = torch.from_numpy(body_image.copy()).permute(2, 0, 1)[None].cuda().float() / 255
-                            body_volume = appearance(body_tensor)
+                            body_volume = volume if natural else appearance(body_tensor)
                             body_extracted = extractor(body_tensor)
                             body_source = {key: value.float().cpu().numpy() for key, value in zip(
                                 ('pitch', 'yaw', 'roll', 't', 'exp', 'scale', 'kp'), body_extracted)}
+                            if reference_body is None:
+                                reference_body = {key: value.copy() for key, value in body_source.items()}
                             body_alpha = cv2.resize(alpha, (bs, bs), interpolation=cv2.INTER_LINEAR)[..., None]
                             body_cache = (frame, body_crop, body_volume, body_source, body_alpha, bx, by, bs)
                         base, active_crop, active_volume, active_source, active_alpha, px, py, patch_side = body_cache
@@ -277,7 +366,21 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None):
                     else:
                         frame = original.copy()
                         active_crop, active_volume, active_source, active_alpha, px, py, patch_side = crop, volume, source, alpha, x, y, side
-                    source_kp, target_kp = stitch(active_source, info)
+                    if natural:
+                        anchor = dict(source)
+                        baseline = reference_body or source
+                        for key in ('pitch', 'yaw', 'roll'):
+                            anchor[key] = bin66_to_degree(source[key]) + .65 * (
+                                bin66_to_degree(active_source[key]) - bin66_to_degree(baseline[key]))
+                        anchor['t'] = source['t'] + .65 * (active_source['t'] - baseline['t'])
+                        anchor['scale'] = source['scale'] * np.clip(active_source['scale'] / baseline['scale'], .95, 1.05)
+                        anchor['exp'] = source['exp']
+                        info = restrained_expression(info, driving[0], activity[index])
+                        _, target_kp = stitch(anchor, info)
+                        target_kp = target_kp + closed_eye_delta * blink[index]
+                        source_kp, active_volume = original_keypoints, volume
+                    else:
+                        source_kp, target_kp = stitch(active_source, info)
                     warped = warper(active_volume, torch.from_numpy(source_kp).cuda(), torch.from_numpy(target_kp).cuda())
                     generated = decoder(warped)[0].float().clamp(0, 1)
                     if not torch.isfinite(generated).all():
@@ -288,7 +391,7 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None):
                         patch * active_alpha + active_crop * (1 - active_alpha), 0, 255).astype(np.uint8)
                     frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
                     encoder.stdin.write(frame.tobytes())
-                    if index in {0, 25, 50, 75, 100, 150} or index % 250 == 0:
+                    if index in {0, 25, 50, 75, 86, 90, 94, 100, 150, 190, 192, 193, 195, 200} or index % 250 == 0:
                         cv2.imwrite(str(WORK / f'frame-{index:04}.jpg'), cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
                         print('Frame', index, '/', count, flush=True)
             encoder.stdin.close()
@@ -306,6 +409,13 @@ def render(research, preview, gesture_dir=None, gesture_timeline=None):
         'gesture_duration': body_report['duration'] if body_report else 0,
         'gesture_video_sha256': body_report['video_sha256'] if body_report else None,
         'gesture_segments': body_report['segments'] if body_report else [],
+        'continuous_body': bool(body_report and body_report['continuous']),
+        'body_join_method': body_report.get('join_method') if body_report else None,
+        'body_tempo_ratio': body_report.get('body_tempo_ratio', 1) if body_report else 1,
+        'face_style': face_style, 'stable_reference_appearance': natural,
+        'motion_cache_reused': motion_cache_reused,
+        'lip_gain': .72 if natural else 1, 'silence_mouth_gate': natural,
+        'eye_control': 'pinned LivePortrait eye retargeter with authored blink timing' if natural else 'legacy',
         'scope': 'offline synthetic narrator; Korean lip motion requires human review'})
 
 
@@ -315,6 +425,8 @@ def main():
     parser.add_argument('stage', choices=['prepare', 'render'])
     parser.add_argument('--research-root', type=Path, required=True)
     parser.add_argument('--preview', action='store_true')
+    parser.add_argument('--preview-seconds', type=float, default=15)
+    parser.add_argument('--face-style', choices=['natural', 'legacy'], default='natural')
     parser.add_argument('--work-dir', type=Path, default=WORK)
     parser.add_argument('--tutor', choices=['alex', 'zoe', 'bid3-guide'], default='alex')
     parser.add_argument('--narration-dir', type=Path, default=ROOT / '.local/product-demo/narration')
@@ -329,7 +441,7 @@ def main():
     if args.stage == 'prepare':
         prepare(research, args.tutor, args.narration_dir.resolve(strict=True), args.source_config)
     else:
-        render(research, args.preview, args.gesture_dir, args.gesture_timeline)
+        render(research, args.preview, args.gesture_dir, args.gesture_timeline, args.face_style, args.preview_seconds)
 
 
 if __name__ == '__main__':

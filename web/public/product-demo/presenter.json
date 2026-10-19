@@ -1,9 +1,10 @@
 {
-  "version": "a39231fa58e6",
+  "version": "4db65842749d",
   "storyboard_version": "20261015-1",
   "character": "BID3 standing presenter",
   "video": "/product-demo/intro-with-guide.mp4",
   "poster": "/product-demo/poster-with-guide.webp",
+  "poster_sha256": "8d9112d5cdbf2db80c547a1acd5b04c1a1c68c498326a7416ce4cb79440a44ed",
   "screen_video": "/product-demo/intro-screen.mp4",
   "screen_video_sha256": "82c8762cc1297d9aa1d64d5a9cd5312d1a51049a431b6d878e6052a7c60646f9",
   "captions": "/product-demo/captions-with-guide.ko.vtt",
@@ -12,11 +13,12 @@
   "screen_captions_sha256": "1a68cbe32ece3bdd091482bc6cf4daf24c00143f59f13af840d7855ca35822c0",
   "width": 2640,
   "height": 1080,
+  "fps": 25,
   "duration": 90.0,
   "main_video_sha256": "459d43d0d5b524f9aac66b81d1dc009bb7da923186de98382de6eff4c3a0945f",
   "storyboard_sha256": "275f60f95f4a805e70cda84c99420bb601303950cd9511f7a7c031f212448406",
-  "avatar_sha256": "9e5d31c6a59e2c0f4a2ae4ea72b82d3464f971b385dca6a89f0aaf356f40ab49",
-  "video_sha256": "5618e98bad9a921114d20143cbc615fda3e5fccd9dc118cb556102a4a9c26041",
+  "avatar_sha256": "d94cb971b0b42b1a99a66967453873b7541b0a3034f57a43eb433300f9235c6e",
+  "video_sha256": "710ac9423cddbeb29b35005dc574258955e0084fa91ec06dccc2b58d95e9dfff",
   "portrait_sha256": "1186740a8d6121b71d655c1eac5cf39af2dafdaa9991eaee72375fdf345849f4",
   "narration": "Supertonic2 local CPU F2",
   "single_audio_track": true,
@@ -95,44 +97,27 @@
     ]
   },
   "cloud_inference_calls": 0,
-  "gesture_duration": 38.6,
+  "gesture_duration": 90.0,
   "gesture_segments": [
     {
       "start_seconds": 0,
-      "duration": 7.72,
-      "clip": "gesture-open",
-      "video_sha256": "64b7098d68015e7a11ca610f11e75a53d8519a53a9c3f6cbcbab6b1921513304"
-    },
-    {
-      "start_seconds": 16,
-      "duration": 7.72,
-      "clip": "gesture-screen",
-      "video_sha256": "2b37d87b5539fe3aa8ee89a52c38d7ddeff6fe48beec377dfa66e7bfab7c0449"
-    },
-    {
-      "start_seconds": 35,
-      "duration": 7.72,
-      "clip": "gesture-open",
-      "video_sha256": "64b7098d68015e7a11ca610f11e75a53d8519a53a9c3f6cbcbab6b1921513304"
-    },
-    {
-      "start_seconds": 56,
-      "duration": 7.72,
-      "clip": "gesture-screen",
-      "video_sha256": "2b37d87b5539fe3aa8ee89a52c38d7ddeff6fe48beec377dfa66e7bfab7c0449"
-    },
-    {
-      "start_seconds": 76,
-      "duration": 7.72,
-      "clip": "gesture-open",
-      "video_sha256": "64b7098d68015e7a11ca610f11e75a53d8519a53a9c3f6cbcbab6b1921513304"
+      "duration": 90.0,
+      "clip": "body-smooth-v3",
+      "video_sha256": "94d5f09780c86673a3143a98902a2d969c0a66d9a93936084ad680f7b97513cb"
     }
   ],
+  "continuous_body": true,
+  "body_join_method": "DIS optical-flow17-frame overlaps with occlusion guard",
+  "body_tempo_ratio": 0.9093333333333333,
+  "face_style": "natural",
+  "stable_reference_appearance": true,
+  "lip_gain": 0.72,
+  "silence_mouth_gate": true,
+  "eye_control": "pinned LivePortrait eye retargeter with authored blink timing",
   "source_image_generation": "built-in image_gen: synthetic standing presenter edited from user-supplied face reference; no Speak character",
   "limitations": [
-    "Offline generated face motion; scheduled explanatory gestures, resting between segments",
+    "Offline chained body generation with17-frame continuation; not a live avatar",
     "Korean articulation and naturalness require human review",
     "Reference-based synthetic presenter; not footage or speech of the reference person"
-  ],
-  "poster_sha256": "e164e783279e01b094ab0e90f547377b86087add899913f10403aff68a17126d"
+  ]
 }

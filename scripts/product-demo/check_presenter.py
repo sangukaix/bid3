@@ -34,6 +34,11 @@ def main():
     assert manifest['storyboard_sha256'] == digest(story_file), 'Recompose after changing the storyboard'
     assert manifest['video_sha256'] == digest(video)
     assert manifest['duration'] == sum(s['duration'] for s in story['scenes'])
+    if manifest.get('continuous_body'):
+        render = json.loads((args.work_dir / 'render.json').read_text('utf-8'))
+        assert render['continuous_body'] and render['frames'] == manifest['duration'] * 25
+        assert render['gesture_duration'] == manifest['duration'], 'No held body gaps in a continuous version'
+        assert render['stable_reference_appearance'] and render['silence_mouth_gate']
     assert manifest['storyboard_version'] == story['version']
     if 'captions' in manifest:
         captions = PUBLIC / Path(manifest['captions']).name
@@ -51,7 +56,7 @@ def main():
     assert not decoded.stderr.strip(), decoded.stderr
     assert 'progress=end' in decoded.stdout
     frames = int(re.findall(r'^frame=(\d+)', decoded.stdout, re.MULTILINE)[-1])
-    assert frames == manifest['duration'] * 24, frames
+    assert frames == manifest['duration'] * manifest.get('fps', 24), frames
     audio_hashes = []
     screen = PUBLIC / Path(manifest.get('screen_video', 'intro.mp4')).name
     if 'screen_video_sha256' in manifest:
@@ -73,7 +78,8 @@ def main():
     assert digest(PUBLIC / 'poster-with-guide.webp') == manifest['poster_sha256']
     result = {'frames_decoded': frames, 'duration': manifest['duration'], 'single_audio_track': True,
               'screen_decoded_audio_sha256': audio_hashes[0], 'composite_decoded_audio_sha256': audio_hashes[1],
-              'main_video_preserved': True, 'fast_start': True, 'source_and_storyboard_match': True}
+              'main_video_preserved': True, 'fast_start': True, 'source_and_storyboard_match': True,
+              'continuous_body': manifest.get('continuous_body', False), 'face_style': manifest.get('face_style', 'legacy')}
     args.work_dir.mkdir(parents=True, exist_ok=True)
     (args.work_dir / 'verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
     print('PASS:', frames, 'frames; identical screen/composite narration; source hashes; single audio; fast-start.')

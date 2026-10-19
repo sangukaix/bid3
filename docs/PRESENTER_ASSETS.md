@@ -1,5 +1,116 @@
 # 서 있는 안내 아바타 제작 자료 — 2026-10-19
 
+## 연속 동작·자연스러운 얼굴 보정 — 2026-10-19 후속
+
+사용자가 지적한 몸 동작 정지와 얼굴/입의 부자연스러움을 별도로 수정한다.
+이 절은 최신 변경이고, 아래의 다섯 손짓/고정 자세 기록은 f77d566 이전 출력의 기록이다.
+
+- 기존 몸: 두7.72초 손짓을 다섯 번 배치하고 나머지51.4초는 마지막 몸 프레임 유지.
+  새 몸: 앞 구간의 마지막17프레임을 다음 LTX 생성의 영상 조건으로 전달한다.
+  중첩17프레임을 제외하고 새 프레임만 연결하며, 영상 전체를 채우기 전에는
+  연속 동작 출력으로 합성할 수 없다. 동일 클립 반복이나 정지 프레임 삽입은 하지 않는다.
+- 긴 출력의 원시 연결부 검사에서 후반 세 곳에 자세/선명도 점프가 발견됐다.
+  `stitch_body.py`는 겹치는17프레임에서 앞 영상과 재구성된 영상의 optical flow를
+  맞춘 뒤 smoothstep으로 연결한다. 원시 생성물은 그대로 보존한다. 순수한 한 번의
+  모델 생성이90초 내내 완벽히 연속이라는 뜻으로 설명하지 않는다.
+  겹친 뒤2046프레임의 몸 동작만2250프레임으로 모션 보간해 약0.9093배의 차분한
+  속도로 맞춘다. 음성·발화 시계는90초 그대로이고, 프레임 유지/손짓 루프를 쓰지 않는다.
+  최종2250프레임은 원시 생성과 모션 보간을 포함하며 모두 순수 모델 출력이라고
+  설명하지 않는다. 부드러운 연결이 손가락/얼굴의 완전한 자연스러움을 뜻하지 않는다.
+  단순 모션 합성에서 일부 손이 반투명하게 겹쳐 보여 그 후보는 채택하지 않았다.
+  최종 연결은 두 워프 영상의 차이가 큰 가림/손가락 영역에서 하나의 관측을 선택해
+  이중 노출을 줄인다. 원시 몸/실패한 두 연결 후보/채택한 연결 후보를 각각 보존한다.
+- 기존 얼굴: 매 몸 프레임에서 외형 특징을 다시 추출해 외형 변화와 흐림이 전파됐다.
+  새 얼굴: 등록 원본의 appearance/기준 keypoints를 재사용하고 몸의 작은 자세 변화만
+  상대적으로 반영한다. 원본 전체 얼굴을 매 프레임 다시 생성하는 방식과 구분한다.
+- 입: 캐시된 음성 기반 움직임을 유지하면서 입 keypoint 변화에0.72 gain을 적용한다.
+  실제 음성 WAV의 RMS로 무음 구간의 입 움직임을 줄이고, 조용한 자음 주변120ms는
+  보호한다. 말 내용·음성 속도·원래 WAV는 바꾸지 않는다.
+- 눈: 첫 후보의 오디오 기반 눈 제어는 과하게 눈을 떠 채택하지 않았다. 이후 몸의
+  눈 변형을 섞는 후보에서도 눈 밑 번짐이 보여 원인을 조사했다. 현재는 기존 로컬
+  LivePortrait 눈 전용 retargeter와 명시한 불규칙 blink clock을 사용하고, 고개는
+  첫 몸 프레임을 기준으로 한 상대 변화로 처리한다. 깜빡임 시점은 학습한 대화 반응이
+  아닌 제작자가 정한 애니메이션이다.2.4MB 기존 모델을 재사용하며 새 다운로드는 없다.
+- 눈 밑 번짐의 주 원인은 예전 손 인사 영상의 lower-left 제외 마스크가 새 구도의
+  왼쪽 눈 아래까지 적용된 것이었다. `face_blend_mask`는 새 구도에서 두 눈 주변을
+  기준 얼굴100%로 유지한다. 손 인사 전용 마스크는 legacy 모드에서만 사용한다.
+- 합성: 아바타의25fps를 유지하고 원래24fps 시연 화면만25fps로 맞춘다.
+  화면 전용/아바타 영상은 동일 음성 트랙과 자막 시계를 유지한다.
+- 효율: 이전 음성 특징10개와2250프레임 발화 motion 캐시를 검증해 재사용한다.
+  연속 몸 제작은 같은 프로세스에서 동일 검증 모델·정확히 같은 프롬프트의 runtime을
+  재사용한다. 다른 작업의 모델을 비우지 않으며 각 구간 전에 물리 VRAM 여유를 확인한다.
+
+수정 파일: `scripts/product-demo/continuous_body.py`, `gesture.py`,
+`stitch_body.py`, `presenter.py`, `compose_presenter.py`, `check_presenter.py`.
+핵심 함수는 `load_gestures`, `speech_activity`, `restrained_expression`,
+`render`다. 등록 인물·이미지·한국어 F2 음성은 기존과 같다.
+몸의 새 프레임과 입 움직임은 기존 로컬 모델로 만들었고 새로운 이미지 생성이나
+프로젝트 OpenAI API 호출을 하지 않는다.
+
+비공개 작업 폴더:
+`.local/product-demo/presenter-natural-20261019/body`에 연속 몸과 구간별 생성 조건,
+`presenter-natural-v4-20261019`에 최종 얼굴 보정 출력을 둔다.
+현재 연결 후보의 출력 폴더는 `presenter-natural-20261019/body-smooth-v3`다.
+첫 과장된 눈 후보는 `presenter-natural-20261019/avatar-preview.mp4`에 보존한다.
+그 후보를 현재 품질 개선의 근거로 사용하지 않는다.
+눈 retargeter 모델 SHA256:
+`3652d5a3f95099141a56986aaddec92fadf0a73c87a20fac9a2c07c32b28b611`,
+LivePortrait 소스 revision `9b294b3d0536135442ea73cb01e6cb3ca7029dd3`.
+관련 구현은[공식 eye retargeter](https://github.com/KlingAIResearch/LivePortrait/blob/9b294b3d0536135442ea73cb01e6cb3ca7029dd3/src/live_portrait_wrapper.py)를 확인했다.
+
+14.72초 수정 후보와 이전 버전을 같은 음성으로 일반 브라우저에서 재생했다.
+약12.7초의 이전 몸은 손을 모으고 있고 수정 후보는 손이 움직이는 것을 확인했다.
+양쪽 모두 끝까지 디코딩됐고 media error는 없었다. 눈 과장 후보는 이 비교 전에
+제외했다. `review/browser-pilot.json`, `face-comparison-v2.jpg`에 비교 자료를 보존한다.
+프레임 차이/디코딩 성공은 정지 프레임 삽입 여부와 실행 검증이며, 한국어 음소 정합성
+또는 자연스러움 전체를 보장하는 점수가 아니다.
+
+다시 제작할 때는 먼저 두 구간으로 짧게 검수하고 같은 작업 폴더에서 이어간다.
+
+```powershell
+& $bodyPython -I scripts/product-demo/continuous_body.py --research-root $research --body-python $bodyPython --output "$work/body" --in-process --max-new-chunks 2
+# 구간 원본/손 모양/연속성을 검수한 뒤 같은 명령에서 max-new-chunks 제한을 제거한다.
+& $bodyPython -I scripts/product-demo/continuous_body.py --research-root $research --body-python $bodyPython --output "$work/body" --in-process
+& $bodyPython -I scripts/product-demo/stitch_body.py --source "$work/body" --output "$work/body-smooth"
+# 전체 프레임의 시각 검수와 acceptance.json을 기록한 후 생성한다.
+& $avatarPython -I scripts/product-demo/presenter.py render --research-root $research --work-dir $faceWork --gesture-dir "$work/body-smooth" --face-style natural
+```
+
+## 최종 출력 검증 — 2026-10-19
+
+선택 출력: `presenter-natural-v4-20261019/avatar.mp4`와
+`presenter-natural-20261019/body-smooth-v3`다. 공개 버전은 `4db65842749d`,
+2640×1080/25fps/90초, MP4는22,945,540bytes다.
+전체2250프레임 디코딩, 소스·포스터·자막 해시, fast-start, 음성 트랙1개와
+화면 전용/아바타 출력의 디코딩 오디오 SHA 일치를 확인했다.
+원래 `intro.mp4` 해시는 그대로다. 기존 음성과 시연 내용은 유지했다.
+
+최종 몸2250프레임의 해시는 모두 다르고 인접 몸 영역이 완전히 같은 프레임은0개다.
+이는 정확한 정지/복제 프레임이 없다는 검증이며 자연스러움 점수가 아니다.
+원시 몸13구간의 샘플, 최종 몸12개 시점, 손 겹침 수정 비교, 얼굴6개 시점과
+첫 blink의 전/중/후를 확인했다. 원시 연결에서 큰 점프가 보였던 세 구간의
+진단 차이는24.47/31.24/48.52에서 보정 후3.80/4.73/11.87로 줄었다.
+값은 지정한 몸 ROI의0~255 RGB 절대차 평균이며, 실제 자연스러움/음소 정합성
+또는 사람 대상 평가 지표가 아니다.
+
+CPU 단위 검증은 얼굴/시계/캐시/배치10개와 모션 연결4개를 통과했다.
+새 마스크는 두 눈 주변이 기준 얼굴100%가 되는 회귀 검증을 포함한다.
+production build(TypeScript 포함)를 통과했다. 실제 공개 HTTPS에서0초 시작,
+45.69초 재생 상태,90초 ended=true/mediaError=null을 확인해 일반 재생이 끝까지
+진행됨을 확인했다.65초 구간 이동 후 일시정지 양방향 아바타 전환 위치 차이는0초였다.
+초기 자동재생 안 함/preload=none, 자막 readyState2,609px 화면의 가로 넘침 없음,
+동영상 range206, 공개 포스터 해시 일치와 비로그인 회사 API401을 확인했다.
+사용자 음성/입의 정확한 음소 일치와 주관적인 실사 자연스러움 전체를 보증하지 않는다.
+
+검수 자료는 최종 얼굴 작업 폴더의 `verification.json`, `http-verification.json`,
+`browser-verification.json`, `browser-preview.png`, `final-face-contact.jpg`와
+몸 작업 폴더의 `body-audit.json`, `final-body-contact.jpg`에 있다.
+새 인물 원본 이미지 제작/음성 재합성/음성 특징 재분석/발화 motion 재예측은 하지 않았고,
+기존 입력·특징·motion 캐시를 검증해 재사용했다. 최종 얼굴 출력은 motion cache
+재사용을 실제 실행 기록으로 남긴다. 기존 모델·다른 프로젝트·공개 터널 주소는 보존했다.
+
+## 이전 서 있는 버전의 제작 기록
+
 최신 요청: 사용자가 첨부한 얼굴을 참고해 기상캐스터처럼 서서 배꼽 부근까지 보이며
 손으로 설명한다. 한국어 여성 합성 음성과 문구 없는 실내 배경을 유지한다.
 이 버전은 첨부 얼굴을 참고한 합성 장면이다. 조이 또는 앞서 만든 앉은 인물을

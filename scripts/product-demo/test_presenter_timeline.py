@@ -3,8 +3,11 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import wave
 
-from presenter import digest, load_gestures
+import numpy as np
+
+from presenter import blink_envelope, digest, face_blend_mask, load_gestures, restrained_expression, speech_activity
 
 
 class GestureTimelineTests(unittest.TestCase):
@@ -42,6 +45,19 @@ class GestureTimelineTests(unittest.TestCase):
         frames, _ = load_gestures(self.clip, None, 'neutral', 50)
         self.assertEqual(list(frames), [0, 1])
 
+    def test_continuous_reviewed_body_can_cover_more_than_a_short_gesture(self):
+        paths = [self.clip / f'frame-{i:03}.png' for i in range(300)]
+        for i, path in enumerate(paths):
+            path.write_bytes(str(i).encode())
+        report = json.loads((self.clip / 'report.json').read_text('utf-8'))
+        report.update(frames=300, continuous=True)
+        self.write(self.clip / 'report.json', report)
+        self.acceptance['frame_sha256'] = [digest(path) for path in paths]
+        self.write(self.clip / 'acceptance.json', self.acceptance)
+        frames, result = load_gestures(self.clip, None, 'neutral', 300)
+        self.assertEqual(list(frames), list(range(300)))
+        self.assertTrue(result['continuous'])
+
     def test_overlap_out_of_range_and_subframe_starts_are_rejected(self):
         for starts in ([0, 0.04], [1.96], [-1], [0.01]):
             with self.subTest(starts=starts), self.assertRaises(ValueError):
@@ -64,6 +80,47 @@ class GestureTimelineTests(unittest.TestCase):
         (self.clip / 'frame-001.png').write_bytes(b'changed-after-review')
         with self.assertRaisesRegex(ValueError, 'changed'):
             load_gestures(None, self.timeline([0]), 'neutral', 50)
+
+    def test_restrained_lips_preserve_eyes_and_cached_motion(self):
+        first = {'exp': np.full((1, 63), .1, np.float32)}
+        speech = {'exp': np.full((1, 63), .3, np.float32)}
+        original = speech['exp'].copy()
+        quiet = restrained_expression(speech, first, 0)['exp'].reshape(21, 3)
+        speaking = restrained_expression(speech, first, 1)['exp'].reshape(21, 3)
+        np.testing.assert_allclose(quiet[6], .1)
+        self.assertTrue(np.all(speaking[6] > quiet[6]))
+        self.assertTrue(np.all(speaking[6] < .3))
+        np.testing.assert_allclose(speaking[11], .3)
+        np.testing.assert_array_equal(speech['exp'], original)
+
+    def test_blink_clock_is_bounded_float32_for_the_renderer(self):
+        value = blink_envelope(170)
+        self.assertEqual(value.dtype, np.float32)
+        self.assertTrue(np.all((value >= 0) & (value <= 1)))
+        self.assertTrue(np.all(value[:80] == 0))
+        self.assertEqual(value[90], 1)
+
+    def test_waist_up_mask_does_not_expose_a_second_eye_below_the_lid(self):
+        mask = face_blend_mask(540)
+        self.assertEqual(mask.shape, (540, 540, 1))
+        for x, y in [(204, 282), (200, 310), (316, 300)]:
+            self.assertEqual(mask[y, x, 0], 1)
+        self.assertTrue(np.all((mask >= 0) & (mask <= 1)))
+
+    def test_long_silence_closes_mouth_without_clipping_voice(self):
+        rate = 16000
+        samples = np.zeros(rate * 3, np.float32)
+        samples[rate // 2:rate] = .05 * np.sin(np.arange(rate // 2) * 2 * np.pi * 220 / rate)
+        with wave.open(str(self.root / 'test.wav'), 'wb') as audio:
+            audio.setnchannels(1)
+            audio.setsampwidth(2)
+            audio.setframerate(rate)
+            audio.writeframes((samples * 32767).astype('<i2').tobytes())
+        activity = speech_activity({'narration_dir': str(self.root), 'scenes': [{'id': 'test', 'duration': 4}]})
+        self.assertEqual(len(activity), 100)
+        self.assertTrue(np.all(activity[:15] == 0))
+        self.assertTrue(np.all(activity[25:33] == 1))
+        self.assertTrue(np.all(activity[50:] == 0))
 
 
 if __name__ == '__main__':
