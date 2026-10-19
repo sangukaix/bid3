@@ -31,7 +31,8 @@ export default function ProductDemo() {
   const guideAvailable = presenter.main_video_sha256 === demoBuild.sha256
     && presenter.storyboard_version === storyboard.version && presenter.duration === duration;
   const withGuide = guideAvailable && showGuide && !guideFailed;
-  const source = withGuide ? `${presenter.video}?v=${presenter.version}` : `${storyboard.video}?v=${storyboard.version}`;
+  const screenSource = guideAvailable ? `${presenter.screen_video}?v=${presenter.version}` : `${storyboard.video}?v=${storyboard.version}`;
+  const source = withGuide ? `${presenter.video}?v=${presenter.version}` : screenSource;
 
   useEffect(() => {
     if (resumeAfterLoad.current && video.current) {
@@ -87,7 +88,7 @@ export default function ProductDemo() {
               {guideAvailable && !guideFailed && <button type="button" aria-pressed={withGuide}
                 onClick={() => changeGuide(!withGuide)}
                 className="rounded-full border border-[#8ee0c7]/30 px-3 py-1.5 text-[#b8f0df] hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8ee0c7]">
-                {withGuide ? "Alex 안내 켜짐" : "Alex 안내 꺼짐"}
+                {withGuide ? "아바타 안내 켜짐" : "아바타 안내 꺼짐"}
               </button>}
               <span className="text-slate-400">{time(duration)} <span className="ml-2 hidden sm:inline">한국어 안내 · 자막</span></span>
             </div>
@@ -118,7 +119,7 @@ export default function ProductDemo() {
                 else setError(true);
               }}
             >
-              <track kind="captions" src={`${storyboard.captions}?v=${storyboard.version}`} srcLang="ko" label="한국어" default />
+              <track kind="captions" src={guideAvailable ? `${withGuide ? presenter.captions : presenter.screen_captions}?v=${presenter.version}` : `${storyboard.captions}?v=${storyboard.version}`} srcLang="ko" label="한국어" default />
               소개 영상을 재생할 수 없습니다. 아래 글로 된 소개를 확인하거나 영상을 다운로드하세요.
             </video>
           </div>

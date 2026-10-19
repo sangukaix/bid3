@@ -1,0 +1,5 @@
+# Offline authoring only, in .local/product-demo/tts-venv; never add to web/API.
+supertonic==1.3.1
+# narrate_local.py explicitly downloads and hashes Supertone/supertonic-2,
+# revision 75e6727618a02f323c720cba9478152d4bc16ca4 (~264MB ONNX + F2 style).
+# Model license OpenRAIL-M; package/sample code MIT. No voice clone or API key.

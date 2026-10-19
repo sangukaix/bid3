@@ -206,12 +206,13 @@ def vtt_time(seconds):
     return f'{milliseconds // 3600000:02d}:{milliseconds // 60000 % 60:02d}:{milliseconds // 1000 % 60:02d}.{milliseconds % 1000:03d}'
 
 
-def caption_text(story):
+def caption_text(story, narration_folder=None):
+    narration_folder = narration_folder or ROOT / '.local/product-demo/narration'
     cues = ['WEBVTT', '']
     offset, number = 0, 0
     for scene in story['scenes']:
         sentences = [part.strip() + '.' for part in scene['narration'].rstrip('.').split('. ') if part.strip()]
-        wav = ROOT / '.local/product-demo/narration' / (scene['id'] + '.wav')
+        wav = narration_folder / (scene['id'] + '.wav')
         span = scene['duration'] - .85
         if wav.is_file():
             with wave.open(str(wav)) as audio:

@@ -1,22 +1,104 @@
 {
-  "version": "da8974963950",
+  "version": "5d5c5759883b",
   "storyboard_version": "20261015-1",
-  "character": "Alex",
+  "character": "Zoe",
   "video": "/product-demo/intro-with-guide.mp4",
   "poster": "/product-demo/poster-with-guide.webp",
+  "screen_video": "/product-demo/intro-screen.mp4",
+  "screen_video_sha256": "82c8762cc1297d9aa1d64d5a9cd5312d1a51049a431b6d878e6052a7c60646f9",
+  "captions": "/product-demo/captions-with-guide.ko.vtt",
+  "captions_sha256": "7c6fb1c7eb4b717c343e1df015728426ad106711cd6c541508da81f6e47cdd6f",
+  "screen_captions": "/product-demo/captions-screen.ko.vtt",
+  "screen_captions_sha256": "1a68cbe32ece3bdd091482bc6cf4daf24c00143f59f13af840d7855ca35822c0",
   "width": 2560,
   "height": 1080,
   "duration": 90.0,
   "main_video_sha256": "459d43d0d5b524f9aac66b81d1dc009bb7da923186de98382de6eff4c3a0945f",
   "storyboard_sha256": "275f60f95f4a805e70cda84c99420bb601303950cd9511f7a7c031f212448406",
-  "avatar_sha256": "04bdd42c5b8c856380a0a6fd009bf256dcd7a0274834fd13adcbba41a03f84f6",
-  "video_sha256": "da8974963950abf1833080af9dc93c215902b92816a71f367cf8ca6786440846",
-  "portrait_sha256": "5871c37dd97ce0023f7e18fadc83693f0316512ee5181632d8ea5835005f1651",
-  "narration": "existing BID3 Korean Windows narration",
-  "single_original_audio": true,
-  "cloud_calls": 0,
+  "avatar_sha256": "86ffb7b12071fd71bfed10684e611d91563ae4a1d817d4b28090f244b01e673a",
+  "video_sha256": "cdfc45c9d8d46054bea9d42a2975b1e28de5b0b8f46d83c81aea87dbe8832bcb",
+  "portrait_sha256": "b700c59cd3d317274ad5186039841ccc128269fc6b1a46a9ea3604b8e72b467c",
+  "narration": "Supertonic2 local CPU F2",
+  "single_audio_track": true,
+  "voice": {
+    "engine": "Supertonic2 local CPU",
+    "voice": "F2",
+    "language": "ko",
+    "model_repository": "Supertone/supertonic-2",
+    "model_revision": "75e6727618a02f323c720cba9478152d4bc16ca4",
+    "package": "supertonic==1.3.1",
+    "cloud_inference": false,
+    "openai_calls": 0,
+    "speed": 1.13,
+    "steps": 12,
+    "scenes": [
+      {
+        "id": "intro",
+        "sha256": "8b088fccc39154d6f978e5e9347ee42b4915a443be30cc0ca0253d9293f51f9a",
+        "duration": 4.712108843537415,
+        "synthesis_seconds": 0.6463124000001699
+      },
+      {
+        "id": "search",
+        "sha256": "f3abdf1045282edea718b9538f93a87f01e5bde82670b32bc92937d1e549eaf8",
+        "duration": 7.591655328798186,
+        "synthesis_seconds": 0.831314200000179
+      },
+      {
+        "id": "plan",
+        "sha256": "fac0747d917038f563be15644caf233bbb9dba418cd4e03a43e798d03eca0c26",
+        "duration": 8.901927437641723,
+        "synthesis_seconds": 0.9870859000002383
+      },
+      {
+        "id": "templates",
+        "sha256": "a3c8cfc6baeea615e668892ab0d61bbec5fcf5a6132d6e2dc79765ffc6944f66",
+        "duration": 7.2338775510204085,
+        "synthesis_seconds": 0.7849624000000404
+      },
+      {
+        "id": "review",
+        "sha256": "e8beae8b1752d36052b9f727d0b5ace8892619833b83d70499e6ca63fcb7e52f",
+        "duration": 9.069478458049886,
+        "synthesis_seconds": 0.9001638999998249
+      },
+      {
+        "id": "studio",
+        "sha256": "567c964cab33aa9fe357f6dcbfcd679b684dc3c2e53ef69390746d6ab0f5cac0",
+        "duration": 8.806961451247165,
+        "synthesis_seconds": 0.8995317999997496
+      },
+      {
+        "id": "references",
+        "sha256": "cca82a128a15d0b122da526021b394f25e3c091e5d8b5ad101e8beded454d34a",
+        "duration": 8.024671201814058,
+        "synthesis_seconds": 0.7968318999996882
+      },
+      {
+        "id": "chat",
+        "sha256": "d8e39c785de1a8d3b0ac8b301d8cf652a2c10046909b67294854441a0865991b",
+        "duration": 9.71281179138322,
+        "synthesis_seconds": 0.9419914000000063
+      },
+      {
+        "id": "export",
+        "sha256": "f1a66c07814e55e0ee30cdf71f1bc8169e3fce5b562ae8d3f36fbb25d9af5963",
+        "duration": 6.53421768707483,
+        "synthesis_seconds": 0.7383056000003307
+      },
+      {
+        "id": "outro",
+        "sha256": "65c0ac95b9aaa8125e6915061501032ea6ce89d44187d880b671f6a781b67a27",
+        "duration": 3.9757596371882085,
+        "synthesis_seconds": 0.5402616999999736
+      }
+    ]
+  },
+  "cloud_inference_calls": 0,
+  "gesture_duration": 7.72,
+  "source_image_generation": "built-in image_gen; original fictional Zoe identity reference",
   "limitations": [
-    "Offline generated face motion; static shoulders; no hand gestures",
+    "Offline generated face motion; one bounded greeting gesture, then resting posture",
     "Korean articulation and naturalness require human review",
     "Original fictional character; model chain not commercially cleared by this demo"
   ]
