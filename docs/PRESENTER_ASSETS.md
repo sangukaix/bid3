@@ -1,5 +1,35 @@
 # 서 있는 안내 아바타 제작 자료 — 2026-10-19
 
+## 선택4 · 밝은 오피스 배경 — 2026-10-19 최신
+
+사용자가 네 후보 중4번을 선택해 밝은 오피스 배경을 적용한다.
+흐린 유리 파티션·밝은 벽·작은 식물로 구성한 차분한 배경이며 뉴스 스튜디오의
+야경과 조명 장식은 현재 배경에서 사용하지 않는다. 기존 뉴스 배경 원본과 영상은 보존한다.
+
+- 선택 원본: `web/public/product-demo/presenter/bright-office.png` (1024×1536).
+  SHA256: `1ddeadea1a02e1ad299dc626d1bd4a5caac471b2f67030e27aacef603e686f62`.
+  이전에 built-in `image_gen`으로 생성한4번 후보를 그대로 복사한다. 새 이미지 생성
+  호출은 없으며 원래 생성 프롬프트는 [presenter-bright-office-prompt.txt](presenter-bright-office-prompt.txt)에 둔다.
+- 입력 인물: `presenter-steady-20261019/avatar.mp4`의 검증된 고정 구도/작은 손짓을
+  그대로 사용한다. 얼굴 모델·몸 동작·발화 캐시·음성을 재생성하지 않는다.
+  기존 RVM CPU 합성으로 배경만 변경하며 새 모델 다운로드나 다른 작업의 GPU 정리는 없다.
+- 작업 폴더: `.local/product-demo/presenter-bright-office-20261019`.
+  `render.json.background`에 선택 배경판·원래 인물·RVM 모델의 SHA와 합성 조건을 보존한다.
+  이전 공개 영상/포스터/manifest는 해당 폴더의 `previous-public/`에 별도로 보존한다.
+
+최종 버전 `1e48cb65b714`: 2640×1080/25fps/90초,16,021,893 bytes.
+전체2250프레임 디코딩, 단일 음성, 화면 전용/합성본 디코딩 음성 SHA 일치와
+배경판/포스터/자막/시연 해시,fast-start 검사를 통과했다. 이전 공개 manifest와 비교해
+인물 원본 SHA·얼굴/몸 설정·음성·화면 전용 영상·자막이 같은 것을 확인했다.
+production build(TypeScript 포함), 실제 HTTPS 영상 range206과 포스터 SHA 일치를 확인했다.
+개별 검증 기록은 새 작업 폴더의 `verification.json`, `background-only-verification.json`,
+`http-verification.json`에 둔다.
+실제 웹에서0..41초 및65초 구간 이동 후90초 종료를 확인했고 media error는 없었다.
+자막 readyState2, 일시정지/구간 이동과775px 화면의 가로 넘침 없음을 확인했다.
+`browser-preview.png`, `browser-verification.json`에 실제 적용 화면과 확인 범위를 보존한다.
+
+아래 고정 구도와 얼굴 안정화 기록은 그대로 유효하고, 뉴스 배경 적용 기록은 이전 버전이다.
+
 ## 고정 구도·차분한 손짓 — 2026-10-19 최신 후속
 
 사용자가 지적한 얼굴 크기 변화와 과한 좌우 흔들림을 재검토했다. 기존 뉴스 배경

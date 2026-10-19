@@ -110,7 +110,7 @@ def main():
     background_report = {
         'plate': args.background.resolve().relative_to(ROOT).as_posix(),
         'plate_sha256': digest(args.background),
-        'origin': 'Built-in image_gen generated empty newsroom studio; no reference person in plate',
+        'origin': 'Built-in image_gen generated selected empty background plate; no reference person in plate',
         'method': 'RVM MobileNetv3 recurrent video matting; CPU; opaque source pixels retained',
         'model_repository': 'https://github.com/PeterL1n/RobustVideoMatting',
         'model_release': 'v1.0.0', 'model_license': 'GPL-3.0',
