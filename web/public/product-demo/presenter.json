@@ -1,10 +1,10 @@
 {
-  "version": "1e48cb65b714",
+  "version": "d094eb6ac453",
   "storyboard_version": "20261015-1",
   "character": "BID3 standing presenter",
   "video": "/product-demo/intro-with-guide.mp4",
   "poster": "/product-demo/poster-with-guide.webp",
-  "poster_sha256": "ffe19fce2b9acb1fd504da6d8049e32366f789e812b6e485d7776e82d3082cf2",
+  "poster_sha256": "9e18b93135769a0b91ea587e1f45ba542093ee42e16db81cba72685854115f78",
   "screen_video": "/product-demo/intro-screen.mp4",
   "screen_video_sha256": "82c8762cc1297d9aa1d64d5a9cd5312d1a51049a431b6d878e6052a7c60646f9",
   "captions": "/product-demo/captions-with-guide.ko.vtt",
@@ -17,8 +17,8 @@
   "duration": 90.0,
   "main_video_sha256": "459d43d0d5b524f9aac66b81d1dc009bb7da923186de98382de6eff4c3a0945f",
   "storyboard_sha256": "275f60f95f4a805e70cda84c99420bb601303950cd9511f7a7c031f212448406",
-  "avatar_sha256": "35d588bde484647123d399a39b771628b808bc4e1965bf8f258c7953deb97519",
-  "video_sha256": "48b452c0d6e083f9324fc6a7d7fc6c660661a4d247ba9fd81c38002180faf29b",
+  "avatar_sha256": "817223aa2af51cd4828ed59649b5d180d0c859f0ea274f2238984df325ee5753",
+  "video_sha256": "8b32d9d870113b867e827ae4d03066421bc132bea6deef6e6b9d78cdcc27dbbb",
   "portrait_sha256": "1186740a8d6121b71d655c1eac5cf39af2dafdaa9991eaee72375fdf345849f4",
   "narration": "Supertonic2 local CPU F2",
   "single_audio_track": true,
@@ -103,14 +103,22 @@
     {
       "start_seconds": 0,
       "duration": 90.0,
-      "clip": "body-calm",
-      "video_sha256": "5dae4bbd438fedb2b6ff86ff5d499258f1ce124820d03363d828462338c1c5b1"
+      "clip": "body-speech",
+      "video_sha256": "a5811773166b09673a241348dc7b6446eccf47c51d89e3045a2b0c2f6b667c15"
     }
   ],
   "continuous_body": true,
   "body_join_method": "fixed upper body; bounded reused gestures; DIS motion interpolation",
   "body_tempo_ratio": 1,
   "face_style": "steady",
+  "speech_sync": {
+    "face_delay_frames": 1,
+    "face_delay_ms": 40,
+    "source_actor_sha256": "49cffb9b3783596baa03c607bd7e6014efbce4813bc11356643b9c6a9beb4143",
+    "before_audit_sha256": "232546a8f32adc259c7022f6b6d55f96f39b7f75ad62107a8379aa40ff3ba685",
+    "method": "Explicit fixed-head face-track delay; narration and body clock unchanged",
+    "scope": "Four manual-crop SyncNet intervals and known-delay control; not phoneme accuracy"
+  },
   "fixed_head_geometry": true,
   "body_stabilization": {
     "method": "Fixed registered head/hair/neck/shoulders; lower-arm gestures only",
@@ -135,47 +143,116 @@
     ],
     "schedule": [
       {
-        "clip": "open",
+        "clip": "neutral",
         "start_frame": 0,
-        "frames": 275
-      },
-      {
-        "clip": "screen",
-        "start_frame": 275,
-        "frames": 300
+        "frames": 11
       },
       {
         "clip": "open",
-        "start_frame": 575,
-        "frames": 275
+        "start_frame": 11,
+        "frames": 116
+      },
+      {
+        "clip": "neutral",
+        "start_frame": 127,
+        "frames": 58
       },
       {
         "clip": "screen",
-        "start_frame": 850,
-        "frames": 250
+        "start_frame": 185,
+        "frames": 187
+      },
+      {
+        "clip": "neutral",
+        "start_frame": 372,
+        "frames": 39
       },
       {
         "clip": "open",
-        "start_frame": 1100,
-        "frames": 300
+        "start_frame": 411,
+        "frames": 224
+      },
+      {
+        "clip": "neutral",
+        "start_frame": 635,
+        "frames": 26
       },
       {
         "clip": "screen",
-        "start_frame": 1400,
-        "frames": 275
+        "start_frame": 661,
+        "frames": 183
+      },
+      {
+        "clip": "neutral",
+        "start_frame": 844,
+        "frames": 46
       },
       {
         "clip": "open",
-        "start_frame": 1675,
-        "frames": 300
+        "start_frame": 890,
+        "frames": 224
+      },
+      {
+        "clip": "neutral",
+        "start_frame": 1114,
+        "frames": 46
       },
       {
         "clip": "screen",
-        "start_frame": 1975,
-        "frames": 275
+        "start_frame": 1160,
+        "frames": 224
+      },
+      {
+        "clip": "neutral",
+        "start_frame": 1384,
+        "frames": 28
+      },
+      {
+        "clip": "open",
+        "start_frame": 1412,
+        "frames": 199
+      },
+      {
+        "clip": "neutral",
+        "start_frame": 1611,
+        "frames": 26
+      },
+      {
+        "clip": "screen",
+        "start_frame": 1637,
+        "frames": 243
+      },
+      {
+        "clip": "neutral",
+        "start_frame": 1880,
+        "frames": 30
+      },
+      {
+        "clip": "open",
+        "start_frame": 1910,
+        "frames": 161
+      },
+      {
+        "clip": "neutral",
+        "start_frame": 2071,
+        "frames": 39
+      },
+      {
+        "clip": "screen",
+        "start_frame": 2110,
+        "frames": 99
+      },
+      {
+        "clip": "neutral",
+        "start_frame": 2209,
+        "frames": 41
       }
     ],
     "unique_gesture_sources": 2,
+    "speech_aligned": true,
+    "speech_inputs_sha256": "c030c6c00a5180d18493df24b4289ea1763f8365df278f2122803346d997f9dd",
+    "gesture_anticipation_frames": 3,
+    "gesture_release_frames": 5,
     "scope": "Authored reuse, not unique continuous90s model generation"
   },
   "stable_reference_appearance": true,
@@ -192,7 +269,7 @@
     "model_license": "GPL-3.0",
     "model_sha256": "f01e0c9338b9a6a31b881ea6d4360d70c1e549701b3792e14c9ed88d6196c5a1",
     "downsample_ratio": 0.5,
-    "source_actor_sha256": "49cffb9b3783596baa03c607bd7e6014efbce4813bc11356643b9c6a9beb4143",
+    "source_actor_sha256": "8645fabbff5418511c096ee33ed9d00f6fd463e4ae80c7e9533646b1228d1a9b",
     "gpu_used": false,
     "sample_frames": [
       0,
@@ -216,7 +293,7 @@
       2000,
       2249
     ],
-    "seconds": 235.401,
+    "seconds": 229.91,
     "scope": "Background replacement only. Hair/finger edge quality requires visual review."
   },
   "source_image_generation": "built-in image_gen: synthetic standing presenter edited from user-supplied face reference; no Speak character",

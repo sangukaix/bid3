@@ -18,7 +18,7 @@ import imageio_ffmpeg
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from presenter import digest, save
+from presenter import digest, save, speech_gesture_schedule
 from stitch_body import blend_motion
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -27,10 +27,12 @@ ROOT = Path(__file__).resolve().parents[2]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--work-dir', type=Path, required=True)
+    parser.add_argument('--output-dir', type=Path)
+    parser.add_argument('--speech-inputs', type=Path)
     args = parser.parse_args()
     work = args.work_dir.resolve()
-    output = work / 'body-calm'
-    output.mkdir(exist_ok=True)
+    output = args.output_dir.resolve() if args.output_dir else work / 'body-calm'
+    output.mkdir(parents=True, exist_ok=True)
     if (output / 'gesture.mp4').exists():
         raise ValueError('Preserve completed candidates')
     config = json.loads((ROOT / 'web/features/product-demo/presenter-source.json').read_text('utf-8'))
@@ -40,7 +42,7 @@ def main():
     neutral = cv2.resize(cv2.imread(str(portrait)), (512, 768), interpolation=cv2.INTER_AREA)
     cv2.setNumThreads(1)
     flow = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_MEDIUM)
-    clips, sources = {}, []
+    clips, sources = {'neutral': [neutral]}, []
     # Exclude the first source's large torso lean; use only its upright palm gesture.
     for name, first, last in [('open', 75, 160), ('screen', 0, 192)]:
         folder = work / ('body-' + name)
@@ -64,8 +66,14 @@ def main():
         clips[name] = frames
         sources.append({'clip': name, 'first': first, 'last': last, 'report_sha256': digest(folder / 'report.json')})
     # A calm authored schedule. Reuse is explicit; not90s of unique model generation.
-    schedule = [('open', 11), ('screen', 12), ('open', 11), ('screen', 10),
-                ('open', 12), ('screen', 11), ('open', 12), ('screen', 11)]
+    schedule = [('open', 275), ('screen', 300), ('open', 275), ('screen', 250),
+                ('open', 300), ('screen', 275), ('open', 300), ('screen', 275)]
+    if args.speech_inputs:
+        inputs = json.loads(args.speech_inputs.read_text('utf-8'))
+        if inputs['portrait_sha256'] != config['portrait_sha256']:
+            raise ValueError('Speech inputs reference a different presenter')
+        schedule = speech_gesture_schedule(inputs)
+    total = sum(count for _, count in schedule)
     y, x = np.mgrid[:768, :512].astype(np.float32)
     lower = np.clip((y - 360) / 70, 0, 1)
     lower = lower * lower * (3 - 2 * lower)
@@ -91,14 +99,14 @@ def main():
         return digest(path)
 
     with ThreadPoolExecutor(max_workers=4) as pool:
-        for name, seconds in schedule:
+        for name, count in schedule:
             frames = clips[name]
             segment_start = index
-            positions = np.linspace(0, len(frames) - 1, seconds * 25)
+            positions = np.linspace(0, len(frames) - 1, count)
             hashes.extend(pool.map(compose_one, ((index + n, p, frames) for n, p in enumerate(positions))))
             index += len(positions)
-            segments.append({'clip': name, 'start_frame': segment_start, 'frames': seconds * 25})
-            print('Composed', index, '/2250 body frames', flush=True)
+            segments.append({'clip': name, 'start_frame': segment_start, 'frames': count})
+            print('Composed', index, '/', total, 'body frames', flush=True)
     target = output / 'gesture.mp4'
     subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), '-v', 'error', '-n', '-framerate', '25',
         '-i', str(output / 'frame-%03d.png'), '-an', '-c:v', 'libx264', '-crf', '19', '-pix_fmt', 'yuv420p',
@@ -110,6 +118,9 @@ def main():
                                 'fixed_above_y_px': 360, 'transition_ends_y_px': 430, 'breathing_max_px': .6,
                                 'fixed_upper_body_pixel_sha256': upper_hash, 'fixed_upper_body_verified_frames': index,
                                 'source_clips': sources, 'schedule': segments, 'unique_gesture_sources': 2,
+                                'speech_aligned': bool(args.speech_inputs),
+                                'speech_inputs_sha256': digest(args.speech_inputs) if args.speech_inputs else None,
+                                'gesture_anticipation_frames': 3, 'gesture_release_frames': 5,
                                 'scope': 'Authored reuse, not unique continuous90s model generation'}}
     save(output / 'report.json', report)
     save(output / 'candidate.json', {'accepted': False, 'video_sha256': digest(target), 'frame_sha256': hashes,

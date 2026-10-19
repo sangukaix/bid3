@@ -51,6 +51,18 @@ def main():
         assert fixed_body['fixed_upper_body_verified_frames'] == manifest['duration'] * 25
         assert fixed_body['fixed_above_y_px'] == 360
         assert len(fixed_body['fixed_upper_body_pixel_sha256']) == 64
+        if fixed_body.get('speech_aligned'):
+            cursor = 0
+            for segment in fixed_body['schedule']:
+                assert segment['start_frame'] == cursor and segment['frames'] > 0
+                cursor += segment['frames']
+            assert cursor == manifest['duration'] * 25
+            assert fixed_body['speech_inputs_sha256'] == digest(args.work_dir / 'inputs.json')
+    if manifest.get('speech_sync'):
+        timing = manifest['speech_sync']
+        assert timing == render['speech_sync']
+        assert timing['face_delay_frames'] in (0, 1, 2)
+        assert timing['face_delay_ms'] == timing['face_delay_frames'] * 40
     assert manifest['storyboard_version'] == story['version']
     if 'captions' in manifest:
         captions = PUBLIC / Path(manifest['captions']).name

@@ -98,6 +98,7 @@ def main():
             'continuous_body': render.get('continuous_body', False),
             'body_join_method': render.get('body_join_method'), 'body_tempo_ratio': render.get('body_tempo_ratio', 1),
             'face_style': render.get('face_style', 'legacy'),
+            'speech_sync': render.get('speech_sync'),
             'fixed_head_geometry': render.get('fixed_head_geometry', False),
             'body_stabilization': render.get('body_stabilization'),
             'stable_reference_appearance': render.get('stable_reference_appearance', False),

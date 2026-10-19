@@ -7,7 +7,7 @@ import wave
 
 import numpy as np
 
-from presenter import blink_envelope, digest, face_blend_mask, load_gestures, restrained_expression, speech_activity
+from presenter import blink_envelope, digest, face_blend_mask, load_gestures, restrained_expression, speech_activity, speech_gesture_schedule
 
 
 class GestureTimelineTests(unittest.TestCase):
@@ -121,6 +121,24 @@ class GestureTimelineTests(unittest.TestCase):
         self.assertTrue(np.all(activity[:15] == 0))
         self.assertTrue(np.all(activity[25:33] == 1))
         self.assertTrue(np.all(activity[50:] == 0))
+        schedule = speech_gesture_schedule({'narration_dir': str(self.root), 'scenes': [{'id': 'test', 'duration': 4}]})
+        self.assertEqual(sum(count for _, count in schedule), 100)
+        self.assertEqual(schedule[0][0], 'neutral')
+        self.assertEqual(schedule[1][0], 'open')
+        self.assertEqual(schedule[-1][0], 'neutral')
+        # The voice starts at .95s (WAV .5s + scene .45s), stops at1.45s.
+        self.assertIn(schedule[0][1], range(20, 22))
+        self.assertIn(sum(n for _, n in schedule[:2]), range(41, 43))
+
+    def test_silent_scene_never_triggers_explanation_gestures(self):
+        with wave.open(str(self.root / 'silent.wav'), 'wb') as audio:
+            audio.setnchannels(1)
+            audio.setsampwidth(2)
+            audio.setframerate(16000)
+            audio.writeframes(bytes(16000))
+        schedule = speech_gesture_schedule({'narration_dir': str(self.root),
+            'scenes': [{'id': 'silent', 'duration': 2}, {'id': 'silent', 'duration': 2}]})
+        self.assertEqual(schedule, [('neutral', 100)])
 
 
 if __name__ == '__main__':

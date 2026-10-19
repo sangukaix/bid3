@@ -83,12 +83,15 @@ def load_gestures(gesture_dir, timeline_file, portrait_sha256, total_frames):
                     'body_tempo_ratio': report.get('body_tempo_ratio', 1) if continuous else 1}
 
 
-def speech_activity(inputs):
-    """Close the mouth in genuine pauses; preserve120ms around quiet consonants."""
+def speech_energy(inputs):
+    """Voice-only40ms RMS on the same450ms scene clock as the published audio."""
     result = []
     narration = Path(inputs['narration_dir'])
     for scene in inputs['scenes']:
-        with wave.open(str(narration / (scene['id'] + '.wav'))) as audio:
+        path = narration / (scene['id'] + '.wav')
+        if scene.get('narration_sha256') and digest(path) != scene['narration_sha256']:
+            raise ValueError('Narration changed; do not reuse speech timing')
+        with wave.open(str(path)) as audio:
             samples = np.frombuffer(audio.readframes(audio.getnframes()), '<i2').astype(np.float32) / 32768
             samples = samples.reshape(-1, audio.getnchannels()).mean(axis=1)
             rate = audio.getframerate()
@@ -97,8 +100,33 @@ def speech_activity(inputs):
         padded[start:start + len(samples)] = samples
         for frame in range(scene['duration'] * 25):
             window = padded[round(frame * rate / 25):round((frame + 1) * rate / 25)]
-            result.append(float(np.sqrt(np.mean(window**2))) > .0015)
-    active = np.array(result, np.float32)
+            result.append(float(np.sqrt(np.mean(window**2))))
+    return np.array(result, np.float32)
+
+
+def speech_gesture_schedule(inputs):
+    """One bounded explanation per spoken scene, resting naturally in gaps."""
+    energy = speech_energy(inputs)
+    cursor, offset, schedule = 0, 0, []
+    for index, scene in enumerate(inputs['scenes']):
+        count = scene['duration'] * 25
+        voiced = np.flatnonzero(energy[offset:offset + count] > .0015)
+        if len(voiced):
+            start = offset + max(0, int(voiced[0]) - 3)
+            end = offset + min(count, int(voiced[-1]) + 1 + 5)
+            if start > cursor:
+                schedule.append(('neutral', start - cursor))
+            schedule.append(('open' if index % 2 == 0 else 'screen', end - start))
+            cursor = end
+        offset += count
+    if cursor < offset:
+        schedule.append(('neutral', offset - cursor))
+    return schedule
+
+
+def speech_activity(inputs):
+    """Close the mouth in genuine pauses; preserve120ms around quiet consonants."""
+    active = (speech_energy(inputs) > .0015).astype(np.float32)
     extended = np.maximum.reduce([np.pad(active, (2, 2))[i:i + len(active)] for i in range(5)])
     return np.convolve(extended, [.25, .5, .25], mode='same').astype(np.float32)
 
