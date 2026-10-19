@@ -5,6 +5,69 @@
 재생·일시정지·전체화면·구간 선택·한국어 자막·글로 된 소개·영상 다운로드를 지원합니다.
 자동재생하지 않으며 `preload="none"`으로 방문만으로 영상 전체를 받지 않습니다.
 
+## Alex 안내 — 2026-10-19
+
+기존 1920×1080 시연 화면의 오른쪽에 Speak의 원본 가상 캐릭터 Alex를 배치한
+2560×1080 버전을 추가합니다. 설명 음성·음악·자막·90초/10개 장면은 그대로이며,
+미리 생성한 얼굴 발화 영상과 합성해 **한 비디오·한 오디오 트랙**으로 재생합니다.
+구간 이동·일시정지·전체화면에 별도의 아바타 시계를 두지 않습니다.
+`Alex 안내 켜짐/꺼짐`으로 원래 영상과 전환할 수 있고, 아바타 영상 오류 시 원래
+영상으로 돌아갑니다. 원본 영상 해시나 스토리보드 버전·전체 길이가 달라지면
+오래된 안내 버전을 선택하지 않습니다.
+
+Alex는 직접 생성했던 성인 가상 인물이며 원본 인물 사진·학습자 음성을 사용하지
+않습니다. 기존 한국어 Windows 합성 음성을 그대로 분석합니다. 입·얼굴 움직임은
+Ditto/HuBERT 및 기존 LivePortrait 렌더러로 로컬에서 사전 생성합니다. 어깨는 정지
+상태이며 손짓·실시간 대화·한국어 발음 정확성 검증 완료를 뜻하지 않습니다.
+OpenAI/Gemma 호출, 새 모델 다운로드·설치, Speak의 소스·설정 변경은 필요 없습니다.
+이 시연 작업이 전체 모델 체인의 상업적 이용 허가를 확정하는 것은 아닙니다.
+
+| 파일 | 역할 |
+| --- | --- |
+| `scripts/product-demo/presenter.py` | 기존 내레이션 분석·검증된 로컬 런타임으로 얼굴 발화 영상 생성 |
+| `scripts/product-demo/compose_presenter.py` | 원래 화면과 아바타를 오른쪽에 합성, 기존 음성 트랙 그대로 복사 |
+| `scripts/product-demo/check_presenter.py` | 전체 프레임 디코딩·원래 음성 동일성·출처 해시·트랙 수 검사 |
+| `web/public/product-demo/presenter.json` | 공개 출력의 버전·출처 SHA·제한 사항 |
+| `web/public/product-demo/intro-with-guide.mp4` | 아바타 안내가 포함된 웹/다운로드 영상 |
+| `.local/product-demo/presenter/` | 비공개 분석 특징·얼굴 움직임·무음 아바타 트랙·검수 자료 |
+
+### 다시 제작하기
+
+`$avatarResearchRoot`는 기존 Speak 아바타 연구 폴더이며 저장소에 모델 가중치나
+그 환경을 복사하지 않습니다. 실제 경로는 해당 노트북에서 지정합니다.
+다음은 이미 준비된 CPU ONNX 런타임과 별도 Torch CUDA 런타임을 사용하는 명령입니다.
+새 설치를 자동으로 하지 않습니다. GPU 물리 여유 12GiB 미만이면 생성은 중단하고
+다른 프로젝트의 모델을 내리지 않습니다.
+
+```powershell
+# 내레이션이나 장면 시간 변경 시: 이전 .local/product-demo/presenter 폴더를
+# 별도 이름으로 보존한 뒤 새 작업 폴더에서 한 번만 준비합니다.
+& $cpuOnnxPython -I scripts/product-demo/presenter.py prepare --research-root $avatarResearchRoot
+& $avatarPython -I scripts/product-demo/presenter.py render --preview --research-root $avatarResearchRoot
+.\server\venv\Scripts\python.exe scripts/product-demo/compose_presenter.py --preview
+# 첫 장면을 검수한 다음 전체 얼굴 트랙을 출력합니다. 예측 움직임 캐시를 재사용합니다.
+& $avatarPython -I scripts/product-demo/presenter.py render --research-root $avatarResearchRoot
+.\server\venv\Scripts\python.exe scripts/product-demo/compose_presenter.py
+.\server\venv\Scripts\python.exe scripts/product-demo/check_presenter.py
+```
+
+**화면 디자인만 변경**하고 음성과 장면 시간이 같다면 기존 무음 아바타 트랙을
+재사용해 `compose_presenter.py`만 다시 실행합니다. **멘트·음성·시간을 변경**하면
+변경된 음성과 정확히 대응하는 분석·얼굴 트랙을 다시 준비합니다. 이전 특징이나
+결과를 조용히 덮어쓰지 않으며, 음성·시간 불일치는 합성 전에 차단합니다.
+
+2026-10-19 확인: 전체 2,160프레임 디코딩, 원본/합성본의 48kHz stereo PCM
+SHA 일치, 오디오 트랙 1개, 원본 영상 SHA 보존, fast-start, 자막 보존,
+ESLint·TypeScript·production build를 통과했습니다. 실제 공개 HTTPS에서
+90초/2560×1080 재생, 장면 선택, 재생 중 원래 영상 전환, 일시정지와 양방향
+전환 시 동일 위치 유지(측정 차이 0초), 자동재생 안 함, byte-range 206을 확인했습니다.
+현재 909px 화면의 가로 넘침이 없고, 428px 화면도 시각 확인했습니다. 회사 자료 API는
+비로그인 시 계속 401입니다. 생성된 6개 시점 얼굴 프레임과 첫 합성 장면을
+시각 검수했으며, 한국어 입 모양의 정확성과 음성·표정 자연스러움의 최종 청취
+판단은 사용자 검토가 필요합니다. 실제 검수 기록/캡처는 비공개
+`.local/product-demo/presenter/verification.json`, `browser-verification.json`,
+`browser-preview.png`에 보존합니다.
+
 ## 구성과 참고
 
 - 공고 검색 → 요구사항별 작성 계획 → 양식 선택 → 원문 대조 → 기존 PPTX 이어 만들기 → 참고자료 → Gemma와 페이지 수정 → 버전 보관·다운로드.

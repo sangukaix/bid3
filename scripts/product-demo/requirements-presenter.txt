@@ -1,0 +1,10 @@
+# Optional offline authoring ONLY. Do not install these into Django/Next/Speak.
+# Existing isolated CPU runtime (Python3.10):
+# numpy, onnxruntime==1.30.0, the pinned local HuBERT ONNX export.
+# Existing isolated GPU runtime (Python3.13.16):
+# torch==2.6.0 (cu124), torchvision==0.21.0, numpy==2.2.6,
+# opencv-python==4.11.0.86, scipy==1.15.3, pillow==11.3.0, einops==0.8.1.
+# Source: antgroup/ditto-talkinghead@c3e47eee2e626500017a0556b470d6d4182f85e8.
+# Reuse audited Speak research helpers, original portrait registration and pinned
+# weights via --research-root. presenter.py does NOT download or install anything.
+# CPU composition/checking uses requirements.txt in this directory.

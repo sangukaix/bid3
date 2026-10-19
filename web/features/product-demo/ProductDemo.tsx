@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import storyboard from "./storyboard.json";
+import demoBuild from "@/public/product-demo/build.json";
+import presenter from "@/public/product-demo/presenter.json";
 
 let start = 0;
 const chapters = storyboard.scenes.map(scene => {
@@ -18,11 +20,34 @@ function time(seconds: number) {
 export default function ProductDemo() {
   const video = useRef<HTMLVideoElement>(null);
   const pendingSeek = useRef<number | null>(null);
+  const resumeAfterLoad = useRef(false);
   const [current, setCurrent] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [hasPlayed, setHasPlayed] = useState(false);
   const [error, setError] = useState(false);
+  const [showGuide, setShowGuide] = useState(true);
+  const [guideFailed, setGuideFailed] = useState(false);
   const currentChapter = chapters.findLastIndex(chapter => current >= chapter.start);
-  const source = `${storyboard.video}?v=${storyboard.version}`;
+  const guideAvailable = presenter.main_video_sha256 === demoBuild.sha256
+    && presenter.storyboard_version === storyboard.version && presenter.duration === duration;
+  const withGuide = guideAvailable && showGuide && !guideFailed;
+  const source = withGuide ? `${presenter.video}?v=${presenter.version}` : `${storyboard.video}?v=${storyboard.version}`;
+
+  useEffect(() => {
+    if (resumeAfterLoad.current && video.current) {
+      resumeAfterLoad.current = false;
+      void video.current.play().catch(() => setPlaying(false));
+    }
+  }, [source]);
+
+  function changeGuide(enabled: boolean) {
+    const player = video.current;
+    pendingSeek.current = pendingSeek.current ?? player?.currentTime ?? current;
+    resumeAfterLoad.current = !!player && !player.paused && !player.ended;
+    player?.pause();
+    setError(false);
+    setShowGuide(enabled);
+  }
 
   async function seek(seconds: number) {
     const player = video.current;
@@ -56,32 +81,42 @@ export default function ProductDemo() {
         </div>
 
         <div className="overflow-hidden rounded-2xl border border-white/15 bg-[#0d1c26] shadow-[0_24px_80px_-30px_rgba(0,0,0,0.5)]">
-          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3 text-[11px] sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3 text-[11px] sm:px-5">
             <span className="flex items-center gap-2 font-semibold tracking-wide"><span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${playing ? "bg-[#8ee0c7]" : "bg-slate-400"}`} />AI비드 · PRODUCT WALKTHROUGH</span>
-            <span className="text-slate-400">{time(duration)} <span className="ml-2 hidden sm:inline">한국어 안내 · 자막</span></span>
+            <div className="flex items-center gap-3">
+              {guideAvailable && !guideFailed && <button type="button" aria-pressed={withGuide}
+                onClick={() => changeGuide(!withGuide)}
+                className="rounded-full border border-[#8ee0c7]/30 px-3 py-1.5 text-[#b8f0df] hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8ee0c7]">
+                {withGuide ? "Alex 안내 켜짐" : "Alex 안내 꺼짐"}
+              </button>}
+              <span className="text-slate-400">{time(duration)} <span className="ml-2 hidden sm:inline">한국어 안내 · 자막</span></span>
+            </div>
           </div>
-          <div className="relative aspect-video">
+          <div className="relative" style={{ aspectRatio: withGuide ? `${presenter.width} / ${presenter.height}` : "16 / 9" }}>
             <video
               ref={video}
               aria-label="AI비드 서비스 소개 영상"
               aria-describedby="product-demo-description"
               className="h-full w-full"
               src={source}
-              poster={`${storyboard.poster}?v=${storyboard.version}`}
+              poster={withGuide ? `${presenter.poster}?v=${presenter.version}` : `${storyboard.poster}?v=${storyboard.version}`}
               controls
               playsInline
-              preload="none"
+              preload={hasPlayed ? "metadata" : "none"}
               onLoadedMetadata={() => {
                 if (pendingSeek.current !== null && video.current) {
                   video.current.currentTime = pendingSeek.current;
                   pendingSeek.current = null;
                 }
               }}
-              onTimeUpdate={event => setCurrent(event.currentTarget.currentTime)}
-              onPlay={() => setPlaying(true)}
+              onTimeUpdate={event => { if (pendingSeek.current === null) setCurrent(event.currentTarget.currentTime); }}
+              onPlay={() => { setPlaying(true); setHasPlayed(true); }}
               onPause={() => setPlaying(false)}
               onEnded={() => setPlaying(false)}
-              onError={() => setError(true)}
+              onError={() => {
+                if (withGuide) { changeGuide(false); setGuideFailed(true); }
+                else setError(true);
+              }}
             >
               <track kind="captions" src={`${storyboard.captions}?v=${storyboard.version}`} srcLang="ko" label="한국어" default />
               소개 영상을 재생할 수 없습니다. 아래 글로 된 소개를 확인하거나 영상을 다운로드하세요.

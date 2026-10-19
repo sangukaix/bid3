@@ -1,0 +1,23 @@
+{
+  "version": "da8974963950",
+  "storyboard_version": "20261015-1",
+  "character": "Alex",
+  "video": "/product-demo/intro-with-guide.mp4",
+  "poster": "/product-demo/poster-with-guide.webp",
+  "width": 2560,
+  "height": 1080,
+  "duration": 90.0,
+  "main_video_sha256": "459d43d0d5b524f9aac66b81d1dc009bb7da923186de98382de6eff4c3a0945f",
+  "storyboard_sha256": "275f60f95f4a805e70cda84c99420bb601303950cd9511f7a7c031f212448406",
+  "avatar_sha256": "04bdd42c5b8c856380a0a6fd009bf256dcd7a0274834fd13adcbba41a03f84f6",
+  "video_sha256": "da8974963950abf1833080af9dc93c215902b92816a71f367cf8ca6786440846",
+  "portrait_sha256": "5871c37dd97ce0023f7e18fadc83693f0316512ee5181632d8ea5835005f1651",
+  "narration": "existing BID3 Korean Windows narration",
+  "single_original_audio": true,
+  "cloud_calls": 0,
+  "limitations": [
+    "Offline generated face motion; static shoulders; no hand gestures",
+    "Korean articulation and naturalness require human review",
+    "Original fictional character; model chain not commercially cleared by this demo"
+  ]
+}
